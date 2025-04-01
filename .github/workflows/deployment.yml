@@ -25,5 +25,11 @@ jobs:
             - name: Run CI command
               run: npm ci
 
+            # - name: Check linting
+            #   run: npm run lint
+            
+            # - name: Run the tests
+            #   run: npm run test
+
             - name: Build
               run: npm run build
