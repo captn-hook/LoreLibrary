@@ -1,3 +1,9 @@
+<script>
+  import {token} from '$lib/context/userContext.svelte.js';
+  function setToken(){
+    token.set('token');
+  }
+  </script>
 <div class="header p-4">
   <div class="flex justify-between items-center">
     <div class="flex items-center space-x-4">
@@ -5,7 +11,7 @@
       <h1 class="text-xl font-bold">Lore Library</h1>
     </div>
     <div>
-      <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Hi</button>
+      <button type="button" class="btn preset-tonal-primary" on:click={setToken}>Hi</button>
     </div>
   </div>
 </div>
