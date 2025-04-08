@@ -2,6 +2,10 @@
 
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton/optional/presets';
+<<<<<<< HEAD:src/app.css
 @import '@skeletonlabs/skeleton/themes/mint';
+=======
+@import '@skeletonlabs/skeleton/themes/cerberus';
+>>>>>>> d1264306c1e5b8b6dfbee64738d17fe8738aa722:lorelibrary/src/app.css
 
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
