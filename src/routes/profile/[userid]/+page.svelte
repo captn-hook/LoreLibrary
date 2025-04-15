@@ -2,4 +2,4 @@
     export let data;
 </script>
 
-<h1>{data.authorid}</h1>
+<h1>{data.userid}</h1>
