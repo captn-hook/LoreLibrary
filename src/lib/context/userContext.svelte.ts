@@ -17,7 +17,7 @@ if (browser) {
 }
 
 // Login function
-export function login(tokenValue) {
+export function login(tokenValue: string) {
     console.log('Logging in with token:', tokenValue);
     if (browser) {
         token.set(tokenValue);
