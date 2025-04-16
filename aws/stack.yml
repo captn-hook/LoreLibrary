@@ -5,6 +5,12 @@ Parameters:
   LambdaCodeS3Key:
     Type: String
     Description: The key (path) to the Lambda code zip file in the S3 bucket
+  OpenApiSpecS3Bucket:
+    Type: String
+    Description: The name of the S3 bucket containing the OpenAPI specification
+  OpenApiSpecS3Key:
+    Type: String
+    Description: The key (path) to the OpenAPI specification file in the S3 bucket
 
 Resources:
   ResourcesBucket:
