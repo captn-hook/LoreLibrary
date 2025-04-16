@@ -1,0 +1,694 @@
+openapi: 3.0.4
+info:
+  title: LoreLibray API
+  description: API for managing users, worlds, collections, entries, and resources.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+tags:
+  - name: user
+    description: Operations related to users
+  - name: world
+    description: Operations related to worlds
+  - name: collection
+    description: Operations related to collections
+  - name: entry
+    description: Operations related to entries
+  - name: resource
+    description: Operations related to resources
+  - name: search
+    description: Search and browse data
+paths:
+  /users:
+    get:
+      tags:
+        - user
+      summary: Get a list of users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      tags:
+        - user
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created successfully
+  /users/{userId}:
+    get:
+      tags:
+        - user
+      summary: Get user details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+    patch:
+      tags:
+        - user
+      summary: Update user details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated successfully
+        '404':
+          description: User not found
+    delete:
+      tags:
+        - user
+      summary: Delete a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted successfully
+        '404':
+          description: User not found
+  /worlds:
+    get:
+      tags:
+        - world
+      summary: Get a list of worlds
+      responses:
+        '200':
+          description: List of worlds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/World'
+    post:
+      tags:
+        - world
+      summary: Create a new world
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/World'
+      responses:
+        '201':
+          description: World created successfully
+  /worlds/{worldId}:
+    get:
+      tags:
+        - world
+      summary: Get world details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: World details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/World'
+        '404':
+          description: World not found
+    patch:
+      tags:
+        - world
+      summary: Update world details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/World'
+      responses:
+        '200':
+          description: World updated successfully
+        '404':
+          description: World not found
+    delete:
+      tags:
+        - world
+      summary: Delete a world
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: World deleted successfully
+        '404':
+          description: World not found
+  /worlds/{worldId}/collections:
+    get:
+      tags:
+        - collection
+      summary: Get collections in a world
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Collection'
+    post:
+      tags:
+        - collection
+      summary: Create a new collection in a world
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Collection'
+      responses:
+        '201':
+          description: Collection created successfully
+  /worlds/{worldId}/collections/{collectionId}:
+    get:
+      tags:
+        - collection
+      summary: Get collection details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Collection details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        '404':
+          description: Collection not found
+    patch:
+      tags:
+        - collection
+      summary: Update collection details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Collection'
+      responses:
+        '200':
+          description: Collection updated successfully
+        '404':
+          description: Collection not found
+    delete:
+      tags:
+        - collection
+      summary: Delete a collection
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Collection deleted successfully
+        '404':
+          description: Collection not found
+  /{worldId}/{collectionId}/entries:
+    get:
+      tags:
+        - entry
+      summary: Get entries in a collection
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entry'
+    post:
+      tags:
+        - entry
+      summary: Create a new entry in a collection
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Entry'
+      responses:
+        '201':
+          description: Entry created successfully
+  /{worldId}/{collectionId}/entries/{entryId}:
+    get:
+      tags:
+        - entry
+      summary: Get entry details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Entry details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '404':
+          description: Entry not found
+    patch:
+      tags:
+        - entry
+      summary: Update entry details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Entry'
+      responses:
+        '200':
+          description: Entry updated successfully
+        '404':
+          description: Entry not found
+    delete:
+      tags:
+        - entry
+      summary: Delete an entry
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Entry deleted successfully
+        '404':
+          description: Entry not found
+  /{worldId}/resources:
+    get:
+      tags:
+        - resource
+      summary: Get resources in a world
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resource'
+    post:
+      tags:
+        - resource
+      summary: Create a new resource in a world
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '201':
+          description: Resource created successfully
+  /{worldId}/resources/{resourceId}:
+    get:
+      tags:
+        - resource
+      summary: Get resource details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resource details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          description: Resource not found
+    patch:
+      tags:
+        - resource
+      summary: Update resource details
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '200':
+          description: Resource updated successfully
+        '404':
+          description: Resource not found
+    delete:
+      tags:
+        - resource
+      summary: Delete a resource
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Resource deleted successfully
+        '404':
+          description: Resource not found
+  /search:
+    get:
+      tags:
+        - search
+      summary: Search for worlds
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - entry
+              - collection
+              - world
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchResult'
+        '400':
+          description: Invalid search query
+        '404':
+          description: No results found
+  /{worldId}/search:
+    get:
+      tags:
+        - search
+      summary: Search for entries and collections in a world
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - entry
+              - collection
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchResult'
+        '400':
+          description: Invalid search query
+        '404':
+          description: No results found
+  /{worldId}/{collectionId}/search:
+    get:
+      tags:
+        - search
+      summary: Search for entries in a collection
+      parameters:
+        - name: worldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchResult'
+        '400':
+          description: Invalid search query
+        '404':
+          description: No results found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    World:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    Collection:
+      type: object
+      properties:
+        name:
+          type: string
+        parentId:
+          type: string
+    Entry:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+    SearchResult:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        name:
+          type: string
+    Resource:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
