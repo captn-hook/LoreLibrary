@@ -2,4 +2,4 @@
     export let data;
 </script>
 
-<h1>{data.worldid}</h1>
+<h1>Viewing World: {data.worldid}</h1>

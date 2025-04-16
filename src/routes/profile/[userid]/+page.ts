@@ -1,6 +1,6 @@
 
-export const load = ({ params: { authorid } }: { params: { authorid: string } }) => {
+export const load = ({ params: { userid } }: { params: { userid: string } }) => {
     return {
-        authorid
+        userid
     };
 }
