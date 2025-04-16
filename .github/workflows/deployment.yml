@@ -1,10 +1,9 @@
 name: Node.js CI
 
 on:
-    push:
-        branches: [main, develop]
-    pull_request:
-        branches: [main, develop]
+  push:
+    branches:
+      - main  # Trigger deployment on pushes to the main branch
 
 jobs:
     build:
@@ -12,15 +11,16 @@ jobs:
 
         strategy:
             matrix:
-                node-version: [21.2.x]
+                node-version: [22.14.x]
 
         steps:
             - uses: actions/checkout@v2
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: 'npm'
+                  cache-dependency-path: package-lock.json
 
             - name: Run CI command
               run: npm ci

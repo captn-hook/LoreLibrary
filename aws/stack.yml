@@ -1,0 +1,123 @@
+Parameters:
+  LambdaCodeS3Bucket:
+    Type: String
+    Description: The name of the S3 bucket containing the Lambda code
+  LambdaCodeS3Key:
+    Type: String
+    Description: The key (path) to the Lambda code zip file in the S3 bucket
+  OpenApiSpecS3Bucket:
+    Type: String
+    Description: The name of the S3 bucket containing the OpenAPI specification
+  OpenApiSpecS3Key:
+    Type: String
+    Description: The key (path) to the OpenAPI specification file in the S3 bucket
+
+Resources:
+  ResourcesBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: lorelibrary-resources
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true 
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+  ResourcesBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref ResourcesBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+              - 's3:GetObject'
+            Resource: !Sub
+              - arn:aws:s3:::${ResourcesBucket}/*
+              - { ResourcesBucket: !Ref ResourcesBucket }
+
+  DataTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: lorelibrary-data
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+
+  LoreLibraryLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: lorelibrary-function
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeS3Bucket
+        S3Key: !Ref LambdaCodeS3Key
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DataTable
+          BUCKET_NAME: !Ref ResourcesBucket
+
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: lorelibrary-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: LoreLibraryLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:*'
+                  - 's3:*'
+                Resource: '*'
+
+  LoreLibraryApiGateway:
+    Type: 'AWS::ApiGatewayV2::Api'
+    Properties:
+      BodyS3Location:
+        Bucket: !Ref OpenApiSpecS3Bucket
+        Key: !Ref OpenApiSpecS3Key
+
+  ApiGatewayIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub
+        - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
+      PayloadFormatVersion: '2.0'
+
+Outputs:
+  WebsiteURL:
+    Description: URL for the website hosted on the S3 bucket
+    Value: !GetAtt ResourcesBucket.WebsiteURL
+
+  DataTableName:
+    Description: Name of the DynamoDB table
+    Value: !Ref DataTable
+
+  ApiGatewayURL:
+    Description: URL for the API Gateway
+    Value: !Sub "https://${LoreLibraryApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
