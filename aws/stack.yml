@@ -65,16 +65,6 @@ Resources:
           TABLE_NAME: !Ref DataTable
           BUCKET_NAME: !Ref ResourcesBucket
 
-  LambdaCodeBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: lorelibrary-lambda-code
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
   LambdaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
