@@ -93,11 +93,15 @@ Resources:
                 Resource: '*'
 
   LoreLibraryApiGateway:
-    Type: 'AWS::ApiGatewayV2::Api'
+    Type: 'AWS::ApiGatewayV2::RestApi'
     Properties:
-      BodyS3Location:
-        Bucket: !Ref OpenApiSpecS3Bucket
-        Key: !Ref OpenApiSpecS3Key
+      Body:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Sub s3://${OpenApiSpecS3Bucket}/${OpenApiSpecS3Key}
+      Description: LoreLibrary API
+      Name: lorelibrary-api
 
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
