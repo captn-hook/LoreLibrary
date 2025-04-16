@@ -4,6 +4,7 @@ import { goto } from '$app/navigation';
 
 export const name = writable('WINNER');
 export const token = writable(browser ? localStorage.getItem('token') || '' : '');
+export const showLogin = writable(false);
 
 // Subscribe to the token store to keep localStorage in sync
 if (browser) {
@@ -17,10 +18,10 @@ if (browser) {
 }
 
 // Login function
-export function login(tokenValue: string) {
-    console.log('Logging in with token:', tokenValue);
+export function login(email: string, password: string) {
+    console.log('Logging in with token:', email, password);
     if (browser) {
-        token.set(tokenValue);
+        token.set(email+password);
         goto('/dashboard');
     }
 }

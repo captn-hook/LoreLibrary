@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import Header from '$lib/components/header.svelte';
-	import User from '$lib/components/user.svelte';
+	import '$lib/scripts/user.ts'
 	
 	let { children } = $props();
 
@@ -40,7 +40,6 @@
 		document.documentElement.setAttribute('data-theme', theme);
 	}
 </script>
-<User/>
 <Header/>
 <nav>
 	<button

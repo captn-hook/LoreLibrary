@@ -1,21 +1,22 @@
-<script>
+
   'use client';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { token } from '$lib/context/userContext.svelte.js';
+  import { get } from 'svelte/store';
 
-  let currentPath = [];
+
+  let currentPath: string[] = [];
   let isRoot = false;
 
   if (browser) {
     currentPath = window.location.pathname.split('/');
     isRoot = currentPath.length === 2 && currentPath[1] === '';
   }
-
-  $: if (browser && $token != null && $token.trim() !== '') {
+  if (browser && token != null && get(token).trim() !== '') {
     // Redirect to dashboard if user is already logged in
     if (isRoot) {
-      console.log('Redirecting to dashboard', $token);
+      console.log('Redirecting to dashboard', token);
       goto('/dashboard');
     }
   } else if (browser) {
@@ -25,4 +26,3 @@
       goto('/');
     }
   }
-</script>
