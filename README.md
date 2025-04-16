@@ -1,38 +1,21 @@
-# sv
+Set Up GitHub Secrets:
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Go to your GitHub repository and add the prod environment.
+Add the following secrets:
+AWS_ACCESS_KEY_ID: Your AWS access key.
+AWS_SECRET_ACCESS_KEY: Your AWS secret key.
 
-## Creating a project
+AWS:
+    aws configure
 
-If you're seeing this, you've probably already done this step. Congrats!
+    aws cloudformation delete-stack --stack-name lorelibrary-stack --region us-west-2
 
-```bash
-# create a new project in the current directory
-npx sv create
+    aws cloudformation describe-stacks --stack-name lorelibrary-stack --region us-west-2
 
-# create a new project in my-app
-npx sv create my-app
-```
+    aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip --region us-west-2
+    
+    aws cloudformation describe-stack-events --stack-name lorelibrary-stack
 
-## Developing
+    aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+    
