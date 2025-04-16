@@ -15,3 +15,5 @@ AWS:
     aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip --region us-west-2
     
     aws cloudformation describe-stack-events --stack-name lorelibrary-stack
+
+    
