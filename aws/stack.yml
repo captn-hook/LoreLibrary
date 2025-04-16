@@ -91,6 +91,9 @@ Resources:
     Properties:
       Name: lorelibrary-api
       ProtocolType: HTTP
+      BodyS3Location:
+        Bucket: !Ref OpenApiSpecS3Bucket
+        Key: !Ref OpenApiSpecS3Key
       Target: !GetAtt LoreLibraryLambda.Arn
 
   ApiGatewayIntegration:
