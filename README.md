@@ -16,4 +16,3 @@ AWS:
     
     aws cloudformation describe-stack-events --stack-name lorelibrary-stack
 
-    
