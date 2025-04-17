@@ -1,180 +1,159 @@
-const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { register, login, createWorld, createCollection, addEntry, getWorlds, getCollections, getEntries, uploadResource } = require('./handlers'); // Assuming handlers are in a separate file
 
-exports.handler = async (event) => {
-    const { httpMethod, path, pathParameters, queryStringParameters, body } = event;
+import { DynamoDBDocumentClient, PutCommand, GetCommand, 
+    UpdateCommand, DeleteCommand} from "@aws-sdk/lib-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
+const ddbClient = new DynamoDBClient({ region: "us-west-2" });
+const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
+
+// Define the name of the DDB table to perform the CRUD operations on
+const tablename = "lorelibrary";
+
+/**
+ * Provide an event that contains the following keys:
+ *
+ *   - operation: one of 'create,' 'read,' 'update,' 'delete,' or 'echo'
+ *   - payload: a JSON object containing the parameters for the table item
+ *     to perform the operation on
+ */
+
+function notImplemented(name) {
+    return {
+        statusCode: 501,
+        body: JSON.stringify({ message: `${name} not implemented` })
+    };
+}
+
+export const handler = async (event, context) => {
+   
+     const operation = event.operation;
+     const path = event.path;
+   
+     if (operation == 'echo'){
+          return(event.payload);
+     }
+     
+    else { 
+        event.payload.TableName = tablename;
+        let response;
+        
+        switch (operation) {
+          case 'create':
+               response = await ddbDocClient.send(new PutCommand(event.payload));
+               break;
+          case 'read':
+               response = await ddbDocClient.send(new GetCommand(event.payload));
+               break;
+          case 'update':
+               response = ddbDocClient.send(new UpdateCommand(event.payload));
+               break;
+          case 'delete':
+               response = ddbDocClient.send(new DeleteCommand(event.payload));
+               break;
+          default:
+            response = 'Unknown operation: ${operation}';
+          }
+        console.log(context);
+        console.log(response);
+        return response;
+    }
 
     try {
-        if (path === '/users' && httpMethod === 'GET') {
-            // Get a list of users (mock implementation, as no function exists for this)
-            return {
-                statusCode: 200,
-                body: JSON.stringify([]) // Replace with actual implementation
-            };
+        if (path === '/users' && operation == 'read') {
+            return notImplemented('Get users');
         }
 
-        if (path === '/users' && httpMethod === 'POST') {
+        if (path === '/users' && operation == 'create') {
             const { userId, password } = JSON.parse(body);
-            const result = await register(userId, password);
-            return {
-                statusCode: 201,
-                body: JSON.stringify(result)
-            };
+            return notImplemented(`Register user: ${result}`);
         }
 
-        if (path.startsWith('/users/') && httpMethod === 'GET') {
+        if (path.startsWith('/users/') && operation == 'read') {
             const { userId } = pathParameters;
-            // Mock implementation for getting user details
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ userId }) // Replace with actual implementation
-            };
+            return notImplemented(`Get user details for ${userId}`);
         }
 
-        if (path.startsWith('/users/') && httpMethod === 'PATCH') {
+        if (path.startsWith('/users/') && operation == 'update') {
             const { userId } = pathParameters;
             const userDetails = JSON.parse(body);
-            // Mock implementation for updating user details
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ userId, ...userDetails }) // Replace with actual implementation
-            };
+            return notImplemented(`Update user details for ${userId}`);
         }
 
-        if (path.startsWith('/users/') && httpMethod === 'DELETE') {
+        if (path.startsWith('/users/') && operation == 'delete') {
             const { userId } = pathParameters;
-            // Mock implementation for deleting a user
-            return {
-                statusCode: 204,
-                body: ''
-            };
+            return notImplemented(`Delete user ${userId}`);
         }
 
-        if (path === '/worlds' && httpMethod === 'GET') {
+        if (path === '/worlds' && operation == 'read') {
             const userId = queryStringParameters.userId; // Assuming userId is passed as a query parameter
-            const worlds = await getWorlds(userId);
-            return {
-                statusCode: 200,
-                body: JSON.stringify(worlds)
-            };
+            return notImplemented(`Get worlds for user ${userId}`);
         }
 
-        if (path === '/worlds' && httpMethod === 'POST') {
+        if (path === '/worlds' && operation == 'create') {
             const { worldId, userId } = JSON.parse(body);
-            const result = await createWorld(worldId, userId);
-            return {
-                statusCode: 201,
-                body: JSON.stringify(result)
-            };
+            return notImplemented(`Create world ${worldId} for user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && httpMethod === 'GET') {
+        if (path.startsWith('/worlds/') && operation == 'read') {
             const { worldId } = pathParameters;
-            // Mock implementation for getting world details
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ worldId }) // Replace with actual implementation
-            };
+            return notImplemented(`Get world details for ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && httpMethod === 'PATCH') {
+        if (path.startsWith('/worlds/') && operation == 'update') {
             const { worldId } = pathParameters;
             const worldDetails = JSON.parse(body);
-            // Mock implementation for updating world details
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ worldId, ...worldDetails }) // Replace with actual implementation
-            };
+            return notImplemented(`Update world details for ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && httpMethod === 'DELETE') {
+        if (path.startsWith('/worlds/') && operation == 'delete') {
             const { worldId } = pathParameters;
-            // Mock implementation for deleting a world
-            return {
-                statusCode: 204,
-                body: ''
-            };
+            return  notImplemented(`Delete world ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.endsWith('/collections') && httpMethod === 'GET') {
+        if (path.startsWith('/worlds/') && path.endsWith('/collections') && operation == 'read') {
             const { worldId } = pathParameters;
-            const userId = queryStringParameters.userId; // Assuming userId is passed as a query parameter
-            const collections = await getCollections(worldId, userId);
-            return {
-                statusCode: 200,
-                body: JSON.stringify(collections)
-            };
+            const userId = queryStringParameters.userId;
+            return notImplemented(`Get collections for world ${worldId} and user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.endsWith('/collections') && httpMethod === 'POST') {
+        if (path.startsWith('/worlds/') && path.endsWith('/collections') && operation == 'create') {
             const { worldId } = pathParameters;
             const { collectionId, userId } = JSON.parse(body);
-            const result = await createCollection(worldId, collectionId, userId);
-            return {
-                statusCode: 201,
-                body: JSON.stringify(result)
-            };
+            return notImplemented(`Create collection ${collectionId} for world ${worldId} and user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/collections/') && httpMethod === 'GET') {
+        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'read') {
             const { worldId, collectionId } = pathParameters;
-            // Mock implementation for getting collection details
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ worldId, collectionId }) // Replace with actual implementation
-            };
+            return notImplemented(`Get collection details for world ${worldId} and collection ${collectionId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/collections/') && httpMethod === 'PATCH') {
+        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'update') {
             const { worldId, collectionId } = pathParameters;
             const collectionDetails = JSON.parse(body);
             // Mock implementation for updating collection details
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ worldId, collectionId, ...collectionDetails }) // Replace with actual implementation
-            };
+            return notImplemented(`Update collection details for world ${worldId} and collection ${collectionDetails}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/collections/') && httpMethod === 'DELETE') {
+        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'delete') {
             const { worldId, collectionId } = pathParameters;
-            // Mock implementation for deleting a collection
-            return {
-                statusCode: 204,
-                body: ''
-            };
+            return notImplemented(`Delete collection ${collectionId} for world ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/entries') && httpMethod === 'GET') {
+        if (path.startsWith('/worlds/') && path.includes('/entries') && operation == 'read') {
             const { worldId, collectionId } = pathParameters;
-            const entries = await getEntries(worldId, collectionId, queryStringParameters.userId);
-            return {
-                statusCode: 200,
-                body: JSON.stringify(entries)
-            };
+            return notImplemented(`Get entries for world ${worldId} and collection ${collectionId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/entries') && httpMethod === 'POST') {
+        if (path.startsWith('/worlds/') && path.includes('/entries') && operation == 'create') {
             const { worldId, collectionId } = pathParameters;
             const { entryId, userId, content } = JSON.parse(body);
-            const result = await addEntry(worldId, collectionId, entryId, userId, content);
-            return {
-                statusCode: 201,
-                body: JSON.stringify(result)
-            };
+            return notImplemented(`Create entry ${entryId} for world ${worldId}, collection ${collectionId}, and user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/resources') && httpMethod === 'POST') {
+        if (path.startsWith('/worlds/') && path.includes('/resources') && operation == 'create') {
             const { worldId } = pathParameters;
             const { resourceId, fileContent, fileType, userId } = JSON.parse(body);
-            const result = await uploadResource(worldId, userId, resourceId, fileContent, fileType);
-            return {
-                statusCode: 201,
-                body: JSON.stringify(result)
-            };
+            return notImplemented(`Upload resource ${resourceId} for world ${worldId} and user ${userId}`);
         }
 
         return {
