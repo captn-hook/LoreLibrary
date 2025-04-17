@@ -130,7 +130,7 @@ export const handler = async (e) => {
 
         return {
             statusCode: 404,
-            body: JSON.stringify({ message: 'Route not found' })
+            body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
         };
     } catch (error) {
         return {
