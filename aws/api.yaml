@@ -10,8 +10,6 @@ servers:
 tags:
   - name: aws:cloudformation:stack-name
     x-amazon-apigateway-tag-value: lorelibrary-stack
-  - name: aws:cloudformation:stack-id
-    x-amazon-apigateway-tag-value: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/lorelibrary-stack/${AWS::StackId}'
   - name: aws:cloudformation:logical-id
     x-amazon-apigateway-tag-value: LoreLibraryApiGateway
   - name: user
