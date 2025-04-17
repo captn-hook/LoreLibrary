@@ -113,8 +113,14 @@ Resources:
     Type: 'AWS::ApiGatewayV2::Deployment'
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
-      StageName: prod
     DependsOn: ApiGatewayIntegration
+
+  ApiGatewayStage:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      DeploymentId: !Ref ApiGatewayDeployment
+      StageName: prod
 
 Outputs:
   WebsiteURL:
