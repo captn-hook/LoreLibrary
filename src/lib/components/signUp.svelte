@@ -1,23 +1,24 @@
 <script>
-    import {login} from '$lib/context/userContext.svelte';
     export let open = false;
     export let onClose = () => {};
-    export let openSignUp = () => {};
+    export let openLogin = () => {};
   
     let username = '';
     let password = '';
+    let email = '';
   
-    function handleLogin() {
-      console.log('Logging in with', username, password);
-      login(username, password);
+    function handleSignUp() {
+      console.log('signing up with', username, email, password);
       onClose();
     }
 
-    function handleSignUp(){
-        console.log('Sign up clicked');
+    function handleLogin() {
+        console.log("Logging in...");   
         onClose();
-        openSignUp();
+        openLogin();
     }
+
+
 </script>
  {#if open}
 <div
@@ -42,13 +43,21 @@
         }}
         style="background-color: #708090;"
     >
-        <h2 id="login-title" class="text-xl font-bold mb-4 text-primary">Login</h2>
-        <label for="username" class="block text-primary font-medium mb-1 text-left">Username or Email</label>
+        <h2 id="login-title" class="text-xl font-bold mb-4 text-primary">Sign Up</h2>
+        <label for="username" class="block text-primary font-medium mb-1 text-left">Username</label>
         <input
             id="username"
             type="text"
-            placeholder="Username or Email"
+            placeholder="Username"
             bind:value={username}
+            class="input input-bordered w-full mb-4 text-primary placeholder-primary"
+        />
+        <label for="email" class="block text-primary font-medium mb-1 text-left">Email</label>
+        <input
+            id="email"
+            type="email"
+            placeholder="Email"
+            bind:value={email}
             class="input input-bordered w-full mb-4 text-primary placeholder-primary"
         />
         <label for="password" class="block text-primary font-medium mb-1 text-left">Password</label>
@@ -59,9 +68,9 @@
             bind:value={password}
             class="input input-bordered w-full mb-4 text-primary placeholder-primary"
         />
-        <p>Don't have an account? <a href="#" on:click={handleSignUp} class="text-primary underline cursor-pointer">Sign up</a></p>
+        <p>Already have an account? <a href="#" on:click={handleLogin} class="text-primary underline cursor-pointer">Login</a></p>
         <div class="flex justify-center"></div>
-            <button on:click={handleLogin} class="btn preset-tonal-primary mt-4 text-primary">Login</button>
+            <button on:click={handleSignUp} class="btn preset-tonal-primary mt-4 text-primary">Sign Up</button>
         </div>
     </div>
 {/if}

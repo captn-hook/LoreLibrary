@@ -1,9 +1,19 @@
-<script>
-  import { login, token, logout } from "$lib/context/userContext.svelte.js";
-  let localToken = "";
-  token.subscribe((value) => {
-    localToken = value;
-  });
+<script lang="ts">
+  // import { showLogin } from "$lib/context/userContext.svelte";
+  import Login from "$lib/components/login.svelte";
+  import SignUp from "$lib/components/signUp.svelte";
+  import LogButton from "./logButton.svelte";
+
+  let showLogin = false;
+  let showSignUp = false;
+
+
+  function openLogin() {
+    showLogin = true;
+  }
+  function openSignUp() {
+    showSignUp = true;
+  }
 </script>
 
 <div class="header p-4">
@@ -12,13 +22,8 @@
       <img src="/images/logo.png" alt="Logo" class="h-12 w-auto" />
       <h1 class="text-xl font-bold">Lore Library</h1>
     </a>
-    <button
-      type="button"
-      class="btn preset-tonal-primary"
-      on:click={() =>
-        localToken && localToken.trim() != "" ? logout() : login("token")}
-    >
-      {localToken && localToken.trim() != "" ? "Log Out" : "Log In"}
-    </button>
+    <LogButton openLogin={openLogin} />
   </div>
+  <Login open={showLogin} onClose={() => (showLogin = false)} openSignUp={openSignUp} />
+  <SignUp open={showSignUp} onClose={() => (showSignUp = false)} openLogin={openLogin}/>
 </div>
