@@ -26,7 +26,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -53,7 +53,7 @@ paths:
         type: aws_proxy
         httpMethod: POST
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -75,7 +75,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -108,7 +108,7 @@ paths:
         type: aws_proxy
         httpMethod: PATCH
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -131,7 +131,7 @@ paths:
         type: aws_proxy
         httpMethod: DELETE
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -149,7 +149,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -176,7 +176,7 @@ paths:
         type: aws_proxy
         httpMethod: POST
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -198,7 +198,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -231,7 +231,7 @@ paths:
         type: aws_proxy
         httpMethod: PATCH
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -254,7 +254,7 @@ paths:
         type: aws_proxy
         httpMethod: DELETE
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -278,7 +278,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -311,7 +311,7 @@ paths:
         type: aws_proxy
         httpMethod: POST
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -338,7 +338,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -376,7 +376,7 @@ paths:
         type: aws_proxy
         httpMethod: PATCH
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -404,7 +404,7 @@ paths:
         type: aws_proxy
         httpMethod: DELETE
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -433,7 +433,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -471,7 +471,7 @@ paths:
         type: aws_proxy
         httpMethod: POST
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -503,7 +503,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -546,7 +546,7 @@ paths:
         type: aws_proxy
         httpMethod: PATCH
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -579,7 +579,7 @@ paths:
         type: aws_proxy
         httpMethod: DELETE
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -603,7 +603,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -636,7 +636,7 @@ paths:
         type: aws_proxy
         httpMethod: POST
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -663,7 +663,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -701,7 +701,7 @@ paths:
         type: aws_proxy
         httpMethod: PATCH
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -729,7 +729,7 @@ paths:
         type: aws_proxy
         httpMethod: DELETE
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -762,7 +762,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -807,7 +807,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
@@ -849,7 +849,7 @@ paths:
         type: aws_proxy
         httpMethod: GET
         uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+          Fn::Sub: arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         passthroughBehavior: when_no_match
         contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
