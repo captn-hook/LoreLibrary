@@ -93,6 +93,14 @@ Resources:
                   - 'dynamodb:*'
                   - 's3:*'
                 Resource: '*'
+                
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt LoreLibraryLambda.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*'
 
   LoreLibraryApiGateway:
     Type: 'AWS::ApiGatewayV2::Api'
