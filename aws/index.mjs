@@ -32,97 +32,97 @@ export const handler = async (e) => {
     try {
         const [operation, path] = e.routeKey.split(' ');
 
-        if (path === '/users' && operation == 'read') {
+        if (path === '/users' && operation == 'GET') {
             return notImplemented('Get users');
         }
 
-        if (path === '/users' && operation == 'create') {
+        if (path === '/users' && operation == 'POST') {
             const { userId, password } = JSON.parse(body);
             return notImplemented(`Register user: ${result}`);
         }
 
-        if (path.startsWith('/users/') && operation == 'read') {
+        if (path.startsWith('/users/') && operation == 'GET') {
             const { userId } = pathParameters;
             return notImplemented(`Get user details for ${userId}`);
         }
 
-        if (path.startsWith('/users/') && operation == 'update') {
+        if (path.startsWith('/users/') && operation == 'PATCH') {
             const { userId } = pathParameters;
             const userDetails = JSON.parse(body);
             return notImplemented(`Update user details for ${userId}`);
         }
 
-        if (path.startsWith('/users/') && operation == 'delete') {
+        if (path.startsWith('/users/') && operation == 'DELETE') {
             const { userId } = pathParameters;
             return notImplemented(`Delete user ${userId}`);
         }
 
-        if (path === '/worlds' && operation == 'read') {
+        if (path === '/worlds' && operation == 'GET') {
             const userId = queryStringParameters.userId;
             return notImplemented(`Get worlds for user ${userId}`);
         }
 
-        if (path === '/worlds' && operation == 'create') {
+        if (path === '/worlds' && operation == 'POST') {
             const { worldId, userId } = JSON.parse(body);
             return notImplemented(`Create world ${worldId} for user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && operation == 'read') {
+        if (path.startsWith('/worlds/') && operation == 'GET') {
             const { worldId } = pathParameters;
             return notImplemented(`Get world details for ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && operation == 'update') {
+        if (path.startsWith('/worlds/') && operation == 'PATCH') {
             const { worldId } = pathParameters;
             const worldDetails = JSON.parse(body);
             return notImplemented(`Update world details for ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && operation == 'delete') {
+        if (path.startsWith('/worlds/') && operation == 'DELETE') {
             const { worldId } = pathParameters;
             return notImplemented(`Delete world ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.endsWith('/collections') && operation == 'read') {
+        if (path.startsWith('/worlds/') && path.endsWith('/collections') && operation == 'GET') {
             const { worldId } = pathParameters;
             const userId = queryStringParameters.userId;
             return notImplemented(`Get collections for world ${worldId} and user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.endsWith('/collections') && operation == 'create') {
+        if (path.startsWith('/worlds/') && path.endsWith('/collections') && operation == 'POST') {
             const { worldId } = pathParameters;
             const { collectionId, userId } = JSON.parse(body);
             return notImplemented(`Create collection ${collectionId} for world ${worldId} and user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'read') {
+        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'GET') {
             const { worldId, collectionId } = pathParameters;
             return notImplemented(`Get collection details for world ${worldId} and collection ${collectionId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'update') {
+        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'PATCH') {
             const { worldId, collectionId } = pathParameters;
             const collectionDetails = JSON.parse(body);
             return notImplemented(`Update collection details for world ${worldId} and collection ${collectionDetails}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'delete') {
+        if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'DELETE') {
             const { worldId, collectionId } = pathParameters;
             return notImplemented(`Delete collection ${collectionId} for world ${worldId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/entries') && operation == 'read') {
+        if (path.startsWith('/worlds/') && path.includes('/entries') && operation == 'GET') {
             const { worldId, collectionId } = pathParameters;
             return notImplemented(`Get entries for world ${worldId} and collection ${collectionId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/entries') && operation == 'create') {
+        if (path.startsWith('/worlds/') && path.includes('/entries') && operation == 'POST') {
             const { worldId, collectionId } = pathParameters;
             const { entryId, userId, content } = JSON.parse(body);
             return notImplemented(`Create entry ${entryId} for world ${worldId}, collection ${collectionId}, and user ${userId}`);
         }
 
-        if (path.startsWith('/worlds/') && path.includes('/resources') && operation == 'create') {
+        if (path.startsWith('/worlds/') && path.includes('/resources') && operation == 'POST') {
             const { worldId } = pathParameters;
             const { resourceId, fileContent, fileType, userId } = JSON.parse(body);
             return notImplemented(`Upload resource ${resourceId} for world ${worldId} and user ${userId}`);
