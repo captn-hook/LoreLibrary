@@ -7,58 +7,27 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const s3Client = new S3Client();
+
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
+const tablename = "lorelibrary";
+
+function notImplemented(name) {
+    return {
+        statusCode: 501,
+        body: JSON.stringify({ message: `${name} not implemented` })
+    };
+}
 
 export const handler = async (e) => {
-
-    function notImplemented(name) {
-        return {
-            statusCode: 501,
-            body: JSON.stringify({ message: `${name} not implemented` })
-        };
-    }
-
     try {
-        // Define the name of the DDB table to perform the CRUD operations on
-        // const tablename = "lorelibrary";
         // const operation = e.http.method;
         // const path = e.rawPath;
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${e}` })
+            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${JSON.stringify(e)}` })
         }
-
-
-        //  if (operation == 'echo'){
-        //       return(event.payload);
-        //  }
-
-        // else { 
-        //     event.payload.TableName = tablename;
-        //     let response;
-
-        //     switch (operation) {
-        //       case 'create':
-        //            response = await ddbDocClient.send(new PutCommand(event.payload));
-        //            break;
-        //       case 'read':
-        //            response = await ddbDocClient.send(new GetCommand(event.payload));
-        //            break;
-        //       case 'update':
-        //            response = ddbDocClient.send(new UpdateCommand(event.payload));
-        //            break;
-        //       case 'delete':
-        //            response = ddbDocClient.send(new DeleteCommand(event.payload));
-        //            break;
-        //       default:
-        //         response = 'Unknown operation: ${operation}';
-        //       }
-        //     console.log(context);
-        //     console.log(response);
-        //     return response;
-        // }
 
         if (path === '/users' && operation == 'read') {
             return notImplemented('Get users');
@@ -86,7 +55,7 @@ export const handler = async (e) => {
         }
 
         if (path === '/worlds' && operation == 'read') {
-            const userId = queryStringParameters.userId; // Assuming userId is passed as a query parameter
+            const userId = queryStringParameters.userId;
             return notImplemented(`Get worlds for user ${userId}`);
         }
 
@@ -131,7 +100,6 @@ export const handler = async (e) => {
         if (path.startsWith('/worlds/') && path.includes('/collections/') && operation == 'update') {
             const { worldId, collectionId } = pathParameters;
             const collectionDetails = JSON.parse(body);
-            // Mock implementation for updating collection details
             return notImplemented(`Update collection details for world ${worldId} and collection ${collectionDetails}`);
         }
 
