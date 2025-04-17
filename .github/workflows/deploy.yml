@@ -23,7 +23,7 @@ jobs:
 
     - name: Package Lambda Code
       run: |
-        zip -j index.zip aws/index.js
+        zip -j index.zip aws/index.mjs
         aws s3 cp index.zip s3://lorelibrary-deployment-artifacts/
 
     - name: Upload OpenAPI Spec
