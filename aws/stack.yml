@@ -100,8 +100,6 @@ Resources:
       BodyS3Location:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
-      Variables:
-        LambdaArn: !GetAtt LoreLibraryLambda.Arn
 
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
