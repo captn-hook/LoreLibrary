@@ -27,7 +27,6 @@ function notImplemented(name) {
 export const handler = async (event, context) => {
    
      const operation = event.operation;
-     const path = event.path;
    
      if (operation == 'echo'){
           return(event.payload);
