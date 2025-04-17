@@ -10,27 +10,28 @@ const s3Client = new S3Client();
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
-export const handler = async (event, context) => {
+export const handler = async (e) => {
+
+    function notImplemented(name) {
+        return {
+            statusCode: 501,
+            body: JSON.stringify({ message: `${name} not implemented` })
+        };
+    }
 
     try {
         // Define the name of the DDB table to perform the CRUD operations on
         const tablename = "lorelibrary";
-        const operation = event.operation;
-        const path = event.path;
+        const operation = e.http.method;
+        const path = e.rawPath;
 
-        console.log('Event:', JSON.stringify(event, null, 2), 'Context:', JSON.stringify(context, null, 2), 'Operation:', operation, 'Path:', path);
+        console.log('Event:', JSON.stringify(event, null, 2), 'Operation:', operation, 'Path:', path);
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${operation} on path: ${path}` })
+            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${operation} on path: ${path} from event: ${JSON.stringify(e)}` })
         }
 
-        function notImplemented(name) {
-            return {
-                statusCode: 501,
-                body: JSON.stringify({ message: `${name} not implemented` })
-            };
-        }
 
         //  if (operation == 'echo'){
         //       return(event.payload);
