@@ -23,7 +23,7 @@ jobs:
 
     - name: Package Lambda Code
       run: |
-        zip -j index.zip aws/index.js
+        zip -r index.zip aws/
         aws s3 cp index.zip s3://lorelibrary-deployment-artifacts/
 
     - name: Upload OpenAPI Spec
@@ -34,4 +34,3 @@ jobs:
 
     - name: Close Bucket
       run: aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
-      
