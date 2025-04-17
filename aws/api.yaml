@@ -24,6 +24,11 @@ paths:
       tags:
         - user
       summary: Get a list of users
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: List of users
@@ -43,6 +48,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '201':
           description: User created successfully
@@ -57,6 +67,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: User details
@@ -82,6 +97,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "PATCH"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: User updated successfully
@@ -97,6 +117,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "DELETE"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '204':
           description: User deleted successfully
@@ -107,6 +132,11 @@ paths:
       tags:
         - world
       summary: Get a list of worlds
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: List of worlds
@@ -126,6 +156,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/World'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '201':
           description: World created successfully
@@ -140,6 +175,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: World details
@@ -165,6 +205,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/World'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "PATCH"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: World updated successfully
@@ -180,6 +225,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "DELETE"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '204':
           description: World deleted successfully
@@ -196,6 +246,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: List of collections
@@ -221,6 +276,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Collection'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '201':
           description: Collection created successfully
@@ -240,6 +300,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Collection details
@@ -270,6 +335,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Collection'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "PATCH"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Collection updated successfully
@@ -290,6 +360,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "DELETE"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '204':
           description: Collection deleted successfully
@@ -311,6 +386,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: List of entries
@@ -341,6 +421,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Entry'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '201':
           description: Entry created successfully
@@ -365,6 +450,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Entry details
@@ -400,6 +490,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Entry'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "PATCH"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Entry updated successfully
@@ -425,6 +520,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "DELETE"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '204':
           description: Entry deleted successfully
@@ -441,6 +541,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: List of resources
@@ -466,6 +571,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Resource'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '201':
           description: Resource created successfully
@@ -485,6 +595,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Resource details
@@ -515,6 +630,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Resource'
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "PATCH"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Resource updated successfully
@@ -535,6 +655,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "DELETE"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '204':
           description: Resource deleted successfully
@@ -560,6 +685,11 @@ paths:
               - entry
               - collection
               - world
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Search results
@@ -597,6 +727,11 @@ paths:
             enum:
               - entry
               - collection
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Search results
@@ -631,6 +766,11 @@ paths:
           required: true
           schema:
             type: string
+      x-amazon-apigateway-integration:
+        type: "AWS_PROXY"
+        httpMethod: "GET"
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:lorelibrary-function/invocations"
+        payloadFormatVersion: "2.0"
       responses:
         '200':
           description: Search results
