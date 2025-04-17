@@ -25,8 +25,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -50,8 +49,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -70,8 +68,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -101,8 +98,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -122,8 +118,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -138,8 +133,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -163,8 +157,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -183,8 +176,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -214,8 +206,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -235,8 +226,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -257,8 +247,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -288,8 +277,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -313,8 +301,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -349,8 +336,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -375,8 +361,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -402,8 +387,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -438,8 +422,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -468,8 +451,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -509,8 +491,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -540,8 +521,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -562,8 +542,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -593,8 +572,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -618,8 +596,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -654,8 +631,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -680,8 +656,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -711,8 +686,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -754,8 +728,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -794,8 +767,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: 
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
         payloadFormatVersion: 2.0
       responses:
         '200':
