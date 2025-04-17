@@ -8,56 +8,51 @@ const s3Client = new S3Client();
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
-// Define the name of the DDB table to perform the CRUD operations on
-const tablename = "lorelibrary";
 
-/**
- * Provide an event that contains the following keys:
- *
- *   - operation: one of 'create,' 'read,' 'update,' 'delete,' or 'echo'
- *   - payload: a JSON object containing the parameters for the table item
- *     to perform the operation on
- */
-
-function notImplemented(name) {
-    return {
-        statusCode: 501,
-        body: JSON.stringify({ message: `${name} not implemented` })
-    };
-}
 
 export const handler = async (event, context) => {
-   
-     const operation = event.operation;
-   
-     if (operation == 'echo'){
-          return(event.payload);
-     }
-     
-    else { 
-        event.payload.TableName = tablename;
-        let response;
-        
-        switch (operation) {
-          case 'create':
-               response = await ddbDocClient.send(new PutCommand(event.payload));
-               break;
-          case 'read':
-               response = await ddbDocClient.send(new GetCommand(event.payload));
-               break;
-          case 'update':
-               response = ddbDocClient.send(new UpdateCommand(event.payload));
-               break;
-          case 'delete':
-               response = ddbDocClient.send(new DeleteCommand(event.payload));
-               break;
-          default:
-            response = 'Unknown operation: ${operation}';
-          }
-        console.log(context);
-        console.log(response);
-        return response;
+   // Define the name of the DDB table to perform the CRUD operations on
+    const tablename = "lorelibrary";
+    const operation = event.operation;
+    const path = event.path;
+
+    console.log('Event:', JSON.stringify(event, null, 2), 'Context:', JSON.stringify(context, null, 2), 'Operation:', operation, 'Path:', path);
+
+    function notImplemented(name) {
+        return {
+            statusCode: 501,
+            body: JSON.stringify({ message: `${name} not implemented` })
+        };
     }
+   
+    //  if (operation == 'echo'){
+    //       return(event.payload);
+    //  }
+     
+    // else { 
+    //     event.payload.TableName = tablename;
+    //     let response;
+        
+    //     switch (operation) {
+    //       case 'create':
+    //            response = await ddbDocClient.send(new PutCommand(event.payload));
+    //            break;
+    //       case 'read':
+    //            response = await ddbDocClient.send(new GetCommand(event.payload));
+    //            break;
+    //       case 'update':
+    //            response = ddbDocClient.send(new UpdateCommand(event.payload));
+    //            break;
+    //       case 'delete':
+    //            response = ddbDocClient.send(new DeleteCommand(event.payload));
+    //            break;
+    //       default:
+    //         response = 'Unknown operation: ${operation}';
+    //       }
+    //     console.log(context);
+    //     console.log(response);
+    //     return response;
+    // }
 
     try {
         if (path === '/users' && operation == 'read') {
