@@ -21,15 +21,13 @@ export const handler = async (e) => {
 
     try {
         // Define the name of the DDB table to perform the CRUD operations on
-        const tablename = "lorelibrary";
-        const operation = e.http.method;
-        const path = e.rawPath;
-
-        console.log('Event:', JSON.stringify(event, null, 2), 'Operation:', operation, 'Path:', path);
+        // const tablename = "lorelibrary";
+        // const operation = e.http.method;
+        // const path = e.rawPath;
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${operation} on path: ${path} from event: ${JSON.stringify(e)}` })
+            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${e}` })
         }
 
 
