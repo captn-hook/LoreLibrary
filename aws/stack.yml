@@ -109,6 +109,13 @@ Resources:
         - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
       PayloadFormatVersion: '2.0'
 
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGatewayV2::Deployment'
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      StageName: prod
+    DependsOn: ApiGatewayIntegration
+
 Outputs:
   WebsiteURL:
     Description: URL for the website hosted on the S3 bucket
