@@ -5,6 +5,18 @@ info:
   version: 1.0.0
 servers:
   - url: https://a1j3kahtn7.execute-api.us-west-2.amazonaws.com
+  
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params:
+    validateRequestBody: true
+    validateRequestParameters: true
+  body:
+    validateRequestBody: true
+    validateRequestParameters: false
+
 tags:
   - name: user
     description: Operations related to users
@@ -27,7 +39,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -51,7 +66,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -70,7 +88,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -100,7 +121,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -120,7 +144,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -135,7 +162,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -159,7 +189,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -178,7 +211,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -208,7 +244,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -228,7 +267,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -249,7 +291,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -279,7 +324,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -303,7 +351,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -338,7 +389,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -363,7 +417,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -389,7 +446,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -424,7 +484,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -453,7 +516,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -493,7 +559,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -523,7 +592,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -544,7 +616,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -574,7 +649,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '201':
@@ -598,7 +676,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -633,7 +714,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: PATCH
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -658,7 +742,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: DELETE
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '204':
@@ -688,7 +775,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -730,7 +820,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
@@ -769,7 +862,10 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: GET
-        uri: arn:aws:lambda:${AWS::Region}:function:lorelibrary-function
+        uri: 
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        passthroughBehavior: when_no_match
+        contentHandling: CONVERT_TO_TEXT
         payloadFormatVersion: 2.0
       responses:
         '200':
