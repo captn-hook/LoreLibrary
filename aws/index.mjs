@@ -20,14 +20,17 @@ function notImplemented(name) {
 }
 
 export const handler = async (e) => {
-    try {
-        // const operation = e.http.method;
-        // const path = e.rawPath;
+    // The event object contains:
+    // version: '2.0',
+    // routeKey: 'HTTP_METHOD /path',
+    // rawPath: '/stage/path',
+    // rawQueryString: 'query',
+    // headers: typical headers,
+    // requestContext: amazon stuff,
+    // isBase64Encoded: false,
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ message: `Hello from Lambda! Got operation: ${JSON.stringify(e)}` })
-        }
+    try {
+        const [operation, path] = e.routeKey.split(' ');
 
         if (path === '/users' && operation == 'read') {
             return notImplemented('Get users');
