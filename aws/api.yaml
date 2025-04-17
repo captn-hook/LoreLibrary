@@ -3,20 +3,6 @@ info:
   title: LoreLibray API
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
-servers:
-  - url: https://a1j3kahtn7.execute-api.us-west-2.amazonaws.com
-  
-x-amazon-apigateway-request-validators:
-  all:
-    validateRequestBody: true
-    validateRequestParameters: true
-  params:
-    validateRequestBody: true
-    validateRequestParameters: true
-  body:
-    validateRequestBody: true
-    validateRequestParameters: false
-
 tags:
   - name: user
     description: Operations related to users
