@@ -1,5 +1,28 @@
-<script>
-    export let data;
-</script>
+<script type="ts">
+    import { world as importedWorld } from "$lib/context/worldContext.svelte";
+    import BulletList from "$lib/components/textComponents/bulletList.svelte";
+    import NumberList from "$lib/components/textComponents/numberList.svelte";
+    import { getWorld } from "$lib/scripts/world";
+    import { onMount } from 'svelte';
 
-<h1>Viewing World: {data.worldid}</h1>
+    export let data;
+    console.log("data", data);
+
+    onMount(() => {
+        getWorld(data.worldid);
+    });
+    console.log("importedWorld", importedWorld);
+</script>
+<h1>Viewing Entry: {data.worldid}</h1>
+
+{#each $importedWorld?.data || [] as { key, value }}
+    {#if key === "bulletList"}
+        <BulletList items={value} />
+    {:else if key === "numberedList"}
+        <NumberList items={value} />
+    {:else if key === "text"}
+        <p>{value}</p>
+    {:else if key === "image"}
+        <img src={value} alt="Image" />
+    {/if}
+{/each}
