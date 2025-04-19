@@ -6,12 +6,9 @@
     import { onMount } from 'svelte';
 
     export let data;
-    console.log("data", data);
-
     onMount(() => {
         getWorld(data.worldid);
     });
-    console.log("importedWorld", importedWorld);
 </script>
 <h1>Viewing Entry: {data.worldid}</h1>
 

@@ -22,8 +22,8 @@ export function getWorld(worldId : string) { //change to hit api when implimente
     const world = new World(
         worldId,
         [
-            { key: "bulletList", value: ["hi", "this is a bullet list", "bye"] },
-            { key: "numberedList", value: ["hi", "this is a numbered list", "bye"] }
+            { key: "bulletList", value: [{text: "hi, im a recusive bullet list", subBullets: []}, {text: "top level bullet", subBullets : [{text: "lower level bullet", subBullets: [{text: "another level down", subBullets: []}]}]}, {text: "this is a bullet list", subBullets: []}, {text: "bye", subBullets: []}] },
+            { key: "numberedList", value: [{text: "hi, im a recursive numbered list" ,subItems: []}, {text: "this is an item", subItems: [{text: "a lower level", subItems: [{text: "another level down", subBullets: []}]}]}, {text: "bye", subItems: []}] },
         ]
     );
     if (world) { 
