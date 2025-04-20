@@ -355,7 +355,7 @@ export const handler = async (e) => {
                 body: JSON.stringify(worldItem)
             };            
         }
-        // /signup: POST
+        // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
             // Create a new user
             const user = match_json(e.body, SignIn);
