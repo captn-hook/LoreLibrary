@@ -153,7 +153,6 @@ export const handler = async (e) => {
     // headers: typical headers,
     // requestContext: amazon stuff,
     // isBase64Encoded: false,
-
     try {
         const [operation, path] = e.routeKey.split(' ');
 
