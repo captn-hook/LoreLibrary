@@ -676,7 +676,7 @@ paths:
           content:
             application/json:
               schema:
-              $ref: '#/components/schemas/Token'
+                $ref: '#/components/schemas/Token'
         '400':
           description: Bad request
         '500':
