@@ -1,3 +1,4 @@
+---
 Parameters:
   LambdaCodeS3Bucket:
     Type: String
@@ -10,7 +11,7 @@ Parameters:
     Description: The name of the S3 bucket containing the OpenAPI specification
   OpenApiSpecS3Key:
     Type: String
-    Description: The key (path) to the OpenAPI specification file in the S3 bucket
+    Description: The key (path) to the OpenAPI file in the S3 bucket
 
 Resources:
   ResourcesBucket:
@@ -20,7 +21,7 @@ Resources:
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
-        RestrictPublicBuckets: true 
+        RestrictPublicBuckets: true
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: error.html
@@ -39,7 +40,7 @@ Resources:
               - 's3:GetObject'
             Resource: !Sub
               - arn:aws:s3:::${ResourcesBucket}/*
-              - { ResourcesBucket: !Ref ResourcesBucket }
+              - {ResourcesBucket: !Ref ResourcesBucket}
 
   DataTable:
     Type: 'AWS::DynamoDB::Table'
@@ -75,12 +76,14 @@ Resources:
     Properties:
       RoleName: lorelibrary-lambda-role
       AssumeRolePolicyDocument:
-        Version: '2012-10-17' 
+        Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
             Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
         - PolicyName: LoreLibraryLambdaPolicy
           PolicyDocument:
@@ -91,6 +94,14 @@ Resources:
                   - 'dynamodb:*'
                   - 's3:*'
                 Resource: '*'
+
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt LoreLibraryLambda.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*'
 
   LoreLibraryApiGateway:
     Type: 'AWS::ApiGatewayV2::Api'
@@ -106,8 +117,21 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-        - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
+        - {LambdaArn: !GetAtt LoreLibraryLambda.Arn}
       PayloadFormatVersion: '2.0'
+
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGatewayV2::Deployment'
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+    DependsOn: ApiGatewayIntegration
+
+  ApiGatewayStage:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      DeploymentId: !Ref ApiGatewayDeployment
+      StageName: prod
 
 Outputs:
   WebsiteURL:
