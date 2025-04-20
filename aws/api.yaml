@@ -3,6 +3,8 @@ info:
   title: LoreLibray API
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
+servers:
+  - url: https://cp13biyxth.execute-api.us-west-2.amazonaws.com/prod
 tags:
   - name: user
     description: Operations related to users
@@ -640,17 +642,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/SignIn'
       responses:
         '201':
           description: User created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
+                $ref: '#/components/schemas/Token'
         '400':
           description: Bad request
         '500':
@@ -670,22 +669,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/SignIn'
       responses:
         '200':
           description: User logged in successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
+              $ref: '#/components/schemas/Token'
         '400':
           description: Bad request
         '500':
@@ -901,4 +892,18 @@ components:
         url:
           type: string
         description:
+          type: string
+    SignIn:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+        username:
           type: string
