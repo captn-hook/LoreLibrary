@@ -12,6 +12,9 @@ Parameters:
   OpenApiSpecS3Key:
     Type: String
     Description: The key (path) to the OpenAPI file in the S3 bucket
+  JWTSecretParameter:
+    Type: String
+    Description: The secret key for JWT authentication
 
 Resources:
   ResourcesBucket:
@@ -70,6 +73,7 @@ Resources:
         Variables:
           TABLE_NAME: !Ref DataTable
           BUCKET_NAME: !Ref ResourcesBucket
+          JWT_SECRET: !Ref JWTSecretParameter
 
   LambdaExecutionRole:
     Type: 'AWS::IAM::Role'
