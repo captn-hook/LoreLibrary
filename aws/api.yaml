@@ -27,17 +27,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getWorlds",
-              "query": {
-                "limit": "$input.params('limit')",
-                "offset": "$input.params('offset')"
-              }
-            }
       parameters:
         - name: limit
           in: query
@@ -76,14 +65,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "createWorld",
-              "body": $input.json('$')
-            }
       requestBody:
         required: true
         content:
@@ -123,16 +104,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getWorld",
-              "path": {
-                "WorldId": "$input.params('WorldId')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -160,17 +131,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "updateWorld",
-              "path": {
-                "id": "$input.params('id')"
-              },
-              "body": $input.json('$')
-            }
       parameters:
         - name: WorldId
           in: path
@@ -215,16 +175,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "deleteWorld",
-              "path": {
-                "WorldId": "$input.params('WorldId')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -249,20 +199,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getCollections",
-              "path": {
-                "WorldId": "$input.params('WorldId')"
-              },
-              "query": {
-                "limit": "$input.params('limit')",
-                "offset": "$input.params('offset')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -307,17 +243,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "createCollection",
-              "path": {
-                "WorldId": "$input.params('WorldId')"
-              },
-              "body": $input.json('$')
-            }
       parameters:
         - name: WorldId
           in: path
@@ -364,17 +289,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getCollection",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -408,18 +322,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "updateCollection",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')"
-              },
-              "body": $input.json('$')
-            }
       parameters:
         - name: WorldId
           in: path
@@ -470,17 +372,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "deleteCollection",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -511,21 +402,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getEntries",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')"
-              },
-              "query": {
-                "limit": "$input.params('limit')",
-                "offset": "$input.params('offset')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -576,18 +452,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "createEntry",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')"
-              },
-              "body": $input.json('$')
-            }
       parameters:
         - name: WorldId
           in: path
@@ -640,18 +504,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getEntry",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')",
-                "EntryId": "$input.params('EntryId')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -691,19 +543,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "updateEntry",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')",
-                "EntryId": "$input.params('EntryId')"
-              },
-              "body": $input.json('$')
-            }
       parameters:
         - name: WorldId
           in: path
@@ -760,18 +599,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "deleteEntry",
-              "path": {
-                "WorldId": "$input.params('WorldId')",
-                "CollectionId": "$input.params('CollectionId')",
-                "EntryId": "$input.params('EntryId')"
-              }
-            }
       parameters:
         - name: WorldId
           in: path
@@ -808,14 +635,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "signUp",
-              "body": $input.json('$')
-            }
       requestBody:
         required: true
         content:
@@ -846,14 +665,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "login",
-              "body": $input.json('$')
-            }
       requestBody:
         required: true
         content:
@@ -889,17 +700,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getUsers",
-              "query": {
-                "limit": "$input.params('limit')",
-                "offset": "$input.params('offset')"
-              }
-            }
       parameters:
         - name: limit
           in: query
@@ -939,16 +739,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "getUser",
-              "path": {
-                "UserId": "$input.params('UserId')"
-              }
-            }
       parameters:
         - name: UserId
           in: path
@@ -976,17 +766,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "updateUser",
-              "path": {
-                "UserId": "$input.params('UserId')"
-              },
-              "body": $input.json('$')
-            }
       parameters:
         - name: UserId
           in: path
@@ -1022,16 +801,6 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-        requestParameters:
-          integration.request.header.Content-Type: "'application/json'"
-        requestTemplates:
-          application/json: |
-            {
-              "operation": "deleteUser",
-              "path": {
-                "UserId": "$input.params('UserId')"
-              }
-            }
       parameters:
         - name: UserId
           in: path
