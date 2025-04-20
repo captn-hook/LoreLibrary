@@ -41,9 +41,12 @@ jobs:
             --change-set-name changeset-${{ github.run_id }}-${{ github.sha }} \
             --template-body file://aws/stack.yml \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
-            # Add other capabilities (e.g., CAPABILITY_AUTO_EXPAND) if required by your template.
-            # If your template needs parameters, add them here like this:
-            # --parameters ParameterKey=YourParamKey,ParameterValue=YourParamValue ParameterKey=AnotherKey,ParameterValue=AnotherValue
+            --parameters \
+              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelibrary-deployment-artifacts \
+              ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
+              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelibrary-deployment-artifacts \
+              ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml
+          echo "Change set creation initiated."
           echo "Change set creation initiated."
 
     - name: Wait for Change Set creation to complete
