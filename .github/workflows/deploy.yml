@@ -55,10 +55,10 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: us-west-2 # Match region above
       run: |
-        echo "Waiting for change set ${{ env.CHANGESET_NAME }} to be created..."
+        echo "Waiting for change set changeset-${{ github.run_id }}-${{ github.sha }} to be created..."
         aws cloudformation wait change-set-create-complete \
-          --stack-name ${{ env.STACK_NAME }} \
-          --change-set-name ${{ env.CHANGESET_NAME }}
+          --stack-name lorelibrary-stack \
+          --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
         echo "Change set created successfully."
 
     # - name: Describe Change Set (Optional - for review in logs)
