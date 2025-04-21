@@ -30,6 +30,9 @@ export const handler = async (e) => {
 
     let token;
 
+    console.log('tokeeene', e.Headers);
+    console.log('tokeeene', e.requestBody);
+
     try {
         token = e.identitySource[0]
         console.log('tokene', token);
@@ -71,17 +74,10 @@ export const handler = async (e) => {
 
     const user = await docClient.send(new GetCommand(params));
 
-    console.log('user', user);
+    console.log('user', user.Item.SK);
 
     if (!user.Item) {
         console.log('User not found');
-        return {
-            'isAuthorized': false
-        }
-    }
-
-    // Ensure the user is making the request
-    if (JSON.parse(e.body).username !== decoded.username) {
         return {
             'isAuthorized': false
         }
@@ -91,6 +87,7 @@ export const handler = async (e) => {
         'isAuthorized': true,
         'context': {
             'username': decoded.username,
+            'test': 'test',
         }
     };
 }

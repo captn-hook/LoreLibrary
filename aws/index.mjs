@@ -127,6 +127,7 @@ async function dynamo_get_all(model) {
     };
     try {
         const data = await ddbDocClient.send(new QueryCommand(params));
+        console.log('queried for ', model.name, 'with params', params, 'and got', data);
         if (data.Items) {
             return data.Items.map(item => {
                 const { PK, SK, ...rest } = item;
@@ -160,6 +161,7 @@ async function dynamo_get_id(model, id) {
     };
     try {
         const data = await ddbDocClient.send(new GetCommand(params));
+        console.log('queried for ', model.name, 'with params', params, 'and got', data);
         if (data.Item) {
             const { PK, SK, ...rest } = data.Item;
             return rest;
@@ -258,6 +260,7 @@ async function dynamo_create(data, model, username) {
         const result = await ddbDocClient.send(new TransactWriteCommand({
             TransactItems: transactionItems
         }));
+        console.log('created ', model.name, 'with params', transactionItems, 'and got', result);
         return newItem;
     } catch (err) {
         console.error("Error creating item:", err);
@@ -294,6 +297,7 @@ async function dynamo_update(model, data, username) {
 
     try {
         const result = await ddbDocClient.send(new UpdateCommand(params));
+        console.log('updated ', model.name, 'with params', params, 'and got', result);
         return result.Attributes;
     } catch (err) {
         console.error("Error updating item:", err);
@@ -316,6 +320,9 @@ async function dynamo_delete(model, id, username) {
     const item = await dynamo_get_id(model, id);
     if (!item) {
         throw new Error("Item not found");
+    }
+    if (!item.ownerId || item.ownerId !== username) {
+        throw new Error("Unauthorized");
     }
     
     let associatedItems = [];
@@ -395,6 +402,7 @@ async function dynamo_delete(model, id, username) {
         const result = await ddbDocClient.send(new TransactWriteItemsCommand({
             TransactItems: transactionItems
         }));
+        console.log('deleted ', model.name, 'with params', transactionItems, 'and got', result);
         return item;
     } catch (err) {
         console.error("Error deleting item:", err);
@@ -457,8 +465,8 @@ async function login_user(data) {
         if (!match) {
             return badRequest('Invalid password');
         }
-        const token = await generateToken(user.username);
-        return new Token(token, user.username);
+        const token = await generateToken(data.username);
+        return new Token(token, data.username);
     }
     catch (err) {
         console.error("Error logging in user:", err);
@@ -482,6 +490,9 @@ export const handler = async (e) => {
             e.body = JSON.parse(e.body);
         }
 
+        console.log('event', e.requestContext.authorizer.lambda.username);
+        const username = e.requestContext.authorizer.lambda.username;
+
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
             // Get all worlds, paginated with limit and offset
@@ -493,16 +504,8 @@ export const handler = async (e) => {
         } 
         else if (operation === 'PUT' && path === '/worlds') {
             // Create a new world
-            const token = getAuthorization(e.headers.Authorization);
-            if (!token) {
-                return badRequest('Authentication required');
-            } 
-            const user = verifyToken(token);
-            if (!user) {
-                return badRequest('Invalid authentication');
-            }
 
-            const world = dynamo_create(e.body, World, user.username);
+            const world = dynamo_create(e.body, World, username);
             // Return world
             return {
                 statusCode: 201,
@@ -512,7 +515,7 @@ export const handler = async (e) => {
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
             // Check if user already exists
-            const userExists = await dynamo_get_id(User, e.body.username);
+            const userExists = await dynamo_get_id(User, username);
             
             if (userExists) {
                 return badRequest('User already exists');
@@ -538,13 +541,7 @@ export const handler = async (e) => {
         // /users: GET
         else if (operation === 'GET' && path === '/users') {
             // Get all users, paginated with limit and offset
-            const token = getAuthorization(e.headers.Authorization);
-            if (!token) {
-                console.log('No token found in headers:', e);
-                return badRequest('Authentication required');
-            } 
-            const user = verifyToken(token);
-            if (!user) {
+            if (!username) {
                 return badRequest('Invalid authentication');
             }
 
@@ -557,17 +554,9 @@ export const handler = async (e) => {
         // /users/{username}: GET, POST, DELETE
         else if (operation === 'GET' && path.startsWith('/users/')) {
             // Get user by ID
-            const token = getAuthorization(e.headers.Authorization);
-            if (!token) {
-                return badRequest('Authentication required');
-            } 
-            const cuser = verifyToken(token); // you can get other users
-            if (!cuser) {
-                return badRequest('Invalid authentication');
-            }
 
-            const username = path.split('/')[2];
             const user = await dynamo_get_id(User, username);
+
             if (!user) {
                 return notFound('User not found');
             }
@@ -578,22 +567,8 @@ export const handler = async (e) => {
         }
         else if (operation === 'POST' && path.startsWith('/users/')) {
             // Update user by ID
-            const token = getAuthorization(e.headers.Authorization);
-            if (!token) {
-                return badRequest('Authentication required');
-            } 
-            const user = verifyToken(token);
-            if (!user) {
-                return badRequest('Invalid authentication');
-            }
 
-            e.body.username = path.split('/')[2];
-
-            if (user.username !== path.split('/')[2]) {
-                return badRequest('Invalid user');
-            }
-
-            const updatedUser = await dynamo_update(User, e.body, user.username);
+            const updatedUser = await dynamo_update(User, e.body, username);
             // Return updated user
             return {
                 statusCode: 200,
@@ -602,20 +577,8 @@ export const handler = async (e) => {
         }
         else if (operation === 'DELETE' && path.startsWith('/users/')) {
             // Delete user by ID
-            const token = getAuthorization(e.headers.Authorization);
-            if (!token) {
-                return badRequest('Authentication required');
-            } 
-            const user = verifyToken(token);
-            if (!user) {
-                return badRequest('Invalid authentication');
-            }
 
-            if (user.username !== path.split('/')[2] || user.username !== e.body.username) {
-                return badRequest('Invalid user');
-            }
-
-            const deletedUser = await dynamo_delete(User, user.username, user.username);
+            const deletedUser = await dynamo_delete(User, username, username);
             if (!deletedUser) {
                 return notFound('User not found');
             }
@@ -655,7 +618,7 @@ export const handler = async (e) => {
                 // Update world by ID
                 
                 
-                const world = dynamo_update(World, e.body, user.username);
+                const world = dynamo_update(World, e.body, username);
                 
                 // Return updated world
                 return {
@@ -664,16 +627,9 @@ export const handler = async (e) => {
                 };
             } else if (operation === 'PUT') {
                 // Create a collection
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                }
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
                 e.body.worldId = worldId;
-                const collection = dynamo_create(e.body, Collection, user.username);
+                const collection = dynamo_create(e.body, Collection, username);
                 // Return collection
                 return {
                     statusCode: 201,
@@ -683,7 +639,7 @@ export const handler = async (e) => {
                 // Delete world by ID
                 
 
-                const world = await dynamo_delete(World, worldId, user.username);
+                const world = await dynamo_delete(World, worldId, username);
                 if (!world) {
                     return notFound('World not found');
                 }
@@ -716,7 +672,7 @@ export const handler = async (e) => {
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
 
-                const collection = dynamo_update(Collection, e.body, user.username);
+                const collection = dynamo_update(Collection, e.body, username);
                 if (!collection) {
                     return notFound('Collection not found');
                 }
@@ -727,19 +683,11 @@ export const handler = async (e) => {
                 };              
             } else if (operation === 'PUT') {
                 // Creat an entry
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                }
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
 
-                const entry = dynamo_create(e.body, Entry, user.username);
+                const entry = dynamo_create(e.body, Entry, username);
                 // Return entry
                 return {
                     statusCode: 201,
@@ -752,7 +700,7 @@ export const handler = async (e) => {
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
 
-                const collection = await dynamo_delete(Collection, collectionId, user.username);
+                const collection = await dynamo_delete(Collection, collectionId, username);
                 if (!collection) {
                     return notFound('Collection not found');
                 }
@@ -789,7 +737,7 @@ export const handler = async (e) => {
                 e.body.collectionId = collectionId;
                 e.body.entryId = entryId;
 
-                const entry = await dynamo_update(Entry, e.body, user.username);
+                const entry = await dynamo_update(Entry, e.body, username);
                 if (!entry) {
                     return notFound('Entry not found');
                 }
@@ -807,7 +755,7 @@ export const handler = async (e) => {
                 e.body.collectionId = collectionId;
                 e.body.entryId = entryId;
 
-                const entry = await dynamo_delete(Entry, entryId, user.username);
+                const entry = await dynamo_delete(Entry, entryId, username);
                 if (!entry) {
                     return notFound('Entry not found');
                 }
@@ -826,7 +774,7 @@ export const handler = async (e) => {
     } catch (error) {
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: error.message })
+            body: JSON.stringify({ message: error })
         };
     }
 };
