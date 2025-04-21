@@ -150,13 +150,8 @@ ApiGatewayAuthorizer:
   Properties:
     ApiId: !Ref LoreLibraryApiGateway
     AuthorizerType: REQUEST
-    AuthorizerUri: !Sub
-      - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-      - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
-    IdentitySource:
-      - '$request.header.Authorization'
     Name: CustomAuthorizer
-
+    
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
     Properties:
