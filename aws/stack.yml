@@ -149,7 +149,6 @@ Resources:
     Type: 'AWS::ApiGatewayV2::Authorizer'
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
-      AuthorizerCredentials: !GetAtt LambdaExecutionRole.Arn
       AuthorizerPayloadFormatVersion: '2.0'
       AuthorizerType: REQUEST
       AuthorizerUri: !Sub
