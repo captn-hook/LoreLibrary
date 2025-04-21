@@ -686,8 +686,13 @@ components:
   securitySchemes:
     bearerAuth:
       type: http
-      scheme: bearer
-      bearerFormat: JWT
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authorizer:
+        type: request
+        identitySource: method.request.header.Authorization
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
+        enableSimpleResponses: true
   schemas:
     User:
       type: object
