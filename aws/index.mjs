@@ -22,7 +22,7 @@ const s3Client = new S3Client();
 
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
-const dataTable = process.env.DATA_TABLE;
+const dataTable = process.env.TABLE_NAME;
 const bucketname = process.env.BUCKET_NAME;
 
 class SignIn {
