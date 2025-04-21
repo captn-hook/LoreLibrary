@@ -13,6 +13,7 @@ import jwt from 'jsonwebtoken';
 //     return token;
 // }
 
+const tableName = process.env.TABLE_NAME;
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
@@ -27,11 +28,10 @@ function verifyToken(token) {
 
 export const handler = async (e) => {
 
-    console.log('event', e);
     let token;
 
     try {
-        token = e.headers.Authorization
+        token = e.identitySource[0]
         console.log('tokene', token);
     } catch (err) {
         console.log('Error getting token', err);

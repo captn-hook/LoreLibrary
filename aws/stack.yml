@@ -104,6 +104,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
+          TABLE_NAME: !Ref DataTable
           JWT_SECRET: !Ref JWTSecretParameter          
 
   LambdaExecutionRole:
