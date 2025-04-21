@@ -145,7 +145,7 @@ Resources:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
         
-  ApiGatewayAuthorizer:
+  lorelibrary-authorizer:
     Type: 'AWS::ApiGatewayV2::Authorizer'
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
