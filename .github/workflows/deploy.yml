@@ -25,6 +25,11 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
 
+    - name: Install node dependencies
+      run: |
+        cd aws
+        npm install
+        
     - name: Package Lambda Code
       run: |
         zip -r index.zip -j aws/*
