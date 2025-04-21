@@ -1,11 +1,8 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, TransactWriteItemsCommand } from "@aws-sdk/client-dynamodb";
 import {
     DynamoDBDocumentClient,
     PutCommand,
     GetCommand,
-    DeleteCommand,
-    TransactWriteCommand,
-    TransactWriteItemsCommand,
     UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 
