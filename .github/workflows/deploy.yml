@@ -29,10 +29,10 @@ jobs:
       run: |
         cd aws
         npm install
-        
+
     - name: Package Lambda Code
       run: |
-        zip -r index.zip -j aws/*
+        zip -r index.zip aws/*
         aws s3 cp index.zip s3://lorelibrary-deployment-artifacts/
 
     - name: Upload OpenAPI Spec

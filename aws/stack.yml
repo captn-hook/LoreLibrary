@@ -64,7 +64,7 @@ Resources:
     Properties:
       FunctionName: lorelibrary-function
       Runtime: nodejs18.x
-      Handler: index.handler
+      Handler: aws/index.handler
       Code:
         S3Bucket: !Ref LambdaCodeS3Bucket
         S3Key: !Ref LambdaCodeS3Key
