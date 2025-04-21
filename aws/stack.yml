@@ -145,7 +145,7 @@ Resources:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
         
-  lorelibrary-authorizer:
+  LorelibraryAuthorizer:
     Type: 'AWS::ApiGatewayV2::Authorizer'
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
@@ -155,7 +155,7 @@ Resources:
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
       EnableSimpleResponses: true
-      Name: lorelibrary-authorizer
+      Name: LorelibraryAuthorizer
     
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
