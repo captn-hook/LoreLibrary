@@ -3,7 +3,7 @@ import {
     DynamoDBDocumentClient,
     GetCommand,
 } from "@aws-sdk/lib-dynamodb";
-    
+
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -16,14 +16,6 @@ import jwt from 'jsonwebtoken';
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
-function getAuthorization(authorization) {
-    if (!authorization) {
-        return null;
-    }
-    const token = authorization.split(' ')[1];
-    return token;
-}
-
 function verifyToken(token) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -34,35 +26,47 @@ function verifyToken(token) {
 }
 
 export const handler = async (e) => {
-    
+
+    console.log('event', e);
     let token;
 
     try {
-        token = getAuthorization(e.authorizationToken);
+        token = e.headers.Authorization
+        console.log('tokene', token);
     } catch (err) {
         console.log('Error getting token', err);
-        return false;
+        return {
+            'isAuthorized': false
+        }
     }
 
     if (!token) {
-        return false
+        console.log('No token found');
+        return {
+            'isAuthorized': false
+        }
     }
 
     const decoded = verifyToken(token);
 
     if (!decoded) {
-        return false
+        console.log('Invalid token');
+        return {
+            'isAuthorized': false,
+            'context': {
+                'username': decoded.username,
+            }
+        }
     }
 
     const params = {
         TableName: process.env.TABLE_NAME,
         Key: {
-            PK: `USER#${decoded.username}`,
-            SK: `USER#${decoded.username}`,
+            PK: 'USER#',
+            SK: decoded.username
         },
-    };
-               
-            
+    }
+
     console.log('params', params);
 
     const user = await docClient.send(new GetCommand(params));
@@ -70,13 +74,23 @@ export const handler = async (e) => {
     console.log('user', user);
 
     if (!user.Item) {
-        return false
+        console.log('User not found');
+        return {
+            'isAuthorized': false
+        }
     }
 
     // Ensure the user is making the request
     if (JSON.parse(e.body).username !== decoded.username) {
-        return false
+        return {
+            'isAuthorized': false
+        }
     }
 
-    return true;
+    return {
+        'isAuthorized': true,
+        'context': {
+            'username': decoded.username,
+        }
+    };
 }
