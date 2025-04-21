@@ -72,13 +72,6 @@ async function s3_get_url(bucket, key) {
     return url;
 }
 
-class User {
-    constructor(username, content = [], worlds = []) {
-        this.username = username; // string
-        this.content = content; // array of strings
-        this.worlds = worlds; // array of strings
-    }
-}
 class SignIn {
     constructor(username, password) {
         this.username = username; // string
@@ -89,6 +82,13 @@ class Token {
     constructor(token, username) {
         this.token = token; // string
         this.username = username; // string
+    }
+}
+class User {
+    constructor(username, content = [], worlds = []) {
+        this.username = username; // string
+        this.content = content; // array of strings
+        this.worlds = worlds; // array of strings
     }
 }
 class World {
@@ -145,18 +145,18 @@ function dynamo_get_all(table, cls, parentId = null) {
         const params = {
             TableName: table
         };
-        return ddbDocClient.send(new ScanCommand(params))
+        return ddbDocClient.send(new QueryCommand(params))
             .then(data => data.Items.map(item => match_json(item, cls)))
             .catch(err => console.log(err));
     }
     const params = {
         TableName: table,
-        FilterExpression: 'parentId = :parentId',
+        FilterExpression: 'PK = :pk',
         ExpressionAttributeValues: {
-            ':parentId': parentId
+            ':pk': parentId
         }
     };
-    return ddbDocClient.send(new ScanCommand(params))
+    return ddbDocClient.send(new QueryCommand(params))
         .then(data => data.Items.map(item => match_json(item, cls)))
         .catch(err => console.log(err));
 }
