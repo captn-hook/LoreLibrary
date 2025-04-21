@@ -149,18 +149,24 @@ ApiGatewayAuthorizer:
   Type: 'AWS::ApiGatewayV2::Authorizer'
   Properties:
     ApiId: !Ref LoreLibraryApiGateway
+    AuthorizerCredentials: !GetAtt LambdaExecutionRole.Arn
+    AuthorizerPayloadFormatVersion: '2.0'
     AuthorizerType: REQUEST
+    AuthorizerUri: !Sub
+      - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+      - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
+    EnableSimpleResponses: true
     Name: CustomAuthorizer
     
-ApiGatewayIntegration:
-  Type: 'AWS::ApiGatewayV2::Integration'
-  Properties:
-    ApiId: !Ref LoreLibraryApiGateway
-    IntegrationType: AWS_PROXY
-    IntegrationUri: !Sub
-      - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-      - {LambdaArn: !GetAtt LoreLibraryLambda.Arn}
-    PayloadFormatVersion: '2.0'
+  ApiGatewayIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub
+        - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+        - {LambdaArn: !GetAtt LoreLibraryLambda.Arn}
+      PayloadFormatVersion: '2.0'
 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGatewayV2::Deployment'
