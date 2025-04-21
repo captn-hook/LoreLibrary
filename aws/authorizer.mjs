@@ -35,7 +35,7 @@ function verifyToken(token) {
 
 export const handler = async (e) => {
     
-    let token = null;
+    let token;
 
     try {
         token = getAuthorization(e.authorizationToken);

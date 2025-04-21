@@ -67,12 +67,8 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -137,12 +133,8 @@ paths:
           description: ID of the world to update
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -178,12 +170,8 @@ paths:
           description: ID of the world to create the collection in
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -220,12 +208,8 @@ paths:
           description: ID of the world to delete
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       responses:
         '200':
           description: World deleted successfully
@@ -289,12 +273,8 @@ paths:
           description: ID of the collection to update
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -336,12 +316,8 @@ paths:
           description: ID of the collection to create the entry in
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -384,12 +360,8 @@ paths:
           description: ID of the collection to delete
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       responses:
         '200':
           description: Collection deleted successfully
@@ -465,12 +437,8 @@ paths:
           description: ID of the entry to update
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -518,12 +486,8 @@ paths:
           description: ID of the entry to delete
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       responses:
         '200':
           description: Entry deleted successfully
@@ -608,12 +572,8 @@ paths:
           description: Offset for pagination
           schema:
             type: integer
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       responses:
         '200':
           description: A list of users
@@ -647,12 +607,8 @@ paths:
           description: ID of the user to retrieve
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       responses:
         '200':
           description: User retrieved successfully
@@ -680,12 +636,8 @@ paths:
           description: ID of the user to update
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -721,12 +673,8 @@ paths:
           description: ID of the user to delete
           schema:
             type: string
-      x-amazon-apigateway-authorizer:
-        type: request
-        identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
-        authorizerPayloadFormatVersion: '2.0'
-        enableSimpleResponses: true
+      security:
+      - CustomAuthorizer: []
       responses:
         '200':
           description: User deleted successfully
@@ -735,6 +683,17 @@ paths:
         '500':
           description: Internal server error  
 components:
+  securitySchemes:
+    CustomAuthorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authorizer:
+        type: request
+        identitySource: method.request.header.Authorization
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
+        authorizerPayloadFormatVersion: '2.0'
+        enableSimpleResponses: true
   schemas:
     User:
       type: object
