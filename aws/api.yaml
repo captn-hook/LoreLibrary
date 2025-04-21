@@ -68,7 +68,7 @@ paths:
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -134,7 +134,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -171,7 +171,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -209,7 +209,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       responses:
         '200':
           description: World deleted successfully
@@ -274,7 +274,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -317,7 +317,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -361,7 +361,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       responses:
         '200':
           description: Collection deleted successfully
@@ -438,7 +438,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -487,7 +487,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       responses:
         '200':
           description: Entry deleted successfully
@@ -573,7 +573,7 @@ paths:
           schema:
             type: integer
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       responses:
         '200':
           description: A list of users
@@ -608,7 +608,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       responses:
         '200':
           description: User retrieved successfully
@@ -637,7 +637,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       requestBody:
         required: true
         content:
@@ -674,7 +674,7 @@ paths:
           schema:
             type: string
       security:
-        - bearerAuth: []
+        - CustomAuthorizer: []
       responses:
         '200':
           description: User deleted successfully
@@ -684,9 +684,10 @@ paths:
           description: Internal server error  
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
+    CustomAuthorizer:
+      type: apiKey
+      name: Authorization
+      in: header
       x-amazon-apigateway-authorizer:
         type: request
         identitySource: method.request.header.Authorization

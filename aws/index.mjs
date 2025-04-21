@@ -449,10 +449,10 @@ async function login_user(data) {
 
     try {
         const result = await ddbDocClient.send(new GetCommand(params));
-        if (result.Items.length === 0) {
+        if (!result.Item) {
             return badRequest('User not found');
         }
-        const user = result.Items[0];
+        const user = result.Item;
         const match = await bcrypt.compare(data.password, user.password);
         if (!match) {
             return badRequest('Invalid password');
