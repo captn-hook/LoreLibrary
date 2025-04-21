@@ -50,16 +50,16 @@ Resources:
     Properties:
       TableName: lorelibrary-data
       AttributeDefinitions:
-        - AttributeName: PK
+        - AttributeName: PK # Combines entity type and ID (e.g., USER#username, WORLD#worldId)
           AttributeType: S
-        - AttributeName: SK
+        - AttributeName: SK # Defines relationships (e.g., WORLD#worldId for collections under a world)
           AttributeType: S
-        - AttributeName: GSI1PK
+        - AttributeName: GSI1PK # Used for queries like searching by tags or retrieving all worlds for a user
           AttributeType: S
-        - AttributeName: GSI1SK
+        - AttributeName: GSI1SK # Used for sorting results (e.g., by name or creation date)
           AttributeType: S
       KeySchema:
-        - AttributeName: PK
+        - AttributeName: PK # Each item will have attributes like name, tags, content, ownerId, etc., depending on the entity type.
           KeyType: HASH
         - AttributeName: SK
           KeyType: RANGE
@@ -70,6 +70,8 @@ Resources:
               KeyType: HASH
             - AttributeName: GSI1SK
               KeyType: RANGE
+          Projection:
+            ProjectionType: ALL        
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true

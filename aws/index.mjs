@@ -4,6 +4,9 @@ import {
     PutCommand,
     GetCommand,
     DeleteCommand,
+    TransactWriteCommand,
+    TransactWriteItemsCommand,
+    UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 import {
@@ -22,54 +25,8 @@ const s3Client = new S3Client();
 
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
-const tablename = process.env.TABLE_NAME;
+const dataTable = process.env.DATA_TABLE;
 const bucketname = process.env.BUCKET_NAME;
-
-function notImplemented(name) {
-    return {
-        statusCode: 501,
-        body: JSON.stringify({ message: `${name} not implemented` })
-    };
-}
-
-function notFound(name) {
-    return {
-        statusCode: 404,
-        body: JSON.stringify({ message: `${name} not found` })
-    };
-}
-
-function badRequest(name) {
-    return {
-        statusCode: 400,
-        body: JSON.stringify({ message: `${name} bad request` })
-    };
-}
-
-async function s3_put_url(bucket, key) {
-    const url = await getSignedUrl(
-        s3Client,
-        new PutObjectCommand({
-            Bucket: bucket,
-            Key: key,
-        }),
-        { expiresIn: 60 } // 1 minute
-
-    )
-    return url;    
-}
-
-async function s3_get_url(bucket, key) {
-    const url = await getSignedUrl(
-        s3Client,
-        new GetObjectCommand({
-            Bucket: bucket,
-            Key: key,
-        }),
-        { expiresIn: 60 * 60 } // 1 hour
-    )
-    return url;
-}
 
 class SignIn {
     constructor(username, password) {
@@ -87,7 +44,7 @@ class User {
     constructor(username, content = [], worlds = []) {
         this.username = username; // string
         this.content = content; // array of strings
-        this.worlds = worlds; // array of strings
+        this.worlds = worlds; // array of worldIds
     }
 }
 class World {
@@ -96,8 +53,8 @@ class World {
         this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
-        this.parentId = parentId; // string
-        this.ownerId = parentId; // string
+        this.parentId = parentId; // username
+        this.ownerId = parentId; // username
         this.collections = collections; // array of strings
     }
 }
@@ -107,10 +64,10 @@ class Collection {
         this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
-        this.parentId = parentId; // string
-        this.ownerId = ownerId; // string
-        this.collections = collections; // array of strings
-        this.entries = entries; // array of strings
+        this.parentId = parentId; // collectionId or worldId
+        this.ownerId = ownerId; // username
+        this.collections = collections; // array of collectionIds
+        this.entries = entries; // array of entryIds
     }
 }
 class Entry {
@@ -119,187 +76,387 @@ class Entry {
         this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
-        this.parentId = parentId; // string
-        this.ownerId = ownerId; // string
-        this.collections = collections; // array of strings
-        this.resources = resources; // array of strings
+        this.parentId = parentId; // collectionId
+        this.ownerId = ownerId; // username
     }
 }
 
-function match_json(json, cls) {
-    const jkeys = Object.keys(json);
-    const ckeys = Object.keys(cls);
+class Resource {
+    constructor(id, url, ownerId, description = '') {
+        this.id = id; // string
+        this.url = url; // s3 url
+        this.ownerId = ownerId; // username
+        this.description = description; // string
+    }
+}
+
+function notFound(message) {
+    return {
+        statusCode: 404,
+        body: JSON.stringify({ message })
+    };
+}
+
+function notImplemented(message) {
+    return {
+        statusCode: 501,
+        body: JSON.stringify({ message })
+    };
+}
+
+function badRequest(message) {
+    return {
+        statusCode: 400,
+        body: JSON.stringify({ message })
+    };
+}
+
+async function dynamo_get_all(model) {
     
-    // if all keys in the class are present in the json, return an instance
-    if (ckeys.every(key => jkeys.includes(key))) {
-        const values = ckeys.map(key => json[key]);
-        return new cls(...values);
-    }
-    // if not, return null
-    return null;
-}
-
-function dynamo_get_all(table, cls, parentId = null) {
-    if (!parentId) {
-        const params = {
-            TableName: table
-        };
-        return ddbDocClient.send(new QueryCommand(params))
-            .then(data => data.Items.map(item => match_json(item, cls)))
-            .catch(err => console.log(err));
-    }
+    const prefix = model.name.toUpperCase() + '#';
     const params = {
-        TableName: table,
-        FilterExpression: 'PK = :pk',
+        TableName: dataTable,
+        KeyConditionExpression: 'PK = :pk',
         ExpressionAttributeValues: {
-            ':pk': parentId
+            ':pk': prefix
         }
     };
-    return ddbDocClient.send(new QueryCommand(params))
-        .then(data => data.Items.map(item => match_json(item, cls)))
-        .catch(err => console.log(err));
+
+    try {
+        const data = await ddbDocClient.send(new GetCommand(params));
+        if (data.Items) {
+            return data.Items.map(item => {
+                const { PK, SK, ...rest } = item;
+                return rest;
+            });
+        }
+        return [];
+    }
+    catch (err) {
+        console.error("Error getting items:", err);
+        throw new Error("Error getting items");
+    }
 }
 
-async function dynamo_get_id(table, cls, id) {
+async function dynamo_get_id(model, id) {
+
+    const prefix = model.name.toUpperCase() + '#';
     const params = {
-        TableName: table,
+        TableName: dataTable,
+        KeyConditionExpression: 'PK = :pk AND SK = :sk',
+        ExpressionAttributeValues: {
+            ':pk': prefix,
+            ':sk': id
+        }
+    };
+    try {
+        const data = await ddbDocClient.send(new GetCommand(params));
+        if (data.Items) {
+            return data.Items.map(item => {
+                const { PK, SK, ...rest } = item;
+                return rest;
+            });
+        }
+        return null;
+    }
+    catch (err) {
+        console.error("Error getting item:", err);
+        throw new Error("Error getting item");
+    }
+}
+
+async function dynamo_create(data, model, username) {
+    // Create a new item in the database and update associated items
+    const prefix = model.name.toUpperCase() + '#';
+
+    data.ownerId = username;
+    data.id = crypto.randomUUID();
+
+    const newItem = {
+        PK: prefix,
+        SK: id,
+        ...data
+    };
+
+    let associatedItems = [];
+
+    if (model === World) {
+        // update user with new world
+        const user = await dynamo_get_id(User, username);
+        if (!user) {
+            throw new Error("User not found");
+        }
+        user.worlds.push(id);
+        associatedItems.push(user);
+    } else if (model === Collection) {
+        // update parentid with new collection
+        const world = await dynamo_get_id(World, data.parentId);
+        if (!world) {
+            // try to get collection
+            const collection = await dynamo_get_id(Collection, data.parentId);
+            if (!collection) {
+                throw new Error("Parent not found");
+            }
+            collection.collections.push(id);
+            associatedItems.push(collection);
+        } 
+        else {
+            world.collections.push(id);
+            associatedItems.push(world);
+        }
+    } else if (model === Entry) {
+        // update parentid with new entry
+        const collection = await dynamo_get_id(Collection, data.parentId);
+        if (!collection) {
+            throw new Error("Parent not found");
+        }
+        collection.entries.push(id);
+        associatedItems.push(collection);
+    }
+
+    let transactionItems = [];
+
+    transactionItems.push({
+        Put: {
+            TableName: dataTable,
+            Item: newItem
+        }
+    });
+
+    for (const item of associatedItems) {
+        const prefix = item.constructor.name.toUpperCase() + '#';
+        const newItem = {
+            PK: prefix,
+            SK: item.id,
+            ...item
+        };
+        transactionItems.push({
+            Put: {
+                TableName: dataTable,
+                Item: newItem
+            }
+        });
+    }
+    
+    try {
+        const result = await ddbDocClient.send(new TransactWriteItemsCommand({
+            TransactItems: transactionItems
+        }));
+        return newItem;
+    } catch (err) {
+        console.error("Error creating item:", err);
+        throw new Error("Error creating item");
+    }
+}
+
+async function dynamo_update(model, data, username) {
+    // Update an existing item in the database
+    const prefix = model.name.toUpperCase() + '#';
+    const params = {
+        TableName: dataTable,
         Key: {
-            id: id
-        }
-    };
-    return ddbDocClient.send(new GetCommand(params))
-        .then(data => match_json(data.Item, cls))
-        .catch(err => console.log(err));
-}
-
-async function dynamo_put(table, cls, item) {
-    const params = {
-        TableName: table,
-        Item: item
-    };
-    return ddbDocClient.send(new PutCommand(params))
-        .then(data => match_json(data.Attributes, cls))
-        .catch(err => console.log(err));
-}
-
-async function dynamo_update(table, cls, item) {
-    const params = {
-        TableName: table,
-        Key: item.id,
-        UpdateExpression: 'SET #name = :name',
+            PK: prefix,
+            SK: data.id
+        },
+        UpdateExpression: 'SET #data = :data',
         ExpressionAttributeNames: {
-            '#name': 'name'
+            '#data': 'data'
         },
         ExpressionAttributeValues: {
-            ':name': item.name
+            ':data': data
         }
     };
-    return ddbDocClient.send(new PutCommand(params))
-        .then(data => match_json(data.Attributes, cls))
-        .catch(err => console.log(err));
+
+    try {
+        const result = await ddbDocClient.send(new UpdateCommand(params));
+        return result.Attributes;
+    } catch (err) {
+        console.error("Error updating item:", err);
+        throw new Error("Error updating item");
+    }
 }
 
-async function dynamo_delete(table, key) {
+async function dynamo_delete(model, id, username) {
+    // Delete an item from the database and update associated items
+    const prefix = model.name.toUpperCase() + '#';
     const params = {
-        TableName: table,
-        Key: key
+        TableName: dataTable,
+        Key: {
+            PK: prefix,
+            SK: id
+        }
     };
-    return ddbDocClient.send(new DeleteCommand(params))
-        .then(data => match_json(data.Attributes, cls))
-        .catch(err => console.log(err));
-}
 
-async function dynamo_delete_all(table, cls, key) {
-    // Get the item
-    const item = await dynamo_get_id(table, cls, key);
+    // get the item to delete
+    const item = await dynamo_get_id(model, id);
     if (!item) {
-        return null;
+        throw new Error("Item not found");
     }
-    // If the item has collections, delete them first
-    if (item.collections && item.collections.length > 0) {
-        for (const collectionId of item.collections) {
-            await dynamo_delete_all(table, Collection, collectionId);
+    
+    let associatedItems = [];
+
+    let children = [];
+    
+    // if the item has collections or entries, add them to the children array
+    if (item.collections) {
+        children = children.concat(item.collections);
+    }
+    if (item.entries) {
+        children = children.concat(item.entries);
+    }
+
+    // while there are children, get the item and add it to the associatedItems array,
+    // add its children to the children array
+    while (children.length > 0) {
+        const childId = children.pop();
+        const child = await dynamo_get_id(model, childId);
+        if (!child) {
+            throw new Error("Child not found");
+        }
+        associatedItems.push(child);
+        if (child.collections) {
+            children = children.concat(child.collections);
+        }
+        if (child.entries) {
+            children = children.concat(child.entries);
         }
     }
-    // If the item has entries, delete them first
-    if (item.entries && item.entries.length > 0) {
-        for (const entryId of item.entries) {
-            await dynamo_delete(table, entryId);
+
+    // delete item and all associated items
+    let transactionItems = [];
+
+    transactionItems.push({
+        Delete: {
+            TableName: dataTable,
+            Key: {
+                PK: prefix,
+                SK: id
+            }
         }
+    });
+
+    for (const item of associatedItems) {
+        const prefix = item.constructor.name.toUpperCase() + '#';
+        transactionItems.push({
+            Delete: {
+                TableName: dataTable,
+                Key: {
+                    PK: prefix,
+                    SK: item.id
+                }
+            }
+        });
     }
-    // Delete the item
-    const params = {
-        TableName: table,
-        Key: key
-    };
-    return ddbDocClient.send(new DeleteCommand(params))
-        .then(data => match_json(data.Attributes, cls))
-        .catch(err => console.log(err));
+
+    // remove this item from its parent
+    if (item.parentId) {
+        const parent = await dynamo_get_id(model, item.parentId);
+        if (!parent) {
+            throw new Error("Parent not found");
+        }
+        const index = parent.collections.indexOf(id);
+        if (index > -1) {
+            parent.collections.splice(index, 1);
+        }
+        transactionItems.push({
+            Put: {
+                TableName: dataTable,
+                Item: parent
+            }
+        });
+    }
+
+    try {
+        const result = await ddbDocClient.send(new TransactWriteItemsCommand({
+            TransactItems: transactionItems
+        }));
+        return item;
+    } catch (err) {
+        console.error("Error deleting item:", err);
+        throw new Error("Error deleting item");
+    }
 }
 
+async function generateToken(username) {
+    // Generate a token for the user
+    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return token;
+}
 
-function getAuthorization(authorization = '') {
-    authorization = token.split(' ')[1];
-    if (!authorization || authorization === '') {
+async function create_user(data) {
+    // Create a new user
+    const prefix = 'USER#';
+
+    const newUser = {
+        PK: prefix,
+        SK:  data.username,
+        username: data.username,
+        password: await bcrypt.hash(data.password, 10),
+        content: [],
+        worlds: []
+    };
+
+    const params = {
+        TableName: dataTable,
+        Item: newUser
+    };
+
+    try {
+        const result = await ddbDocClient.send(new PutCommand(params));
+        return new Token(generateToken(data.username), data.username);
+    }
+    catch (err) {
+        console.error("Error creating user:", err);
+        throw new Error("Error creating user");
+    }
+}
+
+async function login_user(data) {
+    // Login user
+    const prefix = 'USER#';
+    const params = {
+        TableName: dataTable,
+        KeyConditionExpression: 'PK = :pk AND SK = :sk',
+        ExpressionAttributeValues: {
+            ':pk': prefix,
+            ':sk': data.username
+        }
+    };
+    try {
+        const result = await ddbDocClient.send(new GetCommand(params));
+        if (result.Items.length === 0) {
+            return badRequest('User not found');
+        }
+        const user = result.Items[0];
+        const match = await bcrypt.compare(data.password, user.password);
+        if (!match) {
+            return badRequest('Invalid password');
+        }
+        const token = generateToken(user.username);
+        return new Token(token, user.username);
+    }
+    catch (err) {
+        console.error("Error logging in user:", err);
+        throw new Error("Error logging in user");
+    }
+}   
+
+function getAuthorization(authorization) {
+    if (!authorization) {
         return null;
     }
-    return authorization;
-}
-
-function getToken(user) {
-    // Create a token for the user
-    const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, { expiresIn: '3h' });
-
-    // Store the token in the database
-    const tokenItem = new Token(token, user.username);
-    const params = {
-        TableName: process.env.TABLE_NAME,
-        Item: tokenItem
-    };
-    return ddbDocClient.send(new PutCommand(params))
-        .then(data => match_json(data.Attributes, Token))
-        .catch(err => console.log(err));
+    const token = authorization.split(' ')[1];
+    return token;
 }
 
 function verifyToken(token) {
-    // Verify the token
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // If the token is present in the database, return the user
-        const params = {
-            TableName: process.env.TABLE_NAME,
-            Key: {
-                id: decoded.username
-            }
-        };
-        return ddbDocClient.send(new GetCommand(params))
-            .then(data => match_json(data.Item, User))
-            .catch(err => console.log(err));
+        return decoded;
     } catch (err) {
-        console.log(err);
         return null;
     }
 }
-
-async function verify_owner(authorization, cls, id) {
-    const token = getAuthorization(authorization);
-    if (!token) {
-        return false;
-    }
-    const user = verifyToken(token);
-    if (!user) {
-        return false;
-    }
-    const item = await dynamo_get_id(tablename, cls, id);
-    if (!item) {
-        return false;
-    }
-    if (item.ownerId !== user.username) {
-        return false;
-    }
-    return true;
-}
-
 
 export const handler = async (e) => {
     // The event object contains:
@@ -315,8 +472,8 @@ export const handler = async (e) => {
 
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
-            // Get all worlds
-            const worlds = await dynamo_get_all(tablename, World);
+            // Get all worlds, paginated with limit and offset
+            const worlds = await dynamo_get_all(World)
             return {
                 statusCode: 200,
                 body: JSON.stringify(worlds)
@@ -326,54 +483,30 @@ export const handler = async (e) => {
             // Create a new world
             const token = getAuthorization(e.headers.Authorization);
             if (!token) {
-                return badRequest('Invalid token');
-            }
+                return badRequest('Authentication required');
+            } 
             const user = verifyToken(token);
             if (!user) {
-                return badRequest('Invalid token');
+                return badRequest('Invalid authentication');
             }
-            // Create new world
-            e.body.parentId = user.username;
-            const world = match_json(e.body, World);
-            if (!world) {
-                return badRequest('Invalid world');
-            }
-            const worldItem = await dynamo_put(tablename, World, world);
-            if (!worldItem) {
-                return badRequest('Failed to create world');
-            }
-            // Add world to user
-            user.worlds.push(worldItem.id);
-            const userItem = await dynamo_put(tablename, User, user);
-            if (!userItem) {
-                return badRequest('Failed to add world to user');
-            }
+
+            const world = dynamo_create(e.body, World, user.username);
             // Return world
             return {
                 statusCode: 201,
-                body: JSON.stringify(worldItem)
+                body: JSON.stringify(world)
             };            
         }
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
-            // Create a new user
-            const user = match_json(e.body, SignIn);
             // Check if user already exists
-            const existingUser = await dynamo_get_id(tablename, User, user.username);
-            if (existingUser) {
+            const userExists = await dynamo_get_id(User, e.body.username);
+            
+            if (userExists) {
                 return badRequest('User already exists');
             }
-            // Create new user
-            const newUser = new User(user.username);
-            const newUserItem = await dynamo_put(tablename, User, newUser);
-            if (!newUserItem) {
-                return badRequest('Failed to create user');
-            }
-            // Get a token for the user
-            const token = await getToken(newUserItem);
-            if (!token) {
-                return badRequest('Failed to create token');
-            }
+            // Create user
+            const token = await create_user(e.body);
             // Return token
             return {
                 statusCode: 201,
@@ -384,21 +517,7 @@ export const handler = async (e) => {
         // /login: POST
         else if (operation === 'POST' && path === '/login') {
             // Login user
-            const user = match_json(e.body, SignIn);
-            // Check if user exists
-            const existingUser = await dynamo_get_id(tablename, User, user.username);
-            if (!existingUser) {
-                return notFound('User not found');
-            }
-            // Check if password is correct
-            if (existingUser.password !== user.password) {
-                return badRequest('Invalid password');
-            }
-            // Return token
-            const token = await getToken(existingUser);
-            if (!token) {
-                return badRequest('Failed to create token');
-            }
+            const token = await login_user(e.body);
             return {
                 statusCode: 200,
                 body: JSON.stringify(token)
@@ -406,18 +525,36 @@ export const handler = async (e) => {
         }
         // /users: GET
         else if (operation === 'GET' && path === '/users') {
-            // Get all users
-            const users = await dynamo_get_all(tablename, User);
+            // Get all users, paginated with limit and offset
+            const token = getAuthorization(e.headers.Authorization);
+            if (!token) {
+                return badRequest('Authentication required');
+            } 
+            const user = verifyToken(token);
+            if (!user) {
+                return badRequest('Invalid authentication');
+            }
+
+            const users = await dynamo_get_all(User);
             return {
                 statusCode: 200,
                 body: JSON.stringify(users)
             };
         }
-        // /users/{UserId}: GET, POST, DELETE
+        // /users/{username}: GET, POST, DELETE
         else if (operation === 'GET' && path.startsWith('/users/')) {
             // Get user by ID
-            const userId = path.split('/')[2];
-            const user = await dynamo_get_id(tablename, User, userId);
+            const token = getAuthorization(e.headers.Authorization);
+            if (!token) {
+                return badRequest('Authentication required');
+            } 
+            const cuser = verifyToken(token); // you can get other users
+            if (!cuser) {
+                return badRequest('Invalid authentication');
+            }
+
+            const username = path.split('/')[2];
+            const user = await dynamo_get_id(User, username);
             if (!user) {
                 return notFound('User not found');
             }
@@ -430,25 +567,20 @@ export const handler = async (e) => {
             // Update user by ID
             const token = getAuthorization(e.headers.Authorization);
             if (!token) {
-                return badRequest('Invalid token');
-            }
+                return badRequest('Authentication required');
+            } 
             const user = verifyToken(token);
             if (!user) {
-                return badRequest('Invalid token');
+                return badRequest('Invalid authentication');
             }
-            const userId = path.split('/')[2];
-            if (user.username !== userId) {
+
+            e.body.username = path.split('/')[2];
+
+            if (user.username !== path.split('/')[2]) {
                 return badRequest('Invalid user');
             }
-            e.body.username = userId;
-            const userItem = match_json(e.body, User);
-            if (!userItem) {
-                return badRequest('Invalid user');
-            }
-            const updatedUser = await dynamo_update(tablename, User, userItem);
-            if (!updatedUser) {
-                return badRequest('Failed to update user');
-            }
+
+            const updatedUser = await dynamo_update(User, e.body, user.username);
             // Return updated user
             return {
                 statusCode: 200,
@@ -459,36 +591,46 @@ export const handler = async (e) => {
             // Delete user by ID
             const token = getAuthorization(e.headers.Authorization);
             if (!token) {
-                return badRequest('Invalid token');
-            }
+                return badRequest('Authentication required');
+            } 
             const user = verifyToken(token);
             if (!user) {
-                return badRequest('Invalid token');
+                return badRequest('Invalid authentication');
             }
-            const userId = path.split('/')[2];
-            if (user.username !== userId) {
+
+            if (user.username !== path.split('/')[2] || user.username !== e.body.username) {
                 return badRequest('Invalid user');
             }
-            const deletedUser = await dynamo_delete(tablename, { id: userId });
+
+            const deletedUser = await dynamo_delete(User, user.username, user.username);
             if (!deletedUser) {
-                return badRequest('Failed to delete user');
+                return notFound('User not found');
             }
-            // Return deleted user
+
+            // Return success
             return {
                 statusCode: 200,
-                body: JSON.stringify(deletedUser)
+                body: JSON.stringify({ message: 'User deleted' })
             };
         }
+
         // NOT IMPLEMENTED
         // /search: anything at all related to search
+        if (operation === 'GET' && path === '/search') {
+            return notImplemented('Search not implemented');
+        }
         // /resources: anything at all related to resources (images, files, etc)
+        if (path === '/resources') {
+            return notImplemented('Resources not implemented');
+        }
+        
         pathsplit = path.split('/');
-        // /{WorldId}: GET, POST, DELETE
+        // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathsplit[1];
             if (operation === 'GET') {
                 // Get world by ID
-                const world = await dynamo_get_id(tablename, World, worldId);
+                const world = await dynamo_get_id(World, worldId);
                 if (!world) {
                     return notFound('World not found');
                 }
@@ -498,42 +640,69 @@ export const handler = async (e) => {
                 };
             } else if (operation === 'POST') {
                 // Update world by ID
-                if (!verify_owner(e.headers.Authorization, World, worldId)) {
-                    return badRequest('Invalid token');
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                } 
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
                 }
-                const world = match_json(e.body, World);
-                const updatedWorld = await dynamo_update(tablename, World, world);
-                if (!updatedWorld) {
-                    return badRequest('Failed to update world');
-                }
+                
+                const world = dynamo_update(World, e.body, user.username);
+                
                 // Return updated world
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(updatedWorld)
+                    body: JSON.stringify(world)
+                };
+            } else if (operation === 'PUT') {
+                // Create a collection
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                }
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
+                }
+                e.body.worldId = worldId;
+                const collection = dynamo_create(e.body, Collection, user.username);
+                // Return collection
+                return {
+                    statusCode: 201,
+                    body: JSON.stringify(collection)
                 };
             } else if (operation === 'DELETE') {
                 // Delete world by ID
-                if (!verify_owner(e.headers.Authorization, World, worldId)) {
-                    return badRequest('Invalid token');
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                } 
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
                 }
-                const deletedWorld = await dynamo_delete_all(tablename, World, worldId);
-                if (!deletedWorld) {
-                    return badRequest('Failed to delete world');
+
+                const world = await dynamo_delete(World, worldId, user.username);
+                if (!world) {
+                    return notFound('World not found');
                 }
-                // Return deleted world
+
+                // Return success
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(deletedWorld)
+                    body: JSON.stringify({ message: 'World deleted' })
                 };
             }
         }
-        // /{WorldId}/{CollectionId}: GET, POST, DELETE
+        // /{WorldId}/{CollectionId}: GET, POST, PUT DELETE
         else if (pathsplit.length === 3) {
             const worldId = pathsplit[1];
             const collectionId = pathsplit[2];
             if (operation === 'GET') {
                 // Get collection by ID
-                const collection = await dynamo_get_id(tablename, Collection, collectionId);
+                const collection = await dynamo_get_id(Collection, collectionId);
                 if (!collection) {
                     return notFound('Collection not found');
                 }
@@ -543,94 +712,82 @@ export const handler = async (e) => {
                 };                
             } else if (operation === 'POST') {
                 // Update collection by ID
-                if (!verify_owner(e.headers.Authorization, Collection, collectionId)) {
-                    return badRequest('Invalid token');
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                } 
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
                 }
-                const ncollection = match_json(e.body, Collection);
-                const updatedCollection = await dynamo_update(tablename, Collection, ncollection);
-                if (!updatedCollection) {
-                    return badRequest('Failed to update collection');
+
+                e.body.worldId = worldId;
+                e.body.collectionId = collectionId;
+
+                const collection = dynamo_update(Collection, e.body, user.username);
+                if (!collection) {
+                    return notFound('Collection not found');
                 }
                 // Return updated collection
                 return {
                     statusCode: 200,
                     body: JSON.stringify(updatedCollection)
                 };              
+            } else if (operation === 'PUT') {
+                // Creat an entry
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                }
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
+                }
+
+                e.body.worldId = worldId;
+                e.body.collectionId = collectionId;
+
+                const entry = dynamo_create(e.body, Entry, user.username);
+                // Return entry
+                return {
+                    statusCode: 201,
+                    body: JSON.stringify(entry)
+                };
             } else if (operation === 'DELETE') {
                 // Delete collection by ID
-                if (!verify_owner(e.headers.Authorization, Collection, collectionId)) {
-                    return badRequest('Invalid token');
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                } 
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
                 }
-                const deletedCollection = await dynamo_delete_all(tablename, Collection, collectionId);
-                if (!deletedCollection) {
-                    return badRequest('Failed to delete collection');
+
+                e.body.worldId = worldId;
+                e.body.collectionId = collectionId;
+
+                const collection = await dynamo_delete(Collection, collectionId, user.username);
+                if (!collection) {
+                    return notFound('Collection not found');
                 }
-                // Return deleted collection
+
+                // Return success
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(deletedCollection)
+                    body: JSON.stringify({ message: 'Collection deleted' })
                 };
 
             }
         }
-        // /{WorldId}/{CollectionId}/entries: GET, PUT 
-        else if (pathsplit.length === 4 && operation === 'GET' && path.endsWith('/entries')) {
-            const collectionId = pathsplit[2];
-            // Get all entries in collection
-            const entries = await dynamo_get_all(tablename, Entry, collectionId);
-            if (!entries) {
-                return notFound('Entries not found');
-            }
-            return {
-                statusCode: 200,
-                body: JSON.stringify(entries)
-            };
-        }
-        else if (pathsplit.length === 4 && operation === 'PUT' && path.endsWith('/entries')) {
-            // Create a new entry
-            const token = getAuthorization(e.headers.Authorization);
-            if (!token) {
-                return badRequest('Invalid token');
-            }
-            const user = verifyToken(token);
-            if (!user) {
-                return badRequest('Invalid token');
-            }
-            const collectionId = pathsplit[2];
-            e.body.parentId = collectionId;
-            e.body.ownerId = user.username;
-            const entry = match_json(e.body, Entry);
-            if (!entry) {
-                return badRequest('Invalid entry');
-            }
-            const entryItem = await dynamo_put(tablename, Entry, entry);
-            if (!entryItem) {
-                return badRequest('Failed to create entry');
-            }
-            // Add entry to collection
-            const collection = await dynamo_get_id(tablename, Collection, collectionId);
-            if (!collection) {
-                return notFound('Collection not found');
-            }
-            collection.entries.push(entryItem.id);
-            const updatedCollection = await dynamo_update(tablename, Collection, collection);
-            if (!updatedCollection) {
-                return badRequest('Failed to add entry to collection');
-            }
-            // Return entry
-            return {
-                statusCode: 201,
-                body: JSON.stringify(entryItem)
-            };
-        }
         // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
-        else if (pathsplit.length === 4) {
+        else if (pathsplit.length === 4) { 
             const worldId = pathsplit[1];
             const collectionId = pathsplit[2];
             const entryId = pathsplit[3];
             if (operation === 'GET') {
                 // Get entry by ID
-                const entry = await dynamo_get_id(tablename, Entry, entryId);
+                const entry = await dynamo_get_id(Entry, entryId);
                 if (!entry) {
                     return notFound('Entry not found');
                 }
@@ -638,38 +795,59 @@ export const handler = async (e) => {
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
-            } else if (operation === 'POST') {
+            }
+            else if (operation === 'POST') {
                 // Update entry by ID
-                if (!verify_owner(e.headers.Authorization, Entry, entryId)) {
-                    return badRequest('Invalid token');
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                } 
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
                 }
-                const entry = match_json(e.body, Entry);
-                const updatedEntry = await dynamo_update(tablename, Entry, entry);
-                if (!updatedEntry) {
-                    return badRequest('Failed to update entry');
+
+                e.body.worldId = worldId;
+                e.body.collectionId = collectionId;
+                e.body.entryId = entryId;
+
+                const entry = await dynamo_update(Entry, e.body, user.username);
+                if (!entry) {
+                    return notFound('Entry not found');
                 }
                 // Return updated entry
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(updatedEntry)
-                };
-            } else if (operation === 'DELETE') {
-                // Delete entry by ID
-                if (!verify_owner(e.headers.Authorization, Entry, entryId)) {
-                    return badRequest('Invalid token');
-                }
-                const deletedEntry = await dynamo_delete_all(tablename, Entry, entryId);
-                if (!deletedEntry) {
-                    return badRequest('Failed to delete entry');
-                }
-                // Return deleted entry
-                return {
-                    statusCode: 200,
-                    body: JSON.stringify(deletedEntry)
+                    body: JSON.stringify(entry)
                 };
             }
-        }        
+            else if (operation === 'DELETE') {
+                // Delete entry by ID
+                const token = getAuthorization(e.headers.Authorization);
+                if (!token) {
+                    return badRequest('Authentication required');
+                } 
+                const user = verifyToken(token);
+                if (!user) {
+                    return badRequest('Invalid authentication');
+                }
 
+                e.body.worldId = worldId;
+                e.body.collectionId = collectionId;
+                e.body.entryId = entryId;
+
+                const entry = await dynamo_delete(Entry, entryId, user.username);
+                if (!entry) {
+                    return notFound('Entry not found');
+                }
+
+                // Return success
+                return {
+                    statusCode: 200,
+                    body: JSON.stringify({ message: 'Entry deleted' })
+                };
+            }
+        }
         return {
             statusCode: 404,
             body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
