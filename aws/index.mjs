@@ -466,23 +466,6 @@ async function login_user(data) {
     }
 }   
 
-function getAuthorization(authorization) {
-    if (!authorization) {
-        return null;
-    }
-    const token = authorization.split(' ')[1];
-    return token;
-}
-
-function verifyToken(token) {
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return decoded;
-    } catch (err) {
-        return null;
-    }
-}
-
 export const handler = async (e) => {
     // The event object contains:
     // version: '2.0',
@@ -670,14 +653,7 @@ export const handler = async (e) => {
                 };
             } else if (operation === 'POST') {
                 // Update world by ID
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                } 
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
                 
                 const world = dynamo_update(World, e.body, user.username);
                 
@@ -705,14 +681,7 @@ export const handler = async (e) => {
                 };
             } else if (operation === 'DELETE') {
                 // Delete world by ID
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                } 
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
 
                 const world = await dynamo_delete(World, worldId, user.username);
                 if (!world) {
@@ -742,14 +711,7 @@ export const handler = async (e) => {
                 };                
             } else if (operation === 'POST') {
                 // Update collection by ID
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                } 
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
@@ -785,14 +747,7 @@ export const handler = async (e) => {
                 };
             } else if (operation === 'DELETE') {
                 // Delete collection by ID
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                } 
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
@@ -828,14 +783,7 @@ export const handler = async (e) => {
             }
             else if (operation === 'POST') {
                 // Update entry by ID
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                } 
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
@@ -853,14 +801,7 @@ export const handler = async (e) => {
             }
             else if (operation === 'DELETE') {
                 // Delete entry by ID
-                const token = getAuthorization(e.headers.Authorization);
-                if (!token) {
-                    return badRequest('Authentication required');
-                } 
-                const user = verifyToken(token);
-                if (!user) {
-                    return badRequest('Invalid authentication');
-                }
+                
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
