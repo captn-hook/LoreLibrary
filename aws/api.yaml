@@ -686,11 +686,11 @@ components:
   securitySchemes:
     CustomAuthorizer:
       type: apiKey
-      name: Unused
+      name: Authorization
       in: header
       x-amazon-apigateway-authorizer:
         type: request
-        identitySource: method.request.header.Authorization
+        identitySource: $request.header.Authorization
         authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
         authorizerPayloadFormatVersion: '2.0'
         enableSimpleResponses: true
