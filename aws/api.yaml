@@ -683,10 +683,10 @@ paths:
         '500':
           description: Internal server error  
 components:
-  securityDefinitions:
+  securitySchemes:
     CustomAuthorizer:
       type: apiKey
-      name: Authorization
+      name: Unused
       in: header
       x-amazon-apigateway-authorizer:
         type: request
