@@ -92,6 +92,20 @@ Resources:
           BUCKET_NAME: !Ref ResourcesBucket
           JWT_SECRET: !Ref JWTSecretParameter
 
+  CustomAuthorizerLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: lorelibrary-authorizer
+      Runtime: nodejs18.x
+      Handler: aws/authorizer.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeS3Bucket
+        S3Key: !Ref LambdaCodeS3Key
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          JWT_SECRET: !Ref JWTSecretParameter          
+
   LambdaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -130,6 +144,18 @@ Resources:
       BodyS3Location:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
+        
+ApiGatewayAuthorizer:
+  Type: 'AWS::ApiGatewayV2::Authorizer'
+  Properties:
+    ApiId: !Ref LoreLibraryApiGateway
+    AuthorizerType: REQUEST
+    AuthorizerUri: !Sub
+      - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+      - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
+    IdentitySource:
+      - '$request.header.Authorization'
+    Name: CustomAuthorizer
 
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
