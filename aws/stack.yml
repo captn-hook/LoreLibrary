@@ -155,7 +155,7 @@ Resources:
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
       EnableSimpleResponses: true
-      Name: LorelibraryAuthorizer
+      Name: lorelibrary-gateway-authorizer
     
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
