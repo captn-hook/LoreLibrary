@@ -4,7 +4,7 @@ info:
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
 servers:
-  - url: https://s0pfp9623f.execute-api.us-west-2.amazonaws.com/prod
+  - url: https://5mgqdc0k9k.execute-api.us-west-2.amazonaws.com/prod
 tags:
   - name: user
     description: Operations related to users
@@ -686,8 +686,7 @@ components:
   securitySchemes:
     bearerAuth:
       type: http
-      name: Authorization
-      in: header
+      scheme: bearer
       x-amazon-apigateway-authorizer:
         type: request
         identitySource: method.request.header.Authorization

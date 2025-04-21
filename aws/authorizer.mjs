@@ -35,8 +35,17 @@ function verifyToken(token) {
 
 export const handler = async (e) => {
     console.log('event', e);
-
-    const token = getAuthorization(e.headers.Authorization);
+    
+    if (!e || !e.headers) {
+        return false;
+    }
+    
+    let token = null;
+    if (e.headers.Authorization) {
+        token = getAuthorization(e.headers.Authorization);
+    } else {
+        token = getAuthorization(e.authorizationToken);
+    }
 
     if (!token) {
         return false
