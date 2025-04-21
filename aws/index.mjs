@@ -109,6 +109,9 @@ function badRequest(message) {
 }
 
 async function dynamo_get_all(model) {
+    if (!model || !model.name) {
+        throw new Error("Invalid model: 'model.name' is required.");
+    }
     
     const prefix = model.name.toUpperCase() + '#';
     const params = {
@@ -136,14 +139,19 @@ async function dynamo_get_all(model) {
 }
 
 async function dynamo_get_id(model, id) {
+    if (!model || !model.name) {
+        throw new Error("Invalid model: 'model.name' is required.");
+    }
+    if (!id) {
+        throw new Error("Invalid id: 'id' is required.");
+    }
 
     const prefix = model.name.toUpperCase() + '#';
     const params = {
         TableName: dataTable,
-        KeyConditionExpression: 'PK = :pk AND SK = :sk',
-        ExpressionAttributeValues: {
-            ':pk': prefix,
-            ':sk': id
+        Key: {
+            PK: prefix,
+            SK: id
         }
     };
     try {
@@ -158,11 +166,20 @@ async function dynamo_get_id(model, id) {
     }
     catch (err) {
         console.error("Error getting item:", err);
-        throw new Error("Error getting item");
+        throw new Error(`Error getting item with id ${id}: ${err}`);
     }
 }
 
 async function dynamo_create(data, model, username) {
+    if (!model || !model.name) {
+        throw new Error("Invalid model: 'model.name' is required.");
+    }
+    if (!data || !data.name) {
+        throw new Error("Invalid data: 'data.name' is required.");
+    }
+    if (!username) {
+        throw new Error("Invalid username: 'username' is required.");
+    }
     // Create a new item in the database and update associated items
     const prefix = model.name.toUpperCase() + '#';
 
@@ -247,6 +264,15 @@ async function dynamo_create(data, model, username) {
 }
 
 async function dynamo_update(model, data, username) {
+    if (!model || !model.name) {
+        throw new Error("Invalid model: 'model.name' is required.");
+    }
+    if (!data || !data.id) {
+        throw new Error("Invalid data: 'data.id' is required.");
+    }
+    if (!username) {
+        throw new Error("Invalid username: 'username' is required.");
+    }
     // Update an existing item in the database
     const prefix = model.name.toUpperCase() + '#';
     const params = {
@@ -376,7 +402,7 @@ async function dynamo_delete(model, id, username) {
 
 async function generateToken(username) {
     // Generate a token for the user
-    const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = await jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
     return token;
 }
 
@@ -400,7 +426,7 @@ async function create_user(data) {
 
     try {
         const result = await ddbDocClient.send(new PutCommand(params));
-        return new Token(generateToken(data.username), data.username);
+        return new Token(await generateToken(data.username), data.username);
     }
     catch (err) {
         console.error("Error creating user:", err);
@@ -429,7 +455,7 @@ async function login_user(data) {
         if (!match) {
             return badRequest('Invalid password');
         }
-        const token = generateToken(user.username);
+        const token = await generateToken(user.username);
         return new Token(token, user.username);
     }
     catch (err) {
@@ -466,6 +492,7 @@ export const handler = async (e) => {
     // isBase64Encoded: false,
     try {
         const [operation, path] = e.routeKey.split(' ');
+        e.body = JSON.parse(e.body);
 
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
@@ -621,7 +648,7 @@ export const handler = async (e) => {
             return notImplemented('Resources not implemented');
         }
         
-        pathsplit = path.split('/');
+        let pathsplit = path.split('/');
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathsplit[1];
