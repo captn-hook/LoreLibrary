@@ -1,9 +1,12 @@
-import { DynamoDBClient, TransactWriteItemsCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
     DynamoDBDocumentClient,
     PutCommand,
     GetCommand,
     UpdateCommand,
+    DeleteCommand,
+    QueryCommand,
+    TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 import {
@@ -114,6 +117,7 @@ async function dynamo_get_all(model) {
     }
     
     const prefix = model.name.toUpperCase() + '#';
+    // Get all items in the table with the given prefix
     const params = {
         TableName: dataTable,
         KeyConditionExpression: 'PK = :pk',
@@ -121,16 +125,15 @@ async function dynamo_get_all(model) {
             ':pk': prefix
         }
     };
-
     try {
-        const data = await ddbDocClient.send(new GetCommand(params));
+        const data = await ddbDocClient.send(new QueryCommand(params));
         if (data.Items) {
             return data.Items.map(item => {
                 const { PK, SK, ...rest } = item;
                 return rest;
             });
         }
-        return [];
+        return null;
     }
     catch (err) {
         console.error("Error getting items:", err);
@@ -147,6 +150,7 @@ async function dynamo_get_id(model, id) {
     }
 
     const prefix = model.name.toUpperCase() + '#';
+    // Get an item by prefix and id
     const params = {
         TableName: dataTable,
         Key: {
@@ -156,11 +160,9 @@ async function dynamo_get_id(model, id) {
     };
     try {
         const data = await ddbDocClient.send(new GetCommand(params));
-        if (data.Items) {
-            return data.Items.map(item => {
-                const { PK, SK, ...rest } = item;
-                return rest;
-            });
+        if (data.Item) {
+            const { PK, SK, ...rest } = data.Item;
+            return rest;
         }
         return null;
     }
@@ -253,7 +255,7 @@ async function dynamo_create(data, model, username) {
     }
     
     try {
-        const result = await ddbDocClient.send(new TransactWriteItemsCommand({
+        const result = await ddbDocClient.send(new TransactWriteCommand({
             TransactItems: transactionItems
         }));
         return newItem;
@@ -439,12 +441,12 @@ async function login_user(data) {
     const prefix = 'USER#';
     const params = {
         TableName: dataTable,
-        KeyConditionExpression: 'PK = :pk AND SK = :sk',
-        ExpressionAttributeValues: {
-            ':pk': prefix,
-            ':sk': data.username
+        Key: {
+            PK: prefix,
+            SK: data.username
         }
     };
+
     try {
         const result = await ddbDocClient.send(new GetCommand(params));
         if (result.Items.length === 0) {
@@ -492,7 +494,10 @@ export const handler = async (e) => {
     // isBase64Encoded: false,
     try {
         const [operation, path] = e.routeKey.split(' ');
-        e.body = JSON.parse(e.body);
+
+        if (e.body) {
+            e.body = JSON.parse(e.body);
+        }
 
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
@@ -552,6 +557,7 @@ export const handler = async (e) => {
             // Get all users, paginated with limit and offset
             const token = getAuthorization(e.headers.Authorization);
             if (!token) {
+                console.log('No token found in headers:', e);
                 return badRequest('Authentication required');
             } 
             const user = verifyToken(token);
