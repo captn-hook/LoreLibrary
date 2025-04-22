@@ -1,9 +1,8 @@
 <script lang="ts">
   // import { showLogin } from "$lib/context/userContext.svelte";
-  import Login from "$lib/components/login.svelte";
-  import SignUp from "$lib/components/signUp.svelte";
-  import LogButton from "./logButton.svelte";
-
+  import Login from "$lib/components/accountControls/login.svelte";
+  import SignUp from "$lib/components/accountControls/signUp.svelte";
+  import LogButton from "$lib/components/accountControls/logButton.svelte";
   let showLogin = false;
   let showSignUp = false;
 
