@@ -7,6 +7,8 @@ Add the following secrets:
 
     AWS_SECRET_ACCESS_KEY: Your AWS secret key.
 
+    JWT_SECRET: Your JWT secret.
+
 to deploy you will need a bucket to put deployment artifacts in. i called mine s3://lorelibrary-deployment-artifacts/
 
 # notes:

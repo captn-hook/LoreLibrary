@@ -3,6 +3,8 @@ info:
   title: LoreLibray API
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
+servers:
+  - url: https://vzcambvr1l.execute-api.us-west-2.amazonaws.com/prod
 tags:
   - name: user
     description: Operations related to users
@@ -65,21 +67,14 @@ paths:
         httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
+      security:
+      - lorelibrary-gateway-authorizer: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                parentId:
-                  type: string
+              $ref: '#/components/schemas/World'
       responses:
         '201':
           description: World created successfully
@@ -138,21 +133,14 @@ paths:
           description: ID of the world to update
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                parentId:
-                  type: string
+              $ref: '#/components/schemas/World'
       responses:
         '200':
           description: World updated successfully
@@ -164,6 +152,44 @@ paths:
           description: Bad request
         '404':
           description: World not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - collection
+      summary: Create a new collection (requires a user)
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        payloadFormatVersion: 2.0
+      parameters:
+        - name: WorldId
+          in: path
+          required: true
+          description: ID of the world to create the collection in
+          schema:
+            type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Collection'
+      responses:
+        '200':
+          description: Collection created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection:
+                    $ref: '#/components/schemas/Collection'
+        '400':
+          description: Bad request
         '500':
           description: Internal server error
     delete:
@@ -182,101 +208,13 @@ paths:
           description: ID of the world to delete
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       responses:
-        '204':
+        '200':
           description: World deleted successfully
         '404':
           description: World not found
-        '500':
-          description: Internal server error
-  /{WorldId}/collections:
-    get:
-      tags:
-        - collection
-      summary: Get all collections in a world, paginated
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to retrieve collections from
-          schema:
-            type: string
-        - name: limit
-          in: query
-          required: false
-          description: Number of collections to return
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          required: false
-          description: Offset for pagination
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: A list of collections in the world
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  collections:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Collection'
-        '400':
-          description: Bad request
-        '500':
-          description: Internal server error
-    put:
-      tags:
-        - collection
-      summary: Create a new collection in a world (requires a user)
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to create the collection in
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                parentId:
-                  type: string
-      responses:
-        '201':
-          description: Collection created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  collection:
-                    $ref: '#/components/schemas/Collection'
-        '400':
-          description: Bad request
         '500':
           description: Internal server error
   /{WorldId}/{CollectionId}:
@@ -335,21 +273,14 @@ paths:
           description: ID of the collection to update
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                parentId:
-                  type: string
+              $ref: '#/components/schemas/Collection'
       responses:
         '200':
           description: Collection updated successfully
@@ -361,6 +292,50 @@ paths:
           description: Bad request
         '404':
           description: Collection not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - entry
+      summary: Create a new entry (requires a user)
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        payloadFormatVersion: 2.0
+      parameters:
+        - name: WorldId
+          in: path
+          required: true
+          description: ID of the world to create the entry in
+          schema:
+            type: string
+        - name: CollectionId
+          in: path
+          required: true
+          description: ID of the collection to create the entry in
+          schema:
+            type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Entry'
+      responses:
+        '200':
+          description: Entry created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entry:
+                    $ref: '#/components/schemas/Entry'
+        '400':
+          description: Bad request
         '500':
           description: Internal server error
     delete:
@@ -385,113 +360,13 @@ paths:
           description: ID of the collection to delete
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       responses:
-        '204':
+        '200':
           description: Collection deleted successfully
         '404':
           description: Collection not found
-        '500':
-          description: Internal server error
-  /{WorldId}/{CollectionId}/entries:
-    get:
-      tags:
-        - entry
-      summary: Get all entries in a collection, paginated
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to retrieve entries from
-          schema:
-            type: string
-        - name: CollectionId
-          in: path
-          required: true
-          description: ID of the collection to retrieve entries from
-          schema:
-            type: string
-        - name: limit
-          in: query
-          required: false
-          description: Number of entries to return
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          required: false
-          description: Offset for pagination
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: A list of entries in the collection
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  entries:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Entry'
-        '400':
-          description: Bad request
-        '500':
-          description: Internal server error
-    put:
-      tags:
-        - entry
-      summary: Create a new entry in a collection (requires a user)
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to create the entry in
-          schema:
-            type: string
-        - name: CollectionId
-          in: path
-          required: true
-          description: ID of the collection to create the entry in
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                parentId:
-                  type: string
-      responses:
-        '201':
-          description: Entry created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  entry:
-                    $ref: '#/components/schemas/Entry'
-        '400':
-          description: Bad request
         '500':
           description: Internal server error
   /{WorldId}/{CollectionId}/{EntryId}:
@@ -562,21 +437,14 @@ paths:
           description: ID of the entry to update
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                parentId:
-                  type: string
+              $ref: '#/components/schemas/Entry'
       responses:
         '200':
           description: Entry updated successfully
@@ -618,8 +486,10 @@ paths:
           description: ID of the entry to delete
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       responses:
-        '204':
+        '200':
           description: Entry deleted successfully
         '404':
           description: Entry not found
@@ -640,17 +510,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/SignIn'
       responses:
         '201':
           description: User created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
+                $ref: '#/components/schemas/Token'
         '400':
           description: Bad request
         '500':
@@ -670,22 +537,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
+              $ref: '#/components/schemas/SignIn'
       responses:
         '200':
           description: User logged in successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
+                $ref: '#/components/schemas/Token'
         '400':
           description: Bad request
         '500':
@@ -713,6 +572,8 @@ paths:
           description: Offset for pagination
           schema:
             type: integer
+      security:
+      - lorelibrary-gateway-authorizer: []
       responses:
         '200':
           description: A list of users
@@ -729,7 +590,7 @@ paths:
           description: Bad request
         '500':
           description: Internal server error
-  /users/{UserId}:
+  /users/{username}:
     get:
       tags:
         - user
@@ -740,12 +601,14 @@ paths:
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
       parameters:
-        - name: UserId
+        - name: username
           in: path
           required: true
           description: ID of the user to retrieve
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       responses:
         '200':
           description: User retrieved successfully
@@ -767,12 +630,14 @@ paths:
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
       parameters:
-        - name: UserId
+        - name: username
           in: path
           required: true
           description: ID of the user to update
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       requestBody:
         required: true
         content:
@@ -802,20 +667,34 @@ paths:
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
         payloadFormatVersion: 2.0
       parameters:
-        - name: UserId
+        - name: username
           in: path
           required: true
           description: ID of the user to delete
           schema:
             type: string
+      security:
+      - lorelibrary-gateway-authorizer: []
       responses:
-        '204':
+        '200':
           description: User deleted successfully
         '404':
           description: User not found
         '500':
           description: Internal server error  
 components:
+  securitySchemes:
+    lorelibrary-gateway-authorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: custom
+      x-amazon-apigateway-authorizer:
+        type: request
+        identitySource: $request.header.Authorization
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
+        authorizerPayloadFormatVersion: '2.0'
+        enableSimpleResponses: true
   schemas:
     User:
       type: object
@@ -847,6 +726,8 @@ components:
             type: string
         parentId:
           type: string
+        ownerId:
+          type: string
         collections:
           type: array
           items:
@@ -867,6 +748,8 @@ components:
           items:
             type: string
         parentId:
+          type: string
+        ownerId:
           type: string
         collections:
           type: array
@@ -893,12 +776,30 @@ components:
             type: string
         parentId:
           type: string
+        ownerId:
+          type: string
     Resource:
       type: object
       properties:
-        name:
+        id:
           type: string
         url:
           type: string
+        ownerId:
+          type: string
         description:
+          type: string
+    SignIn:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+        username:
           type: string

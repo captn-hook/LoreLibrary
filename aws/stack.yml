@@ -12,6 +12,9 @@ Parameters:
   OpenApiSpecS3Key:
     Type: String
     Description: The key (path) to the OpenAPI file in the S3 bucket
+  JWTSecretParameter:
+    Type: String
+    Description: The secret key for JWT authentication
 
 Resources:
   ResourcesBucket:
@@ -47,11 +50,28 @@ Resources:
     Properties:
       TableName: lorelibrary-data
       AttributeDefinitions:
-        - AttributeName: id
+        - AttributeName: PK # Combines entity type and ID (e.g., USER#username, WORLD#worldId)
+          AttributeType: S
+        - AttributeName: SK # Defines relationships (e.g., WORLD#worldId for collections under a world)
+          AttributeType: S
+        - AttributeName: GSI1PK # Used for queries like searching by tags or retrieving all worlds for a user
+          AttributeType: S
+        - AttributeName: GSI1SK # Used for sorting results (e.g., by name or creation date)
           AttributeType: S
       KeySchema:
-        - AttributeName: id
+        - AttributeName: PK # Each item will have attributes like name, tags, content, ownerId, etc., depending on the entity type.
           KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL        
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
@@ -61,7 +81,7 @@ Resources:
     Properties:
       FunctionName: lorelibrary-function
       Runtime: nodejs18.x
-      Handler: index.handler
+      Handler: aws/index.handler
       Code:
         S3Bucket: !Ref LambdaCodeS3Bucket
         S3Key: !Ref LambdaCodeS3Key
@@ -70,6 +90,22 @@ Resources:
         Variables:
           TABLE_NAME: !Ref DataTable
           BUCKET_NAME: !Ref ResourcesBucket
+          JWT_SECRET: !Ref JWTSecretParameter
+
+  CustomAuthorizerLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: lorelibrary-authorizer
+      Runtime: nodejs18.x
+      Handler: aws/authorizer.handler
+      Code:
+        S3Bucket: !Ref LambdaCodeS3Bucket
+        S3Key: !Ref LambdaCodeS3Key
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DataTable
+          JWT_SECRET: !Ref JWTSecretParameter          
 
   LambdaExecutionRole:
     Type: 'AWS::IAM::Role'
@@ -103,13 +139,33 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*'
 
+  AuthenticationInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt CustomAuthorizerLambda.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*'
+
   LoreLibraryApiGateway:
     Type: 'AWS::ApiGatewayV2::Api'
     Properties:
       BodyS3Location:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
-
+        
+  # LorelibraryAuthorizer:
+  #   Type: 'AWS::ApiGatewayV2::Authorizer'
+  #   Properties:
+  #     ApiId: !Ref LoreLibraryApiGateway
+  #     AuthorizerPayloadFormatVersion: '2.0'
+  #     AuthorizerType: REQUEST
+  #     AuthorizerUri: !Sub
+  #       - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+  #       - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
+  #     EnableSimpleResponses: true
+  #     Name: lorelibrary-gateway-authorizer
+    
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
     Properties:
