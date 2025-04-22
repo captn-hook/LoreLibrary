@@ -28,66 +28,72 @@ function verifyToken(token) {
 
 export const handler = async (e) => {
 
-    let token;
-
-    console.log('tokeeene', e.Headers);
-    console.log('tokeeene', e.requestBody);
-
     try {
-        token = e.identitySource[0]
-        console.log('tokene', token);
-    } catch (err) {
-        console.log('Error getting token', err);
-        return {
-            'isAuthorized': false
-        }
-    }
+        let token;
 
-    if (!token) {
-        console.log('No token found');
-        return {
-            'isAuthorized': false
-        }
-    }
+        console.log('tokeeene', e.Headers);
+        console.log('tokeeene', e.requestBody);
 
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-        console.log('Invalid token');
-        return {
-            'isAuthorized': false,
-            'context': {
-                'username': decoded.username,
+        try {
+            token = e.identitySource[0]
+            console.log('tokene', token);
+        } catch (err) {
+            console.log('Error getting token', err);
+            return {
+                'isAuthorized': false
             }
         }
-    }
 
-    const params = {
-        TableName: process.env.TABLE_NAME,
-        Key: {
-            PK: 'USER#',
-            SK: decoded.username
-        },
-    }
+        if (!token) {
+            console.log('No token found');
+            return {
+                'isAuthorized': false
+            }
+        }
 
-    console.log('params', params);
+        const decoded = verifyToken(token);
 
-    const user = await docClient.send(new GetCommand(params));
+        if (!decoded) {
+            console.log('Invalid token');
+            return {
+                'isAuthorized': false,
+                'context': {
+                    'username': decoded.username,
+                }
+            }
+        }
 
-    console.log('user', user.Item.SK);
+        const params = {
+            TableName: process.env.TABLE_NAME,
+            Key: {
+                PK: 'USER#',
+                SK: decoded.username
+            },
+        }
 
-    if (!user.Item) {
-        console.log('User not found');
+        console.log('params', params);
+
+        const user = await docClient.send(new GetCommand(params));
+
+        console.log('user', user.Item.SK);
+
+        if (!user.Item) {
+            console.log('User not found');
+            return {
+                'isAuthorized': false
+            }
+        }
+        console.log('returning authorized for user', user.Item.SK);
+        return {
+            'isAuthorized': true,
+            'context': {
+                'username': user.Item.SK
+            }
+        };
+    } catch (err) {
+        console.log('Error', err);
         return {
             'isAuthorized': false
         }
     }
-
-    return {
-        'isAuthorized': true,
-        'context': {
-            'username': decoded.username,
-            'test': 'test',
-        }
-    };
 }
