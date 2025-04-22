@@ -48,9 +48,8 @@ class User {
     }
 }
 class World {
-    constructor(name, id, content = [], tags = [], parentId = null, collections = []) {
-        this.name = name; // string
-        this.id = id; // string
+    constructor(name, content = [], tags = [], parentId = null, collections = []) {
+        this.name = name; // stringg
         this.content = content; // array of strings
         this.tags = tags; // array of strings
         this.parentId = parentId; // username
@@ -59,9 +58,8 @@ class World {
     }
 }
 class Collection {
-    constructor(name, id, content = [], tags = [], parentId = null, ownerId = null, collections = [], entries = []) {
+    constructor(name, content = [], tags = [], parentId = null, ownerId = null, collections = [], entries = []) {
         this.name = name; // string
-        this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
         this.parentId = parentId; // collectionId or worldId
@@ -71,9 +69,8 @@ class Collection {
     }
 }
 class Entry {
-    constructor(name, id, content = [], tags = [], parentId = null, ownerId = null, collections = [], resources = []) {
+    constructor(name, content = [], tags = [], parentId = null, ownerId = null, collections = [], resources = []) {
         this.name = name; // string
-        this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
         this.parentId = parentId; // collectionId
