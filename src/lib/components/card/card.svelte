@@ -16,7 +16,9 @@
         </header>
         <article class="space-y-4 p-4">
             <div>
-                <h2 class="h6">{card.category}</h2>
+                <h2 class="h6">{#each card.category as category}
+                    <span class="badge badge-primary">{category}</span>
+                {/each}</h2>
                 <h3 class="h3">{card.title}</h3>
             </div>
             <p class="opacity-60">

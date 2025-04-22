@@ -242,8 +242,8 @@ get_entry() {
 
 # World Information
 world_name="Grub World"
-world_content=$(jq -n --arg text "Grub World" --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg" \
-    '[{"text": $text}, {"image_url": $image_url}]')
+world_content=$(jq -n --arg text "Grub World" --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg" --arg name "Grub World" \
+    '[{"text": $text}, {"image_url": $image_url}, {"name": $name}]')
 world_tags='["grub", "bio", "biopunk", "biologics", "hive", "ship"]'
 
 # Collections
