@@ -150,7 +150,7 @@ put_collection() {
     local collection_content=$2
     local collection_id=''
     local collection_tags=$3
-    local collection_parentId=''
+    local collection_parentId=$4
     local collection_ownerId=''
     local collection_collections=[]
     local collection_entries=[]
@@ -198,7 +198,7 @@ put_entry() {
     local entry_content=$2
     local entry_id=''
     local entry_tags=$3
-    local entry_parentId=''
+    local entry_parentId=$4
     local entry_ownerId=''
     local collection=$(echo "$4" | jq -sRr @uri)
     local world=$(echo "$5" | jq -sRr @uri)
