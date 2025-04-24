@@ -1,25 +1,28 @@
 <script type="ts">
     import { world as importedWorld } from "$lib/context/worldContext.svelte";
-    import BulletList from "$lib/components/textComponents/bulletList.svelte";
-    import NumberList from "$lib/components/textComponents/numberList.svelte";
-    import { getWorld } from "$lib/scripts/world";
-    import { onMount } from 'svelte';
+    import {getWorld} from "$lib/scripts/world";
+    import NumberList from '$lib/components/textComponents/numberList.svelte';
+    import BullletList from "$lib/components/textComponents/bulletList.svelte";
 
     export let data;
-    onMount(() => {
-        getWorld(data.worldid);
-    });
 </script>
 <h1>Viewing Entry: {data.worldid}</h1>
 
-{#each $importedWorld?.data || [] as { key, value }}
-    {#if key === "bulletList"}
-        <BulletList items={value} />
-    {:else if key === "numberedList"}
-        <NumberList items={value} />
-    {:else if key === "text"}
-        <p>{value}</p>
-    {:else if key === "image"}
-        <img src={value} alt="Image" />
-    {/if}
-{/each}
+{#await getWorld(data.worldid) then world}
+    {console.log(world)}
+    <h2>World: {world?.name}</h2>
+    <p>{world?.description}</p>
+        {#each world?.entry?.content ?? [] as component}
+            {#if component.key === 'text'}
+                <p>{component.value}</p>
+            {:else if component.key === 'numberedList'}
+                <NumberList items={component.value} />
+            {:else if component.key === 'bulletList'}
+                <BullletList items={component.value} />
+            {:else if component.key === 'image'}
+                <img src={component.value} alt={component.value} />
+            {/if}
+        {/each}
+{:catch error}
+    <p>Error loading world: {error.message}</p>
+{/await}
