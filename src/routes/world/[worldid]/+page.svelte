@@ -3,6 +3,7 @@
     import {getWorld} from "$lib/scripts/world";
     import NumberList from '$lib/components/textComponents/numberList.svelte';
     import BullletList from "$lib/components/textComponents/bulletList.svelte";
+    import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
 
     export let data;
 </script>
@@ -20,7 +21,9 @@
             {:else if component.key === 'bulletList'}
                 <BullletList items={component.value} />
             {:else if component.key === 'image'}
-                <img src={component.value} alt={component.value} />
+                <img src={component.value} alt={component.value} />'
+            {:else if component.key === 'md'}
+                <MarkdownReader md={component.value} />
             {/if}
         {/each}
 {:catch error}
