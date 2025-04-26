@@ -35,7 +35,7 @@ export class World {
 
     static fromJson(json: any): World {
         return new World(
-            json.id || 'No ID',
+            json.content[2].name || 'No ID',
             json.content[2].name || 'No Name',
             json.collections || [],
             json.tags || [],
