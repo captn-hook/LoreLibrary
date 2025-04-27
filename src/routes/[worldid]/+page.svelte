@@ -12,7 +12,7 @@
     {console.log(world)}
     <Navbar navItems={world?.collections?.map(collection => ({
         name: typeof collection === 'string' ? collection : collection.key,
-        href: `/world/${data.worldid}/${typeof collection === 'string' ? collection : collection.key}`
+        href: `/${data.worldid}/${typeof collection === 'string' ? collection : collection.key}`
     }))} />
     <h2>Viewing World:  {world?.name}</h2>
     <p>{world?.description}</p>
