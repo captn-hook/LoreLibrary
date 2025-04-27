@@ -80,4 +80,27 @@ export function getCollection(worldId: string, collectionId: string) {
             return null; // Return null in case of error
         });
 }
+
+export function getEntry(worldId: string, collectionId: string, entryId: string) {
+    return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`)
+    .then((response) => {
+        if (!response.ok) {
+            console.warn('Network response was not ok,.', response);
+            return null; // Return null to handle in the next step
+        }
+        return response.json();
+    })
+    .then((data) => {
+        if (!data) {
+            console.warn('No data received, returning base world data.');
+            return null; // Return null to handle in the next step
+        }
+        return Entry.fromJson(data); // Convert the JSON data to a World object
+    })
+    .catch((error) => {
+        console.error("Error fetching world:", error); // Log any errors
+        return null; // Return null in case of error
+    });
+    
+}  
                     
