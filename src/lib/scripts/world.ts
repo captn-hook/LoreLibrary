@@ -73,10 +73,16 @@ console.log('Hello, world!');
 > Just like this.
 
 - Lists:
-    - Item 1
-    - Item 2
-        - Sub-item 1
-        - Sub-item 2
+- Item 1
+- Item 2
+- Sub-item 1
+- Sub-item 2
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Row 1    | Data 1   | Data 2   |
+| Row 2    | Data 3   | Data 4   |
+| Row 3    | Data 5   | Data 6   |
 `
                   }                
                 ]
