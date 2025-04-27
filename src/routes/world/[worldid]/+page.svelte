@@ -7,11 +7,10 @@
 
     export let data;
 </script>
-<h1>Viewing Entry: {data.worldid}</h1>
 
 {#await getWorld(data.worldid) then world}
     {console.log(world)}
-    <h2>World: {world?.name}</h2>
+    <h2>Viewing World:  {world?.name}</h2>
     <p>{world?.description}</p>
         {#each world?.entry?.content ?? [] as component}
             {#if component.key === 'text'}

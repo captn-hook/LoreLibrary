@@ -18,110 +18,24 @@ function getWorldId() {
 }
 
 export function getWorld(worldId: string) { //TO-DO - this should not return the placeholder world data, but the real one and return errors with issues
-    return fetch(`${PUBLIC_API_URL}/world/${worldId}`)
+    return fetch(`${PUBLIC_API_URL}/${worldId}`)
         .then((response) => {
             if (!response.ok) {
-                console.warn('Network response was not ok, returning base world data.', response);
+                console.warn(response);
                 return null; // Return null to handle in the next step
             }
             return response.json();
         })
         .then((data) => {
             if (!data) {
-                // If no data, return base world data
-                return new World(
-                worldId,
-                "World Name",
-                [],
-                [],
-                "No Description",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg",
-                "unknown",
-                new Entry(
-                worldId,
-                "World Name",
-                [
-                { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-                { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
-                { 
-                    key: "md", 
-                    value: `
-# Welcome to the Markdown Reader
-This is a **Markdown** example to test your component.
-
-## Features
-- **Bold text**: **Bold**
-- *Italic text*: *Italic*
-- [Links](https://example.com): [Link text](https://example.com)
-- Inline code: \`code\`
-- Code blocks:
-\`\`\`javascript
-console.log('Hello, world!');
-\`\`\`
-
-# h1
-## h2
-### h3
-#### h4
-##### h5
-###### h6
-
-- Blockquotes:
-
-> This is a blockquote.
-> It can span multiple lines.
-> Just like this.
-
-- Lists:
-- Item 1
-- Item 2
-- Sub-item 1
-- Sub-item 2
-
-| Column 1 | Column 2 | Column 3 |
-|----------|----------|----------|
-| Row 1    | Data 1   | Data 2   |
-| Row 2    | Data 3   | Data 4   |
-| Row 3    | Data 5   | Data 6   |
-`
-                  }                
-                ]
-                )
-                );
+                console.warn('No data received, returning base world data.');
+                return null; // Return null to handle in the next step
             }
-            console.log("World data:", data); // Log the fetched data
-            let world = World.fromJson(data);
-            console.log("World:", world); // Log the mapped world
-            world.entry = new Entry( // Change later, component showcase for now
-                worldId,
-                "World Name",
-                [
-                    { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-                    { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
-                ]
-            );
-            return world;
+            return World.fromJson(data); // Convert the JSON data to a World object
         })
         .catch((error) => {
             console.error("Error fetching world:", error); // Log any errors
-            // Return base world data in case of error
-            return new World(
-                worldId,
-                "World Name",
-                [],
-                [],
-                "No Description",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg",
-                "unknown",
-                new Entry(
-                    worldId,
-                    "World Name",
-                    [
-                        { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-                        { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
-                    ]
-                )
-            );
+            return null; // Return null in case of error
         });
 }
 
