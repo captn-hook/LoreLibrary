@@ -2,6 +2,7 @@
 
 import { world as worldContext} from "$lib/context/worldContext.svelte";
 import {World} from "$lib/types/world";
+import {Collection} from "$lib/types/collection";
 import { Entry } from "$lib/types/entry";
 import { get } from 'svelte/store';
 import { browser } from '$app/environment';
@@ -31,6 +32,7 @@ export function getWorld(worldId: string) { //TO-DO - this should not return the
                 console.warn('No data received, returning base world data.');
                 return null; // Return null to handle in the next step
             }
+            console.log("World JSON:", data); // Log the JSON data
             return World.fromJson(data); // Convert the JSON data to a World object
         })
         .catch((error) => {
@@ -53,6 +55,29 @@ export function getWorlds() {
         }).catch((error) => {
             console.error("Error fetching worlds:", error); // Log any errors
             return []; // Return an empty array in case of error
+        });
+}
+
+
+export function getCollection(worldId: string, collectionId: string) {
+    return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}`)
+        .then((response) => {
+            if (!response.ok) {
+                console.warn('Network response was not ok,.', response);
+                return null; // Return null to handle in the next step
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (!data) {
+                console.warn('No data received, returning base world data.');
+                return null; // Return null to handle in the next step
+            }
+            return Collection.fromJson(data); // Convert the JSON data to a World object
+        })
+        .catch((error) => {
+            console.error("Error fetching world:", error); // Log any errors
+            return null; // Return null in case of error
         });
 }
                     
