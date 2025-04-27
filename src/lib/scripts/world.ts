@@ -21,7 +21,7 @@ export function getWorld(worldId: string) { //TO-DO - this should not return the
     return fetch(`${PUBLIC_API_URL}/${worldId}`)
         .then((response) => {
             if (!response.ok) {
-                console.warn(response);
+                console.warn('Network response was not ok,.', response);
                 return null; // Return null to handle in the next step
             }
             return response.json();

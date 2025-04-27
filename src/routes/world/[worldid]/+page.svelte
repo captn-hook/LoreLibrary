@@ -4,12 +4,16 @@
     import NumberList from '$lib/components/textComponents/numberList.svelte';
     import BullletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
-
+    import Navbar from "$lib/components/navigationComponents/navbar.svelte";
     export let data;
 </script>
 
 {#await getWorld(data.worldid) then world}
     {console.log(world)}
+    <Navbar navItems={world?.collections?.map(collection => ({
+        name: typeof collection === 'string' ? collection : collection.key,
+        href: `/world/${data.worldid}/${typeof collection === 'string' ? collection : collection.key}`
+    }))} />
     <h2>Viewing World:  {world?.name}</h2>
     <p>{world?.description}</p>
         {#each world?.entry?.content ?? [] as component}
