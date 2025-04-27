@@ -13,14 +13,13 @@
         name: typeof collection === 'string' ? collection : collection.key,
         href: `/${data.worldid}/${typeof collection === 'string' ? collection : collection.key}`
     }))} />
-    <div class="ml-5">
-        <h2>Viewing World:  {world?.id}</h2>
+    <div class="ml-3">
             {#each world?.content ?? [] as component}
                 {#if component.key === 'text'}
                     <p>{component.value}</p>
                 {:else if component.key === 'title'}
-                    <h1>{component.value}</h1>
-                {:else if component.key === 'image_url'}
+                    <h1 class="text-4xl font-bold text-primary">{component.value}</h1>
+                {:else if component.key == 'image_url'}
                     <img src={component.value} alt={component.value} />
                 {:else if component.key === 'numberedList'}
                     <NumberList items={component.value} />

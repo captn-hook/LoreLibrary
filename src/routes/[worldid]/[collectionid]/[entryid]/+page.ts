@@ -1,7 +1,7 @@
-
-export const load = ({ params: { entryid } }: { params: { entryid: string } }) => {
-    console.log("entryid", entryid);
+export const load = ({ params: { worldid, collectionid, entryid } }: { params: { worldid: string; collectionid: string; entryid: string } }) => {
     return {
+        worldid,
+        collectionid,
         entryid
     };
-}
+};

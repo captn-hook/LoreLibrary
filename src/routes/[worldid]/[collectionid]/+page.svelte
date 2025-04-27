@@ -17,12 +17,11 @@
             href: `/${data.worldid}/${data.collectionid}/${entry}`
         }})}
     />
-    <h1>Viewing World: {data.worldid}</h1>
-    <h1>Viewing collection: {data.collectionid}</h1>
+    <div class="ml-3">
     {#each collection?.content ?? [] as { key, value }}
         {console.log(value)}
                 {#if key === 'title'}
-                    <h1>{value}</h1>
+                    <h1 class="text-4xl font-bold text-primary">{value}</h1>
                 {:else if key === 'text'}
                     <p>{value}</p>
                 {:else if key === 'numberedList'}
@@ -35,6 +34,7 @@
                     <MarkdownReader md={value} />
                 {/if}
             {/each}
+    </div>
     {:catch error}
         <p>Error loading world: {error.message}</p>
     {/await}

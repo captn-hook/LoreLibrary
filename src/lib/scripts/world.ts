@@ -95,12 +95,13 @@ export function getEntry(worldId: string, collectionId: string, entryId: string)
             console.warn('No data received, returning base world data.');
             return null; // Return null to handle in the next step
         }
+        console.log("Entry JSON:", data); // Log the JSON data
         return Entry.fromJson(data); // Convert the JSON data to a World object
     })
     .catch((error) => {
         console.error("Error fetching world:", error); // Log any errors
         return null; // Return null in case of error
     });
-    
+
 }  
                     
