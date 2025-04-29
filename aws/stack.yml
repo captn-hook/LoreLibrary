@@ -15,20 +15,6 @@ Parameters:
   JWTSecretParameter:
     Type: String
     Description: The secret key for JWT authentication
-
-Resources:
-  ResourcesBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: lorelibrary-resources
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: error.html
-
   ResourcesBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
@@ -44,6 +30,78 @@ Resources:
             Resource: !Sub
               - arn:aws:s3:::${ResourcesBucket}/*
               - {ResourcesBucket: !Ref ResourcesBucket}
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: lorelibrary-user-pool
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: lorelibrary-user-pool-client
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - https://lore-library.vercel.app/callback
+      LogoutURLs:
+        - https://lore-library.vercel.app/logout
+
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: lorelibrary-identity-pool
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref CognitoUserPoolClient
+          ProviderName: !GetAtt CognitoUserPool.ProviderName
+
+  AuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPool
+              "ForAnyValue:StringLike":
+                cognito-identity.amazonaws.com:amr: authenticated
+      Policies:
+        - PolicyName: CognitoAuthorizedPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                Resource: '*'
 
   DataTable:
     Type: 'AWS::DynamoDB::Table'
@@ -165,7 +223,18 @@ Resources:
   #       - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
   #     EnableSimpleResponses: true
   #     Name: lorelibrary-gateway-authorizer
-    
+  ApiGatewayCognitoAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      AuthorizerType: JWT
+      IdentitySource: "$request.header.Authorization"
+      Name: CognitoAuthorizer
+      JwtConfiguration:
+        Audience:
+          - !Ref CognitoUserPoolClient
+        Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+
   ApiGatewayIntegration:
     Type: 'AWS::ApiGatewayV2::Integration'
     Properties:
@@ -175,6 +244,7 @@ Resources:
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         - {LambdaArn: !GetAtt LoreLibraryLambda.Arn}
       PayloadFormatVersion: '2.0'
+      AuthorizerId: !Ref ApiGatewayCognitoAuthorizer
 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGatewayV2::Deployment'
