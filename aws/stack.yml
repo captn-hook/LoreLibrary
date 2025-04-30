@@ -262,7 +262,8 @@ Resources:
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
       AuthorizerType: JWT
-      IdentitySource: "$request.header.Authorization"
+      IdentitySource:
+        - "$request.header.Authorization"
       Name: CognitoAuthorizer
       JwtConfiguration:
         Audience:
