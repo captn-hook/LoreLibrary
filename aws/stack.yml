@@ -279,7 +279,6 @@ Resources:
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
         - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
       PayloadFormatVersion: "2.0"
-      AuthorizerId: !Ref ApiGatewayCognitoAuthorizer
 
   ApiGatewayDeployment:
     Type: "AWS::ApiGatewayV2::Deployment"
