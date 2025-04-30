@@ -48,9 +48,8 @@ class User {
     }
 }
 class World {
-    constructor(name, id, content = [], tags = [], parentId = null, collections = []) {
-        this.name = name; // string
-        this.id = id; // string
+    constructor(name, content = [], tags = [], parentId = null, collections = []) {
+        this.name = name; // stringg
         this.content = content; // array of strings
         this.tags = tags; // array of strings
         this.parentId = parentId; // username
@@ -59,9 +58,8 @@ class World {
     }
 }
 class Collection {
-    constructor(name, id, content = [], tags = [], parentId = null, ownerId = null, collections = [], entries = []) {
+    constructor(name, content = [], tags = [], parentId = null, ownerId = null, collections = [], entries = []) {
         this.name = name; // string
-        this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
         this.parentId = parentId; // collectionId or worldId
@@ -71,9 +69,8 @@ class Collection {
     }
 }
 class Entry {
-    constructor(name, id, content = [], tags = [], parentId = null, ownerId = null, collections = [], resources = []) {
+    constructor(name, content = [], tags = [], parentId = null, ownerId = null, collections = [], resources = []) {
         this.name = name; // string
-        this.id = id; // string
         this.content = content; // array of strings
         this.tags = tags; // array of strings
         this.parentId = parentId; // collectionId
@@ -92,6 +89,9 @@ class Resource {
 
 function notFound(message) {
     return {
+        headers: {
+            "Access-Control-Allow-Origin": "*"
+        },
         statusCode: 404,
         body: JSON.stringify({ message })
     };
@@ -99,6 +99,9 @@ function notFound(message) {
 
 function notImplemented(message) {
     return {
+        headers: {
+            "Access-Control-Allow-Origin": "*"
+        },
         statusCode: 501,
         body: JSON.stringify({ message })
     };
@@ -106,6 +109,9 @@ function notImplemented(message) {
 
 function badRequest(message) {
     return {
+        headers: {
+            "Access-Control-Allow-Origin": "*"
+        },
         statusCode: 400,
         body: JSON.stringify({ message })
     };
@@ -115,7 +121,7 @@ async function dynamo_get_all(model) {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
     }
-    
+
     const prefix = model.name.toUpperCase() + '#';
     // Get all items in the table with the given prefix
     const params = {
@@ -141,7 +147,7 @@ async function dynamo_get_all(model) {
     }
 }
 
-async function dynamo_get_id(model, name) {
+async function dynamo_get_id(model, name, worldId = '') {
     if (!model || !model.name) {
         console.log('model', model);
         throw new Error("Invalid model: 'model.name' is required.");
@@ -151,7 +157,7 @@ async function dynamo_get_id(model, name) {
         throw new Error("Invalid id: 'id' is required.");
     }
 
-    const prefix = model.name.toUpperCase() + '#';
+    const prefix = model.name.toUpperCase() + '#' + worldId;
     // Get an item by prefix and name
     const params = {
         TableName: dataTable,
@@ -187,7 +193,7 @@ async function dynamo_get_id(model, name) {
     }
 }
 
-async function dynamo_create(data, model, username) {
+async function dynamo_create(data, model, username, worldId = '', parentId = '') {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
     }
@@ -198,7 +204,7 @@ async function dynamo_create(data, model, username) {
         throw new Error("Invalid username: 'username' is required.");
     }
 
-    const prefix = model.name.toUpperCase() + '#';
+    const prefix = model.name.toUpperCase() + '#' + worldId;
 
     // Try to get the item in case it already exists
     const params = {
@@ -216,7 +222,7 @@ async function dynamo_create(data, model, username) {
 
     // Create a new item in the database and update associated items
 
-    const parentId = model === World ? username : data.parentId;
+    const pId = model === World ? username : parentId;
 
     let newItem;
 
@@ -226,7 +232,7 @@ async function dynamo_create(data, model, username) {
             SK: data.name,
             content: data.content || [],
             tags: data.tags || [],
-            parentId: parentId,
+            parentId: pId,
             ownerId: username,
             collections: []
 
@@ -237,7 +243,7 @@ async function dynamo_create(data, model, username) {
             SK: data.name,
             content: data.content || [],
             tags: data.tags || [],
-            parentId: parentId,
+            parentId: pId,
             ownerId: username,
             collections: [],
             entries: []
@@ -248,7 +254,7 @@ async function dynamo_create(data, model, username) {
             SK: data.name,
             content: data.content || [],
             tags: data.tags || [],
-            parentId: parentId,
+            parentId: pId,
             ownerId: username
         };
     } else {
@@ -317,7 +323,7 @@ async function dynamo_create(data, model, username) {
         });
     } else if (model === Entry) {
         // if entry, add it to the collection
-        const collectionPrefix = 'COLLECTION#';
+        const collectionPrefix = 'COLLECTION#' + worldId;
         const collectionParams = {
             TableName: dataTable,
             Key: {
@@ -341,19 +347,19 @@ async function dynamo_create(data, model, username) {
             }
         });
     }
-    
+
     try {
         const result = await ddbDocClient.send(new TransactWriteCommand({
             TransactItems: transactionItems
         }));
-        return dynamo_get_id(model, data.name);
+        return dynamo_get_id(model, data.name, data.worldId);
     } catch (err) {
         console.error("Error creating item:", err);
         throw new Error("Error creating item");
     }
 }
 
-async function dynamo_update(model, data, username) {
+async function dynamo_update(model, data, username, wolrdId = '') {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
     }
@@ -364,7 +370,7 @@ async function dynamo_update(model, data, username) {
         throw new Error("Invalid username: 'username' is required.");
     }
     // Update an existing item in the database
-    const prefix = model.name.toUpperCase() + '#';
+    const prefix = model.name.toUpperCase() + '#' + wolrdId;
     const params = {
         TableName: dataTable,
         Key: {
@@ -389,30 +395,23 @@ async function dynamo_update(model, data, username) {
     }
 }
 
-async function dynamo_delete(model, id, username) {
+async function dynamo_delete(model, id, username, wolrdId = '') {
     // Delete an item from the database and update associated items
-    const prefix = model.name.toUpperCase() + '#';
-    const params = {
-        TableName: dataTable,
-        Key: {
-            PK: prefix,
-            SK: id
-        }
-    };
+    const prefix = model.name.toUpperCase() + '#' + wolrdId;
 
     // get the item to delete
-    const item = await dynamo_get_id(model, id);
+    const item = await dynamo_get_id(model, id, wolrdId);
     if (!item) {
         throw new Error("Item not found");
     }
     if (!item.ownerId || item.ownerId !== username) {
         throw new Error("Unauthorized");
     }
-    
+
     let associatedItems = [];
 
     let children = [];
-    
+
     // if the item has collections or entries, add them to the children array
     if (item.collections) {
         children = children.concat(item.collections);
@@ -425,7 +424,7 @@ async function dynamo_delete(model, id, username) {
     // add its children to the children array
     while (children.length > 0) {
         const childId = children.pop();
-        const child = await dynamo_get_id(model, childId);
+        const child = await dynamo_get_id(model, childId, wolrdId);
         if (!child) {
             throw new Error("Child not found");
         }
@@ -452,13 +451,12 @@ async function dynamo_delete(model, id, username) {
     });
 
     for (const item of associatedItems) {
-        const prefix = item.constructor.name.toUpperCase() + '#';
         transactionItems.push({
             Delete: {
                 TableName: dataTable,
                 Key: {
-                    PK: prefix,
-                    SK: item.name
+                    PK: item.PK,
+                    SK: item.SK
                 }
             }
         });
@@ -466,7 +464,7 @@ async function dynamo_delete(model, id, username) {
 
     // remove this item from its parent
     if (item.parentId) {
-        const parent = await dynamo_get_id(model, item.parentId);
+        const parent = await dynamo_get_id(model, item.parentId, wolrdId);
         if (!parent) {
             throw new Error("Parent not found");
         }
@@ -505,7 +503,7 @@ async function create_user(data, username) {
 
     const newUser = {
         PK: prefix,
-        SK:  username,
+        SK: username,
         password: await bcrypt.hash(data.password, 10),
         content: [],
         worlds: []
@@ -554,7 +552,7 @@ async function login_user(data, username) {
         console.error("Error logging in user:", err);
         throw new Error("Error logging in user");
     }
-}   
+}
 
 export const handler = async (e) => {
     // The event object contains:
@@ -590,7 +588,7 @@ export const handler = async (e) => {
                     pathParameters[key] = pathParameters[key].replace(/(\r\n|\n|\r)/gm, '');
                 });
             }
-            
+
         } catch (error) {
             console.log('Error getting path parameters:', error);
         }
@@ -600,19 +598,25 @@ export const handler = async (e) => {
             // Get all worlds, paginated with limit and offset
             const worlds = await dynamo_get_all(World)
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(worlds)
             };
-        } 
+        }
         else if (operation === 'PUT' && path === '/worlds') {
             // Create a new world
             if (!username) { return badRequest('Invalid authentication'); }
             const world = await dynamo_create(e.body, World, username);
             // Return world
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(world)
-            };            
+            };
         }
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
@@ -625,9 +629,12 @@ export const handler = async (e) => {
             const token = await create_user(e.body, e.body.username);
             // Return token
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(token)
-            };           
+            };
 
         }
         // /login: POST
@@ -635,6 +642,9 @@ export const handler = async (e) => {
             // Login user
             const token = await login_user(e.body, e.body.username);
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(token)
             };
@@ -646,6 +656,9 @@ export const handler = async (e) => {
 
             const users = await dynamo_get_all(User);
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(users)
             };
@@ -663,6 +676,9 @@ export const handler = async (e) => {
             delete user.password;
 
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(user)
             };
@@ -674,6 +690,9 @@ export const handler = async (e) => {
             const updatedUser = await dynamo_update(User, e.body, username);
             // Return updated user
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify(updatedUser)
             };
@@ -689,6 +708,9 @@ export const handler = async (e) => {
 
             // Return success
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 200,
                 body: JSON.stringify({ message: 'User deleted' })
             };
@@ -705,7 +727,7 @@ export const handler = async (e) => {
 
             return notImplemented('Resources not implemented');
         }
-        
+
         let pathsplit = path.split('/');
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
@@ -717,36 +739,45 @@ export const handler = async (e) => {
                     return notFound('World not found');
                 }
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(world)
                 };
             } else if (operation === 'POST') {
                 // Update world by ID
-               if (!username) { return badRequest('Invalid authentication'); }
-                
-                
+                if (!username) { return badRequest('Invalid authentication'); }
+
+
                 const world = await dynamo_update(World, e.body, username);
-                
+
                 // Return updated world
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(world)
                 };
             } else if (operation === 'PUT') {
                 // Create a collection
-               if (!username) { return badRequest('Invalid authentication'); }
-                
+                if (!username) { return badRequest('Invalid authentication'); }
+
                 e.body.worldId = worldId;
-                const collection = await dynamo_create(e.body, Collection, username);
+                const collection = await dynamo_create(e.body, Collection, username, worldId, e.body.parentId);
                 // Return collection
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(collection)
                 };
             } else if (operation === 'DELETE') {
                 // Delete world by ID
                 if (!username) { return badRequest('Invalid authentication'); }
-                
+
 
                 const world = await dynamo_delete(World, worldId, username);
                 if (!world) {
@@ -755,6 +786,9 @@ export const handler = async (e) => {
 
                 // Return success
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify({ message: 'World deleted' })
                 };
@@ -766,57 +800,69 @@ export const handler = async (e) => {
             const collectionId = pathParameters.CollectionId;
             if (operation === 'GET') {
                 // Get collection by ID
-                const collection = await dynamo_get_id(Collection, collectionId);
+                const collection = await dynamo_get_id(Collection, collectionId, worldId);
                 if (!collection) {
                     return notFound('Collection not found');
                 }
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(collection)
-                };                
+                };
             } else if (operation === 'POST') {
                 // Update collection by ID
-               if (!username) { return badRequest('Invalid authentication'); }                
+                if (!username) { return badRequest('Invalid authentication'); }
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
 
-                const collection = await dynamo_update(Collection, e.body, username);
+                const collection = await dynamo_update(Collection, e.body, username, worldId);
                 if (!collection) {
                     return notFound('Collection not found');
                 }
                 // Return updated collection
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(updatedCollection)
-                };              
+                };
             } else if (operation === 'PUT') {
                 // Create an entry
-               if (!username) { return badRequest('Invalid authentication'); }
+                if (!username) { return badRequest('Invalid authentication'); }
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
 
-                const entry = await dynamo_create(e.body, Entry, username);
+                const entry = await dynamo_create(e.body, Entry, username, worldId, collectionId);
                 // Return entry
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
             } else if (operation === 'DELETE') {
                 // Delete collection by ID
-               if (!username) { return badRequest('Invalid authentication'); }
+                if (!username) { return badRequest('Invalid authentication'); }
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
 
-                const collection = await dynamo_delete(Collection, collectionId, username);
+                const collection = await dynamo_delete(Collection, collectionId, username, worldId);
                 if (!collection) {
                     return notFound('Collection not found');
                 }
 
                 // Return success
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify({ message: 'Collection deleted' })
                 };
@@ -824,60 +870,72 @@ export const handler = async (e) => {
             }
         }
         // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
-        else if (pathsplit.length === 4) { 
+        else if (pathsplit.length === 4) {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
             const entryId = pathParameters.EntryId;
             if (operation === 'GET') {
                 // Get entry by ID
-                const entry = await dynamo_get_id(Entry, entryId);
+                const entry = await dynamo_get_id(Entry, entryId, worldId);
                 if (!entry) {
                     return notFound('Entry not found');
                 }
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
             }
             else if (operation === 'POST') {
                 // Update entry by ID
-               if (!username) { return badRequest('Invalid authentication'); }                
+                if (!username) { return badRequest('Invalid authentication'); }
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
                 e.body.entryId = entryId;
 
-                const entry = await dynamo_update(Entry, e.body, username);
+                const entry = await dynamo_update(Entry, e.body, username, worldId);
                 if (!entry) {
                     return notFound('Entry not found');
                 }
                 // Return updated entry
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
             }
             else if (operation === 'DELETE') {
                 // Delete entry by ID
-               if (!username) { return badRequest('Invalid authentication'); }                
+                if (!username) { return badRequest('Invalid authentication'); }
 
                 e.body.worldId = worldId;
                 e.body.collectionId = collectionId;
                 e.body.entryId = entryId;
 
-                const entry = await dynamo_delete(Entry, entryId, username);
+                const entry = await dynamo_delete(Entry, entryId, username, worldId);
                 if (!entry) {
                     return notFound('Entry not found');
                 }
 
                 // Return success
                 return {
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
                     statusCode: 200,
                     body: JSON.stringify({ message: 'Entry deleted' })
                 };
             }
         }
         return {
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            },
             statusCode: 404,
             body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
         };
@@ -885,12 +943,18 @@ export const handler = async (e) => {
         // if error is Item already exists, return 409
         if (err.message === 'Item already exists') {
             return {
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
                 statusCode: 409,
                 body: JSON.stringify({ message: err.message })
             };
         }
-        
+
         return {
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            },
             statusCode: 500,
             body: JSON.stringify({ message: err.message })
         };

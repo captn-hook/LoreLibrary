@@ -1,5 +1,5 @@
 <script>
-    import {login} from '$lib/context/userContext.svelte';
+    import {login} from '$lib/scripts/user';
     export let open = false;
     export let onClose = () => {};
     export let openSignUp = () => {};
@@ -8,7 +8,6 @@
     let password = '';
   
     function handleLogin() {
-      console.log('Logging in with', username, password);
       login(username, password);
       onClose();
     }

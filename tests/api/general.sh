@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-url="https://vzcambvr1l.execute-api.us-west-2.amazonaws.com/prod"
+url="https://440cybvvr6.execute-api.us-west-2.amazonaws.com/prod"
 token=""
 username=""
 
@@ -150,7 +150,7 @@ put_collection() {
     local collection_content=$2
     local collection_id=''
     local collection_tags=$3
-    local collection_parentId=''
+    local collection_parentId=$4
     local collection_ownerId=''
     local collection_collections=[]
     local collection_entries=[]
@@ -198,7 +198,7 @@ put_entry() {
     local entry_content=$2
     local entry_id=''
     local entry_tags=$3
-    local entry_parentId=''
+    local entry_parentId=$4
     local entry_ownerId=''
     local collection=$(echo "$4" | jq -sRr @uri)
     local world=$(echo "$5" | jq -sRr @uri)
@@ -242,8 +242,8 @@ get_entry() {
 
 # World Information
 world_name="Grub World"
-world_content=$(jq -n --arg text "Grub World" --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg" \
-    '[{"text": $text}, {"image_url": $image_url}]')
+world_content=$(jq -n --arg text "Grub World" --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg" --arg name "Grub World" \
+    '[{"text": $text}, {"image_url": $image_url}, {"name": $name}]')
 world_tags='["grub", "bio", "biopunk", "biologics", "hive", "ship"]'
 
 # Collections

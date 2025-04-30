@@ -1,15 +1,15 @@
 <script>
+    import {signup} from '$lib/scripts/user'
     export let open = false;
     export let onClose = () => {};
     export let openLogin = () => {};
   
     let username = '';
     let password = '';
-    let email = '';
   
     function handleSignUp() {
-      console.log('signing up with', username, email, password);
-      onClose();
+     signup(username, password);
+    onClose();
     }
 
     function handleLogin() {
@@ -50,14 +50,6 @@
             type="text"
             placeholder="Username"
             bind:value={username}
-            class="input input-bordered w-full mb-4 text-primary placeholder-primary"
-        />
-        <label for="email" class="block text-primary font-medium mb-1 text-left">Email</label>
-        <input
-            id="email"
-            type="email"
-            placeholder="Email"
-            bind:value={email}
             class="input input-bordered w-full mb-4 text-primary placeholder-primary"
         />
         <label for="password" class="block text-primary font-medium mb-1 text-left">Password</label>

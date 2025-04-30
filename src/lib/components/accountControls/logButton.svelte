@@ -1,7 +1,8 @@
-<script>
-  import { login, token, logout } from "$lib/context/userContext.svelte";
+<script lang='ts'>
+  import {token} from "$lib/context/userContext.svelte";
+  import {logout} from "$lib/scripts/user"
 
-  let localToken = "";
+  let localToken: string | null = null;
   token.subscribe((value) => {
     localToken = value;
   });
@@ -9,7 +10,8 @@
   export let openLogin = () => {};
 
   function handleButtonClick() {
-    if (localToken && localToken.trim() !== "") {
+    if (localToken !== null && localToken.trim() !== "") {
+      // User is logged in, perform logout action
       console.log("Logging out...");
       logout();
     } else {
