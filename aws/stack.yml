@@ -245,6 +245,17 @@ Resources:
       BodyS3Location:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
+      CorsConfiguration:
+        AllowCredentials: true
+        AllowHeaders:
+          - "*"
+        AllowMethods:
+          - "*"
+        AllowOrigins:
+          - "*"
+        ExposeHeaders:
+          - "*"
+        MaxAge: 86400
 
   # LorelibraryAuthorizer:
   #   Type: 'AWS::ApiGatewayV2::Authorizer'
@@ -293,22 +304,6 @@ Resources:
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: prod
    
-  ApiCors:
-    Type: "AWS::ApiGatewayV2::CorsConfiguration"
-    Properties:
-      ApiId: !Ref LoreLibraryApiGateway
-      AllowOrigins:
-        - "*"
-      AllowMethods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - OPTIONS
-      AllowHeaders:
-        - Content-Type
-        - Authorization
-
 Outputs:
   WebsiteURL:
     Description: URL for the website hosted on the S3 bucket
