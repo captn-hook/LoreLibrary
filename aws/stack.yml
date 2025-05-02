@@ -292,6 +292,16 @@ Resources:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: prod
+    CorsConfiguration:
+      AllowOrigins:
+        - "*"
+      AllowMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+      AllowHeaders:
+        - "*"
 
 Outputs:
   WebsiteURL:
