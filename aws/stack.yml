@@ -245,17 +245,6 @@ Resources:
       BodyS3Location:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
-      CorsConfiguration:
-        AllowCredentials: true
-        AllowHeaders:
-          - "*"
-        AllowMethods:
-          - "*"
-        AllowOrigins:
-          - "*"
-        ExposeHeaders:
-          - "*"
-        MaxAge: 86400
 
   # LorelibraryAuthorizer:
   #   Type: 'AWS::ApiGatewayV2::Authorizer'

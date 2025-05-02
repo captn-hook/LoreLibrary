@@ -18,6 +18,19 @@ tags:
     description: Operations related to resources
   - name: search
     description: Search and browse data
+x-amazon-apigateway-cors:
+  allowOrigins:
+    - '*'
+  allowMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+  allowHeaders:
+    - "*"
+  exposeHeaders:
+    - "*"
+  maxAge: 86400
 paths:
   /worlds:
     get:
