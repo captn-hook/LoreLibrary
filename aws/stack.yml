@@ -292,7 +292,11 @@ Resources:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: prod
-    CorsConfiguration:
+   
+  ApiCors:
+    Type: "AWS::ApiGatewayV2::CorsConfiguration"
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
       AllowOrigins:
         - "*"
       AllowMethods:
@@ -300,8 +304,10 @@ Resources:
         - POST
         - PUT
         - DELETE
+        - OPTIONS
       AllowHeaders:
-        - "*"
+        - Content-Type
+        - Authorization
 
 Outputs:
   WebsiteURL:
