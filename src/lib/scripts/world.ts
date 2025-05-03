@@ -1,6 +1,6 @@
 'use client';
 
-import { world as worldContext} from "$lib/context/worldContext.svelte";
+import { world as worldContext} from "$lib/state/worldState.svelte";
 import {World} from "$lib/types/world";
 import {Collection} from "$lib/types/collection";
 import { Entry } from "$lib/types/entry";

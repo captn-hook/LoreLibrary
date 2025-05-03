@@ -3,12 +3,12 @@
     import Card from "$lib/components/card/card.svelte"; // Import the Svelte component
     import type { CardType } from "$lib/components/card/card.ts"; // Import the type 
     import { getWorlds } from "$lib/scripts/world";
-    import { worlds } from "$lib/context/worldContext.svelte"; // Import the worlds context
+    import { worlds } from "$lib/state/worldState.svelte"; // Import the worlds context
     import { onMount } from "svelte"; // Import the onMount lifecycle function
     import { onDestroy } from "svelte";
     import { World } from "$lib/types/world"; // Import the Worlds type
     import {marked} from "marked";
-    import StyleEditor from "$lib/components/editComponents/styleEditor.svelte";
+    import Controls from "$lib/components/editComponents/generator/Controls/Controls.svelte";
 
     let worldList: World[] = [];
     let error: Error | null = null;
@@ -35,4 +35,4 @@
     {/if}
     
 </div>
-<StyleEditor/>
+<Controls/>

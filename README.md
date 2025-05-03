@@ -31,3 +31,16 @@ everything is named lorelibrary, you will have to change that if you want to use
 
     aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip --region us-west-2
     
+
+
+# Third-Party Licenses
+
+This project includes portions of source code from the following third-party project:
+
+---
+
+**Skeleton UI**  
+https://github.com/skeletonlabs/skeleton  
+© 2022 Skeleton Labs  
+Licensed under the MIT License
+See License.skeleton.txt
