@@ -8,6 +8,7 @@
     import { onDestroy } from "svelte";
     import { World } from "$lib/types/world"; // Import the Worlds type
     import {marked} from "marked";
+    import StyleEditor from "$lib/components/editComponents/styleEditor.svelte";
 
     let worldList: World[] = [];
     let error: Error | null = null;
@@ -34,3 +35,4 @@
     {/if}
     
 </div>
+<StyleEditor/>
