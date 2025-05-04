@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-url="https://6uptpgc8rc.execute-api.us-west-2.amazonaws.com/prod"
+url="https://zkw98x8jae.execute-api.us-west-2.amazonaws.com/prod"
 token=""
 username=""
 
