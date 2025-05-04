@@ -182,6 +182,8 @@ Resources:
           USER_TABLE: !Ref UserTable
           BUCKET_NAME: !Ref ResourcesBucket
           JWT_SECRET: !Ref JWTSecretParameter
+          COGNITO_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+          COGNITO_AUDIENCE: !Ref CognitoUserPoolClient
 
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
@@ -198,6 +200,9 @@ Resources:
           DATA_TABLE: !Ref DataTable
           USER_TABLE: !Ref UserTable
           JWT_SECRET: !Ref JWTSecretParameter
+          COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
+          COGNITO_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+          COGNITO_AUDIENCE: !Ref CognitoUserPoolClient
 
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
@@ -257,6 +262,7 @@ Resources:
   #       - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
   #     EnableSimpleResponses: true
   #     Name: lorelibrary-gateway-authorizer
+
   ApiGatewayCognitoAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:

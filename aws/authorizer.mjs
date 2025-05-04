@@ -4,8 +4,8 @@ import {
     GetCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 
 // async function generateToken(username) {
 //     // Generate a token for the user
@@ -13,17 +13,51 @@ import jwt from 'jsonwebtoken';
 //     return token;
 // }
 
-const tableName = process.env.TABLE_NAME;
+const issuer = process.env.COGNITO_ISSUER;
+const audience = process.env.COGNITO_AUDIENCE;
+
+const jwtclient = jwksClient({
+    jwksUri: `${issuer}/.well-known/jwks.json`,
+});
+
+const dataTable = process.env.TABLE_NAME;
+const userTable = process.env.USER_TABLE;
+
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
+// Function to get the signing key
+function getSigningKey(header, callback) {
+    client.getSigningKey(header.kid, (err, key) => {
+        if (err) {
+            callback(err);
+        } else {
+            const signingKey = key.getPublicKey();
+            callback(null, signingKey);
+        }
+    });
+}
+
+// Function to verify the token
 function verifyToken(token) {
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return decoded;
-    } catch (err) {
-        return null;
-    }
+    return new Promise((resolve, reject) => {
+        jwt.verify(
+            token,
+            getSigningKey,
+            {
+                audience: audience,
+                issuer: issuer,
+                algorithms: ['RS256'],
+            },
+            (err, decoded) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(decoded);
+                }
+            }
+        );
+    });
 }
 
 export const handler = async (e) => {
@@ -31,37 +65,28 @@ export const handler = async (e) => {
     try {
         let token;
 
-        console.log('tokeeene', e.Headers);
-        console.log('tokeeene', e.requestBody);
-
         try {
             token = e.identitySource[0]
-            console.log('tokene', token);
         } catch (err) {
-            console.log('Error getting token', err);
+            console.log('Error getting token from request: ', e, ' got error: ', err);
             return {
                 'isAuthorized': false
             }
         }
 
         if (!token) {
-            console.log('No token found');
+            console.log('No token found in request: ', e);
             return {
                 'isAuthorized': false
             }
         }
 
-        const decoded = verifyToken(token);
-
-        if (!decoded) {
-            console.log('Invalid token');
+        const decoded = await verifyToken(token).catch((err) => {
+            console.log('Error verifying token for request: ', e, ' got error: ', err);
             return {
-                'isAuthorized': false,
-                'context': {
-                    'username': decoded.username,
-                }
+                'isAuthorized': false
             }
-        }
+        });
 
         const params = {
             TableName: process.env.TABLE_NAME,
@@ -71,19 +96,15 @@ export const handler = async (e) => {
             },
         }
 
-        console.log('params', params);
-
         const user = await docClient.send(new GetCommand(params));
 
-        console.log('user', user.Item.SK);
-
         if (!user.Item) {
-            console.log('User not found');
+            console.log('User not found in database: ', e);
             return {
                 'isAuthorized': false
             }
         }
-        console.log('returning authorized for user', user.Item.SK);
+        console.log('User found in database: ', e);
         return {
             'isAuthorized': true,
             'context': {
@@ -91,7 +112,7 @@ export const handler = async (e) => {
             }
         };
     } catch (err) {
-        console.log('Error', err);
+        console.log('Error in authorizer: ', e, ' got error: ', err);
         return {
             'isAuthorized': false
         }
