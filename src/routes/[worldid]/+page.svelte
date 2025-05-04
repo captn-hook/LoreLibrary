@@ -1,17 +1,24 @@
 <script lang="ts">
-    import { world as importedWorld } from "$lib/state/worldState.svelte.js";
     import {getWorld} from "$lib/scripts/world";
     import NumberList from '$lib/components/textComponents/numberList.svelte';
     import BullletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
     import Navbar from "$lib/components/navigationComponents/navbar.svelte";
+  import { showStyleControls } from "$lib/state/editState.svelte";
+  import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
     export let data;
     const getNavItems = (collections: Array<{ key: string } | string> | undefined) => 
             collections?.map((collection) => ({
                 name: typeof collection === 'string' ? collection : collection.key,
                 href: `/${data.worldid}/${typeof collection === 'string' ? collection : collection.key}`
             }));
+            
+
+
+
+
 </script>
+
 {#await getWorld(data.worldid) then world}
     {console.log(world)}
     <Navbar navItems={getNavItems(world?.collections)} />
@@ -34,6 +41,9 @@
                 {/if}
             {/each}
     </div>
+    {#if $showStyleControls}
+        <StyleEditor/>
+    {/if}
 {:catch error}
     <p>Error loading world: {error.message}</p>
 {/await}

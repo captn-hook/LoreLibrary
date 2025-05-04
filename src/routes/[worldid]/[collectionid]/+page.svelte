@@ -6,6 +6,10 @@
     import NumberList from '$lib/components/textComponents/numberList.svelte';
     import BulletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
+    import { showStyleControls } from "$lib/state/editState.svelte";
+    import { onMount } from "svelte";
+    import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
+    import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
 
 </script>
 {#if browser}
@@ -38,4 +42,7 @@
     {:catch error}
         <p>Error loading world: {error.message}</p>
     {/await}
+    {#if $showStyleControls}
+        <StyleEditor/>
+    {/if}
 {/if}

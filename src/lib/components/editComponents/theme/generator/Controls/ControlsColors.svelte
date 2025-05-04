@@ -87,7 +87,7 @@
 						<!-- Actions -->
 						<div class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-2">
 							<h3 class="h5">{activeColorLabel}</h3>
-							<button
+							<button 
 								type="button"
 								class="chip preset-outlined-surface-300-700 hover:preset-tonal"
 								onclick={() => promptColorSeed(color.value)}
@@ -128,7 +128,7 @@
 											<input
 												type="text"
 												class="input"
-												bind:value={settingsColors[`--color-${color.value}-${shade}`]}
+												bind:value={settingsColors[`--color-${color.value}-${shade}` as keyof typeof settingsColors]}
 												onblur={() => genColorRamp(showAllShades, color.value)}
 											/>
 										</td>
@@ -138,7 +138,7 @@
 											<input
 												class="input"
 												type="color"
-												bind:value={settingsColors[`--color-${color.value}-${shade}`]}
+												bind:value={settingsColors[`--color-${color.value}-${shade}` as keyof typeof settingsColors]}
 												oninput={() => genColorRamp(showAllShades, color.value)}
 											/>
 										</td>
@@ -154,12 +154,12 @@
 									<span class="label-text">Light Contrast</span>
 									<div
 										class="w-full h-4 border border-surface-200-800 rounded-base"
-										style:background={`${settingsColors[`--color-${color.value}-contrast-light`]}`}
+										style:background={`${settingsColors[`--color-${color.value}-contrast-light` as keyof typeof settingsColors]}`}
 									></div>
 									<select
 										class="select"
 										name={`--color-${color.value}-contrast-light`}
-										bind:value={settingsColors[`--color-${color.value}-contrast-light`]}
+										bind:value={settingsColors[`--color-${color.value}-contrast-light` as keyof typeof settingsColors]}
 									>
 										<option value="oklch(1 0 0 / 1)">White</option>
 										{#each constants.colorNames as colorName}
@@ -176,12 +176,12 @@
 									<span class="label-text">Dark Contrast</span>
 									<div
 										class="w-full h-4 border border-surface-200-800 rounded-base"
-										style:background={`${settingsColors[`--color-${color.value}-contrast-dark`]}`}
+										style:background={`${settingsColors[`--color-${color.value}-contrast-dark` as keyof typeof settingsColors]}`}
 									></div>
 									<select
 										class="select"
 										name={`--color-${color.value}-contrast-dark`}
-										bind:value={settingsColors[`--color-${color.value}-contrast-dark`]}
+										bind:value={settingsColors[`--color-${color.value}-contrast-dark` as keyof typeof settingsColors]}
 									>
 										<option value="oklch(0 0 0 / 1)">Black</option>
 										{#each constants.colorNames as colorName}

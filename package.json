@@ -12,7 +12,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
-		"@skeletonlabs/skeleton": "^3.1.2",
+		"@skeletonlabs/skeleton": "^3.1.3",
 		"@skeletonlabs/skeleton-svelte": "^1.2.0",
 		"@sveltejs/adapter-auto": "^4.0.0",
 		"@sveltejs/kit": "^2.16.0",
@@ -20,9 +20,11 @@
 		"@tailwindcss/vite": "^4.0.0",
 		"@types/chroma-js": "^3.1.1",
 		"@types/dompurify": "^3.0.5",
+		"autoprefixer": "^10.4.21",
+		"postcss": "^8.5.3",
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.0.0",
-		"tailwindcss": "^4.0.0",
+		"tailwindcss": "^4.1.5",
 		"typescript": "^5.0.0",
 		"vite": "^6.2.5"
 	},
@@ -31,6 +33,7 @@
 		"bcrypt": "^5.1.1",
 		"chroma": "^0.0.1",
 		"chroma-js": "^3.1.2",
+		"culori": "^4.0.1",
 		"dompurify": "^3.2.5",
 		"js": "^0.1.0",
 		"jsonwebtoken": "^9.0.2",

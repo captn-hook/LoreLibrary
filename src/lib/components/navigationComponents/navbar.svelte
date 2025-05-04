@@ -3,7 +3,7 @@
     export let navItems: { name: string; href: string }[] = [];
 </script>
 
-<AppBar >
+<AppBar classes="bg-primary-200">
     {#snippet lead()}
 
     {#each navItems as nav}

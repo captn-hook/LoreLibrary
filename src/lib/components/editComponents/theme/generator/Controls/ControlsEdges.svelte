@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Components
-	import Edges from '$lib/components/editComponents/generator/Edges/Edges.svelte';
+	import Edges from '$lib/components/editComponents/theme/generator/Edges/Edges.svelte';
 	// State
 	import { settingsEdges } from '$lib/state/generator.svelte';
 </script>

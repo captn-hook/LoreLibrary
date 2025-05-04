@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Edge from '$lib/components/editComponents/generator/Edges/EdgeOption.svelte';
+	import Edge from '$lib/components/editComponents/theme/generator/Edges/EdgeOption.svelte';
 
 	interface EdgesProps {
 		thickness?: boolean;

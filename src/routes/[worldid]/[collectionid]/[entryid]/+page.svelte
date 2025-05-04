@@ -5,10 +5,21 @@
     import NumberList from "$lib/components/textComponents/numberList.svelte";
     import BulletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
+    import { showStyleControls } from "$lib/state/editState.svelte";
+    import { onMount } from "svelte";
+    import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
+    import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
+
+    onMount(() => {
+    updateSettingsFromCurrentStyles();
+
+    document.documentElement.setAttribute('data-theme', 'generated');
+});
 </script>
-<div class="ml-3">
+
 {#if browser}
     {#await getEntry(data.worldid, data.collectionid, data.entryid) then entry}
+    <div class="ml-3">
         {#each entry?.content ?? [] as { key, value }}
         {console.log(key)}
             {#if key === 'title'}
@@ -25,9 +36,13 @@
                 <MarkdownReader md={value} />
             {/if}
         {/each}
+    </div>
     {:catch error}
         <p>Error loading world: {error.message}</p>
     {/await}
+    {#if $showStyleControls}
+        <StyleEditor/>
+    {/if}
 {/if}
-</div>
+
 

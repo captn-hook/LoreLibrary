@@ -1,8 +1,6 @@
 <script lang="ts">
-	// State
-	import { globals } from '$lib/state/generator.svelte';
-	// Components (Skeleton)
-	import { Accordion, Segment } from '@skeletonlabs/skeleton-svelte';
+	'use client';
+	import { Accordion } from '@skeletonlabs/skeleton-svelte'; 
 	// Components (Settings)
 	import ControlsColors from './ControlsColors.svelte';
 	import ControlsBackgrounds from './ControlsBackgrounds.svelte';
@@ -11,14 +9,98 @@
 	import ControlsEdges from './ControlsEdges.svelte';
 	// Icons
 	import IconColors from '@lucide/svelte/icons/palette';
-	import IconBackgrounds from '@lucide/svelte/icons/layers-2'; // Note: no dash in 'Layers2'
-	import IconTypography from '@lucide/svelte/icons/a-large-small'; // PascalCase
+	import IconBackgrounds from '@lucide/svelte/icons/layers-2';
+	import IconTypography from '@lucide/svelte/icons/a-large-small'; 
 	import IconSpacing from '@lucide/svelte/icons/scaling';
 	import IconEdges from '@lucide/svelte/icons/square-dashed';
 	import IconOpen from '@lucide/svelte/icons/chevron-up';
 	import IconClosed from '@lucide/svelte/icons/chevron-down';
 
-	import {generateTheme} from '$lib/scripts/generator/generate-theme';
+	import { oklch, formatHex } from 'culori';
+
+	import {
+    settingsColors,
+    settingsBackgrounds,
+    settingsTypography,
+    settingsSpacing,
+    settingsEdges
+} from '$lib/state/generator.svelte';
+
+export function updateSettingsFromCurrentStyles() {
+	const rootStyles = getComputedStyle(document.documentElement);
+
+	function oklchToHex(oklchValue: string): string {
+    try {
+        const color = oklch(oklchValue);
+		const hex = formatHex(color);
+        return hex;
+    } catch (error) {
+        console.warn(`Failed to convert oklch to hex. Input: ${oklchValue}`, error);
+        return '#000001'; // Fallback to black
+    }
+}
+
+	// Update settingsColors
+	Object.keys(settingsColors).forEach((key) => {
+		const typedKey = key as keyof typeof settingsColors;
+		let value = rootStyles.getPropertyValue(key).trim();
+		if (value) {
+			if (value.startsWith('oklch(')) {
+				value = oklchToHex(value);
+			}
+			settingsColors[typedKey] = value;
+		}
+	});
+
+	// Update settingsBackgrounds
+	Object.keys(settingsBackgrounds).forEach((key) => {
+		const typedKey = key as keyof typeof settingsBackgrounds;
+		let value = rootStyles.getPropertyValue(key).trim();
+		if (value) {
+			if (value.startsWith('oklch(')) {
+				value = oklchToHex(value);
+			}
+			settingsBackgrounds[typedKey] = value;
+		}
+	});
+
+	// Update settingsTypography
+	Object.keys(settingsTypography).forEach((key) => {
+		const typedKey = key as keyof typeof settingsTypography;
+		let value = rootStyles.getPropertyValue(key).trim();
+		if (value) {
+			if (value.startsWith('oklch(')) {
+				value = oklchToHex(value);
+			}
+			settingsTypography[typedKey] = value;
+		}
+	});
+
+	// Update settingsSpacing
+	Object.keys(settingsSpacing).forEach((key) => {
+		const typedKey = key as keyof typeof settingsSpacing;
+		let value = rootStyles.getPropertyValue(key).trim();
+		if (value) {
+			if (value.startsWith('oklch(')) {
+				value = oklchToHex(value);
+			}
+			settingsSpacing[typedKey] = value;
+		}
+	});
+
+	// Update settingsEdges
+	Object.keys(settingsEdges).forEach((key) => {
+		const typedKey = key as keyof typeof settingsEdges;
+		let value = rootStyles.getPropertyValue(key).trim();
+		if (value) {
+			if (value.startsWith('oklch(')) {
+				value = oklchToHex(value);
+			}
+			settingsEdges[typedKey] = value;
+		}
+	});
+
+}
 
 	// Local
 	const accordionItemProps = {
@@ -27,48 +109,16 @@
 		controlHover: 'hover:preset-tonal',
 		panelPadding: 'p-5'
 	};
-	function updateStyling(styling: Object[]) {
-		const themeElement = document.querySelector('[data-theme]');
-		if (!themeElement) {
-			console.error("No element with [data-theme] attribute found.");
-			return;
-		}
-		if (themeElement) {
-			console.log(themeElement);
-			styling.forEach(style => {
-				Object.entries(style).forEach(([key, value]) => {
-					(themeElement as HTMLElement).style.setProperty(key, value as string);
-				});
-			});
-		}
+
+	function handleSaveTheme() {
+		document.documentElement.setAttribute('data-theme', 'generated');
+		
 	}
-	function setTheme() {
-		let theme = generateTheme();
-		const styleId = 'skeleton-theme-injected';
-
-		// Remove existing injected theme if present
-		const oldStyle = document.getElementById(styleId);
-		if (oldStyle) oldStyle.remove();
-
-		// Create a new <style> tag with the theme CSS variables
-		const style = document.createElement('style');
-		style.id = styleId;
-		style.textContent = `
-			:root {
-				${Object.entries(theme.cssVars)
-					.map(([key, val]) => `${key}: ${val};`)
-					.join('\n')}
-			}
-		`;
-
-		document.head.appendChild(style);
-	}
-
 	let settings: string[] = $state([]);
 </script>
 
-<section class="absolute top-0 right-0 h-screen w-1/5 bg-surface-100-900 pb-96 overflow-y-auto border-l border-black">
-	<div class="space-y-10">
+<section class="space-y-0">
+	<div class="space-y-0">
 		<Accordion value={settings} onValueChange={(e) => (settings = e.value)} collapsible spaceY="space-y-0">
 			{#snippet iconOpen()}<IconOpen size={16} />{/snippet}
 			{#snippet iconClosed()}<IconClosed size={16} />{/snippet}
@@ -110,9 +160,9 @@
 			<hr class="hr" />
 		</Accordion>
 	</div>
-<div class="flex justify-center space-x-3 p-3 preset-primary">
-	<button onclick={() => {setTheme()}} class="btn btn-primary preset-filled">Preview</button>
-	<button onclick={() => { console.log(generateTheme()) }} class="btn btn-primary preset-filled">Save</button>
-	<button onclick={() => { /* Add your save logic here */ }} class="btn btn-secondary preset-filled">Cancel</button>
-</div>
+	<div class="flex justify-center space-x-3 p-3 preset-primary">
+		<button onclick={handleSaveTheme} class="btn btn-primary preset-filled">Save</button>
+		<button onclick={() => { /* Add your cancel logic here */ }} class="btn btn-secondary preset-filled">Cancel</button>
+
+	</div>
 </section>
