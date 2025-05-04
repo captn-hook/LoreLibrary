@@ -574,6 +574,10 @@ async function create_user(data, username) {
         // Handle specific Cognito errors
         if (err.name === "UsernameExistsException") {
             throw new Error("User already exists");
+        } else if (err.name === "InvalidPasswordException") {
+            throw new Error("Invalid password");
+        } else if (err.name === "InvalidParameterException") {
+            throw new Error("Invalid parameters");
         }
 
         throw new Error("Error creating user");

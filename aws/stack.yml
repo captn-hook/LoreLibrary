@@ -81,6 +81,9 @@ Resources:
         - https://lore-library.vercel.app/callback
       LogoutURLs:
         - https://lore-library.vercel.app/logout
+      ExplicitAuthFlows:
+        - ADMIN_NO_SRP_AUTH
+        - USER_PASSWORD_AUTH
 
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
