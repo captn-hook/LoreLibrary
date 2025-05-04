@@ -676,7 +676,7 @@ export const handler = async (e) => {
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
             // Check if user already exists
-            const userExists = await dynamo_get_id(User, e.body.username);
+            const userExists = await dynamo_get_id(User, e.body.username, table = userTable);
             if (userExists) {
                 return badRequest('User already exists');
             }
@@ -714,7 +714,7 @@ export const handler = async (e) => {
             // Get user by ID
             if (!username) { return badRequest('Invalid authentication'); }
 
-            let user = await dynamo_get_id(User, username);
+            let user = await dynamo_get_id(User, username, table = userTable);
             if (!user) {
                 return notFound('User not found');
             }
