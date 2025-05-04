@@ -20,7 +20,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa'; // Install this library for JWKS key fetching
+import jwksClient from 'jwks-rsa';
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
@@ -66,7 +66,7 @@ const s3Client = new S3Client();
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 const userTable = process.env.USER_TABLE;
-const dataTable = process.env.TABLE_NAME;
+const dataTable = process.env.DATA_TABLE;
 const bucketname = process.env.BUCKET_NAME;
 
 class SignUp {
@@ -93,6 +93,9 @@ class World {
     constructor(name, content = [], tags = [], parentId = null, collections = []) {
         this.name = name; // stringg
         this.content = content; // array of strings
+        this.description = content; // string
+        this.image = content; // url
+        this.style = content; // json string
         this.tags = tags; // array of strings
         this.parentId = parentId; // username
         this.ownerId = parentId; // username

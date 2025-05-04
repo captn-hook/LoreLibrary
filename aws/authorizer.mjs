@@ -20,7 +20,7 @@ const jwtclient = jwksClient({
     jwksUri: `${issuer}/.well-known/jwks.json`,
 });
 
-const dataTable = process.env.TABLE_NAME;
+const dataTable = process.env.DATA_TABLE;
 const userTable = process.env.USER_TABLE;
 
 const client = new DynamoDBClient({});
