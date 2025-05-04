@@ -20,7 +20,6 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;

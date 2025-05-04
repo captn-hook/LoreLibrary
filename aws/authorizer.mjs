@@ -5,15 +5,9 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 import jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
-
 
 const issuer = process.env.COGNITO_ISSUER;
 const audience = process.env.COGNITO_AUDIENCE;
-
-const jwtclient = jwksClient({
-    jwksUri: `${issuer}/.well-known/jwks.json`,
-});
 
 const dataTable = process.env.DATA_TABLE;
 const userTable = process.env.USER_TABLE;

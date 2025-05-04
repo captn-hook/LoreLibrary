@@ -10,7 +10,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "jwks-rsa": "^1.3.0:",
     "jsonwebtoken": "^9.0.2"
   }
 }
