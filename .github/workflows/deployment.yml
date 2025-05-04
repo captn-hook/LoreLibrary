@@ -1,9 +1,15 @@
 name: Node.js CI
 
 on:
+  workflow_dispatch:  # Allows manual trigger of the workflow
+
   push:
     branches:
       - main  # Trigger deployment on pushes to the main branch
+
+    paths:
+      - 'src/**'  # Only trigger on changes to the src directory
+      - 'package.json'  # Also trigger on changes to package.json
 
 jobs:
     build:
