@@ -298,7 +298,7 @@ Resources:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: prod
-
+   
 Outputs:
   WebsiteURL:
     Description: URL for the website hosted on the S3 bucket
