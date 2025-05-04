@@ -184,6 +184,7 @@ async function dynamo_get_all(model, worldId = '', table = dataTable) {
 }
 
 async function dynamo_get_id(model, name, worldId = '', table = dataTable) {
+    print('got table', table);
     if (!model || !model.name) {
         console.log('model', model);
         throw new Error("Invalid model: 'model.name' is required.");

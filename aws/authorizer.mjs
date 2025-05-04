@@ -7,11 +7,6 @@ import {
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 
-// async function generateToken(username) {
-//     // Generate a token for the user
-//     const token = await jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-//     return token;
-// }
 
 const issuer = process.env.COGNITO_ISSUER;
 const audience = process.env.COGNITO_AUDIENCE;
