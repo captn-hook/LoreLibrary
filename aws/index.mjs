@@ -19,10 +19,12 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { AdminCreateUserCommand, AdminSetUserPasswordCommand } from "@aws-sdk/client-cognito-identity-provider";
 import jwt from 'jsonwebtoken';
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
+const userPoolId = process.env.COGNITO_USER_POOL_ID;
 const issuer = process.env.COGNITO_ISSUER;
 const audience = process.env.COGNITO_AUDIENCE;
 
@@ -183,7 +185,6 @@ async function dynamo_get_all(model, worldId = '', table = dataTable) {
 }
 
 async function dynamo_get_id(model, name, worldId = '', table = dataTable) {
-    print('got table', table);
     if (!model || !model.name) {
         console.log('model', model);
         throw new Error("Invalid model: 'model.name' is required.");
@@ -536,7 +537,6 @@ async function generateToken(username) {
 
 
 async function create_user(data, username) {
-    const userPoolId = process.env.COGNITO_USER_POOL_ID;
 
     try {
         // Create the user in Cognito
@@ -581,7 +581,6 @@ async function create_user(data, username) {
 }
 
 async function login_user(data, username) {
-    const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
 
     try {
         // Authenticate the user with Cognito
@@ -639,6 +638,7 @@ export const handler = async (e) => {
             console.log('Error getting username from authorizer:', error);
         }
 
+
         try {
             pathParameters = e.pathParameters;
 
@@ -675,10 +675,11 @@ export const handler = async (e) => {
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
             // Check if user already exists
-            const userExists = await dynamo_get_id(User, e.body.username, table = userTable);
+            const userExists = await dynamo_get_id(User, e.body.username, '', userTable);
             if (userExists) {
                 return badRequest('User already exists');
             }
+            console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
             // Create user
             const token = await create_user(e.body, e.body.username);
             // Return token
@@ -712,8 +713,8 @@ export const handler = async (e) => {
         else if (operation === 'GET' && path.startsWith('/users/')) {
             // Get user by ID
             if (!username) { return badRequest('Invalid authentication'); }
-
-            let user = await dynamo_get_id(User, username, table = userTable);
+            console.log('username', username, 'table', userTable);
+            let user = await dynamo_get_id(User, username, '', userTable);
             if (!user) {
                 return notFound('User not found');
             }
@@ -940,6 +941,7 @@ export const handler = async (e) => {
             body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
         };
     } catch (err) {
+        console.error("Error processing request:", err);
         // if error is Item already exists, return 409
         if (err.message === 'Item already exists') {
             return {

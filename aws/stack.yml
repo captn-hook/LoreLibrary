@@ -182,6 +182,8 @@ Resources:
           USER_TABLE: !Ref UserTable
           BUCKET_NAME: !Ref ResourcesBucket
           JWT_SECRET: !Ref JWTSecretParameter
+          COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
           COGNITO_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
           COGNITO_AUDIENCE: !Ref CognitoUserPoolClient
 
