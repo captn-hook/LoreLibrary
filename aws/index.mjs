@@ -19,7 +19,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
-import { AdminCreateUserCommand, AdminSetUserPasswordCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
 import jwt from 'jsonwebtoken';
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
@@ -540,31 +540,24 @@ async function create_user(data, username) {
 
     try {
         // Create the user in Cognito
-        const createUserParams = {
+        const signUpCommand = SignUpCommand({
+            ClientId: clientId,
+            Password: data.password,
             UserPoolId: userPoolId,
             Username: username,
             UserAttributes: [
-                { Name: "email", Value: data.email },
+                {
+                    Name: "email",
+                    Value: data.email,
+                },
+                {
+                    Name: "email_verified",
+                    Value: "true",
+                },
             ],
-        };
-
-        const createUserCommand = new AdminCreateUserCommand(createUserParams);
-        await cognitoClient.send(createUserCommand);
-
-        // Set the user's password
-        const setPasswordParams = {
-            UserPoolId: userPoolId,
-            Username: username,
-            Password: data.password,
-            Permanent: true, 
-        };
-
-        const setPasswordCommand = new AdminSetUserPasswordCommand(setPasswordParams);
-        await cognitoClient.send(setPasswordCommand);
-
-        // Create the user in DynamoDB
-        const user = new User(username, [], []);
+        });
         
+        const signUpResponse = await cognitoClient.send(signUpCommand);
 
         // Return a success response
         return { message: "User created successfully", username };
