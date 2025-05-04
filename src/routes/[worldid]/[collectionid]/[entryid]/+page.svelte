@@ -9,6 +9,7 @@
     import { onMount } from "svelte";
     import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
     import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
+    import HtmlReader from "$lib/components/textComponents/htmlReader.svelte";
 
     onMount(() => {
     updateSettingsFromCurrentStyles();
@@ -34,6 +35,8 @@
                 <img src={value} alt={value} />
             {:else if key === 'md'}
                 <MarkdownReader md={value} />
+            {:else if key === 'html'}
+                <HtmlReader html={value} />
             {/if}
         {/each}
     </div>
