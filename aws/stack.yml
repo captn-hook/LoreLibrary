@@ -218,7 +218,7 @@ Resources:
       Properties:
         FunctionName: pre-signup-trigger
         Runtime: nodejs18.x
-        Handler: preSignUpLambda.handler
+        Handler: index.handler
         Code:
           ZipFile: |
             exports.handler = async (event) => {
