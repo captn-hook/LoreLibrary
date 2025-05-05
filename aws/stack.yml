@@ -207,9 +207,6 @@ Resources:
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
       Timeout: 5 # seconds
-      Tags:
-        - Key: Github SHA
-          Value: !Sub "${{ github.sha }}"
           
   PreSignUpLambda:
       Type: "AWS::Lambda::Function"
@@ -261,9 +258,6 @@ Resources:
                   - "cognito-idp:AdminConfirmSignUp"
                   - "cognito-idp:ListUsers"
                 Resource: "*"
-      Tags:
-        - Key: Github SHA
-          Value: !Sub "${{ github.sha }}"
 
   LambdaInvokePermission:
     Type: "AWS::Lambda::Permission"
