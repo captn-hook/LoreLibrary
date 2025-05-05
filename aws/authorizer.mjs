@@ -8,6 +8,8 @@ import jwt from 'jsonwebtoken';
 
 const issuer = process.env.COGNITO_ISSUER;
 const audience = process.env.COGNITO_AUDIENCE;
+const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
+
 
 const dataTable = process.env.DATA_TABLE;
 const userTable = process.env.USER_TABLE;
@@ -23,7 +25,7 @@ async function verifyToken(token) {
         const verifier = CognitoJwtVerifier.create({
             userPoolId,
             tokenUse: "access",
-            clientId: audience,
+            clientId: clientId,
         });
 
         const payload = await verifier.verify(token);
