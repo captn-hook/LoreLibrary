@@ -191,6 +191,7 @@ Resources:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
           COGNITO_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
           COGNITO_AUDIENCE: !Ref CognitoUserPoolClient
+      Timeout: 7 # seconds
 
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
@@ -210,6 +211,7 @@ Resources:
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
           COGNITO_AUDIENCE: !Ref CognitoUserPoolClient
+      Timeout: 5 # seconds
           
   PreSignUpLambda:
       Type: "AWS::Lambda::Function"
@@ -231,6 +233,7 @@ Resources:
             };
         Role: !GetAtt 
           LambdaExecutionRole.Arn
+        Timeout: 4 # seconds
 
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
