@@ -49,7 +49,8 @@ Resources:
     Type: AWS::Cognito::UserPool
     Properties:
       UserPoolName: lorelibrary-user-pool
-      PreSignUp: !GetAtt PreSignUpLambda.Arn
+      LambdaConfig:
+        PreSignUp: !GetAtt PreSignUpLambda.Arn
       AutoVerifiedAttributes:
         - email
       Policies:
@@ -267,6 +268,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*"
+  
+  PreSignUpLambdaInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt PreSignUpLambda.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
 
   AuthenticationInvokePermission:
     Type: "AWS::Lambda::Permission"
