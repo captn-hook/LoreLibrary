@@ -626,7 +626,8 @@ export const handler = async (e) => {
         try {
             username = e.requestContext.authorizer.lambda.username;
         } catch (error) {
-            console.log('Error getting username from authorizer:', error);
+            console.log('e, requestContext', e.requestContext);
+            console.error('Error getting username from authorizer:', error);
         }
 
 

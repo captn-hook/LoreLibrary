@@ -3,7 +3,7 @@ import {
     DynamoDBDocumentClient,
     GetCommand,
 } from "@aws-sdk/lib-dynamodb";
-
+import { CognitoJwtVerifier } from "aws-jwt-verify";
 import jwt from 'jsonwebtoken';
 
 const issuer = process.env.COGNITO_ISSUER;
@@ -15,38 +15,21 @@ const userTable = process.env.USER_TABLE;
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
-// Function to get the signing key
-function getSigningKey(header, callback) {
-    client.getSigningKey(header.kid, (err, key) => {
-        if (err) {
-            callback(err);
-        } else {
-            const signingKey = key.getPublicKey();
-            callback(null, signingKey);
-        }
-    });
-}
-
 // Function to verify the token
-function verifyToken(token) {
-    return new Promise((resolve, reject) => {
-        jwt.verify(
-            token,
-            getSigningKey,
-            {
-                audience: audience,
-                issuer: issuer,
-                algorithms: ['RS256'],
-            },
-            (err, decoded) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(decoded);
-                }
-            }
-        );
-    });
+async function verifyToken(token) {
+    try {
+        const verifier = CognitoJwtVerifier.create({
+            userPoolId,
+            tokenUse: "access",
+            clientId: audience,
+        });
+
+        const payload = await verifier.verify(token);
+        console.log('Decoded JWT:', payload);
+    } catch (err) {
+        console.error('Error verifying JWT:', err);
+        throw err;
+    }
 }
 
 export const handler = async (e) => {
