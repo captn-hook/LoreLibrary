@@ -529,12 +529,6 @@ async function dynamo_delete(model, id, username, wolrdId = '', table = dataTabl
     }
 }
 
-async function generateToken(username) {
-    // Generate a token for the user
-    const token = await jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    return token;
-}
-
 async function create_user(data, username) {
     try {
         // Create the user in Cognito

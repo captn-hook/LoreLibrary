@@ -4,16 +4,9 @@ import {
     GetCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
-import jwt from 'jsonwebtoken';
 
-const issuer = process.env.COGNITO_ISSUER;
-const audience = process.env.COGNITO_AUDIENCE;
-const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
-
-
-const dataTable = process.env.DATA_TABLE;
-const userTable = process.env.USER_TABLE;
 const userPoolId = process.env.COGNITO_USER_POOL_ID;
+const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
