@@ -235,7 +235,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: lorelibrary-lambda-role
+      RoleName: lorelibrary-lambda-role 
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -254,7 +254,11 @@ Resources:
                 Action:
                   - "dynamodb:*"
                   - "s3:*"
-                  - "cognito-idp:*"
+                  - "cognito-idp:*"      
+                  - "cognito-idp:AdminCreateUser"
+                  - "cognito-idp:AdminUpdateUserAttributes"
+                  - "cognito-idp:AdminConfirmSignUp"
+                  - "cognito-idp:ListUsers"
                 Resource: "*"
 
   LambdaInvokePermission:
