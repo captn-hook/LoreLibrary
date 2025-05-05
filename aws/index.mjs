@@ -91,12 +91,12 @@ class User {
     }
 }
 class World {
-    constructor(name, content = [], tags = [], parentId = null, collections = []) {
+    constructor(name, content = [], description = '', image = '', style = '', tags = [], parentId = null, collections = []) {
         this.name = name; // stringg
         this.content = content; // array of strings
-        this.description = content; // string
-        this.image = content; // url
-        this.style = content; // json string
+        this.description = description; // string
+        this.image = image; // string
+        this.style = style; // string
         this.tags = tags; // array of strings
         this.parentId = parentId; // username
         this.ownerId = parentId; // username
@@ -211,7 +211,7 @@ async function dynamo_get_id(model, name, worldId = '', table = dataTable) {
                 return new User(SK, rest.content, rest.worlds);
             } else if (model === World) {
                 const { PK, SK, ...rest } = data.Item;
-                return new World(SK, rest.content, rest.tags, rest.parentId, rest.collections);
+                return new World(SK, rest.content, rest.description, rest.image, rest.style, rest.tags, rest.parentId, rest.collections);
             }
             else if (model === Collection) {
                 const { PK, SK, ...rest } = data.Item;
@@ -268,6 +268,9 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '',
             PK: prefix,
             SK: data.name,
             content: data.content || [],
+            description: data.description || '',
+            image: data.image || '',
+            style: data.style || '',
             tags: data.tags || [],
             parentId: pId,
             ownerId: username,

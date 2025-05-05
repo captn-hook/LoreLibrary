@@ -206,7 +206,6 @@ Resources:
           USER_TABLE: !Ref UserTable
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
-
       Timeout: 5 # seconds
           
   PreSignUpLambda:

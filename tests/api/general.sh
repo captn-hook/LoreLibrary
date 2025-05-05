@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-url="https://06wztxi7r2.execute-api.us-west-2.amazonaws.com/prod"
+url="https://0ymvlkimq2.execute-api.us-west-2.amazonaws.com/prod"
 token=""
 username=""
 email1="hookt@oregonstate.edu"
@@ -102,6 +102,9 @@ get_user() {
 put_world() {
     local world_name=$1
     local world_content=$2
+    local world_description='a sample description for the world'
+    local world_image='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg'
+    local wolrd_style=''
     local world_id=''
     local world_tags=$3
     local world_parentId=''
@@ -118,7 +121,7 @@ put_world() {
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
-        -d "{\"name\":\"$world_name\", \"content\":$world_content, \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
+        -d "{\"name\":\"$world_name\", \"content\":$world_content, \"description\":\"$world_description\", \"image\":\"$world_image\", \"style\":\"$wolrd_style\", \"id\":\"$world_id\", \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
         "$url/worlds")
 
     # Check if PUT request was successful
