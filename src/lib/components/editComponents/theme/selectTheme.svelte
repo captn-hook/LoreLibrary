@@ -34,6 +34,7 @@
 	function setTheme(theme: string) {
 		document.documentElement.setAttribute('data-theme', theme);
         updateSettingsFromCurrentStyles();
+        document.documentElement.setAttribute('data-theme', 'generated');
 	}
     let selectedTheme = themes[0];
 </script>
