@@ -1,20 +1,24 @@
 #!/bin/bash
 
 # Define variables
-url="https://440cybvvr6.execute-api.us-west-2.amazonaws.com/prod"
+url="https://06wztxi7r2.execute-api.us-west-2.amazonaws.com/prod"
 token=""
 username=""
+email1="hookt@oregonstate.edu"
+emalil2="hooktristanshs@gmail.com"
+email3="tristanskyhook@gmail.com"
 
 # Special functions for signup and login
 signup() {
     local user=$1
     local password=$2
+    local email=$3
     
     # Perform signup
     local response=$(curl -X 'POST' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
-        -d "{\"username\":\"$user\", \"password\":\"$password\"}" \
+        -d "{\"username\":\"$user\", \"password\":\"$password\", \"email\":\"$email\"}" \
         "$url/signup")
 
     # Check if signup was successful
@@ -287,10 +291,10 @@ entry4_tags='["ship", "hive", "biopunk"]'
 # Main script execution
 
 # Create user
-signup grubman2 iloveworms123
+signup grubman2 iLoveworms123! "$email1"
 
 # Login user, not strictly necessary to get token, but useful for testing
-login grubman2 iloveworms123
+login grubman2 iLoveworms123!
 
 # Get user information
 get_user grubman2

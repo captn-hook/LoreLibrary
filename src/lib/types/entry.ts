@@ -72,6 +72,4 @@ console.log('Hello, world!');
                 ]
         );
     }
-
-
 }
