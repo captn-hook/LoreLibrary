@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define variables
-url="https://zkw98x8jae.execute-api.us-west-2.amazonaws.com/prod"
+url="https://xovdol38wd.execute-api.us-west-2.amazonaws.com/prod"
 token=""
 username=""
 email1="hookt@oregonstate.edu"
@@ -291,10 +291,10 @@ entry4_tags='["ship", "hive", "biopunk"]'
 # Main script execution
 
 # Create user
-signup grubman2 iloveworms123! "$email1"
+signup grubman2 iLoveworms123! "$email1"
 
 # Login user, not strictly necessary to get token, but useful for testing
-login grubman2 iloveworms123
+login grubman2 iLoveworms123!
 
 # Get user information
 get_user grubman2

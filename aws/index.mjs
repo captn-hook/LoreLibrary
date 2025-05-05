@@ -535,12 +535,10 @@ async function generateToken(username) {
     return token;
 }
 
-
 async function create_user(data, username) {
-
     try {
         // Create the user in Cognito
-        const signUpCommand = SignUpCommand({
+        const signUpCommand = new SignUpCommand({
             ClientId: clientId,
             Password: data.password,
             UserPoolId: userPoolId,
@@ -549,11 +547,7 @@ async function create_user(data, username) {
                 {
                     Name: "email",
                     Value: data.email,
-                },
-                {
-                    Name: "email_verified",
-                    Value: "true",
-                },
+                }
             ],
         });
         

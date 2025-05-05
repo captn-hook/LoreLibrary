@@ -49,6 +49,8 @@ Resources:
     Type: AWS::Cognito::UserPool
     Properties:
       UserPoolName: lorelibrary-user-pool
+      LambdaConfig:
+        PreSignUp: !GetAtt PreSignUpLambda.Arn
       AutoVerifiedAttributes:
         - email
       Policies:
@@ -208,6 +210,27 @@ Resources:
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_ISSUER: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
           COGNITO_AUDIENCE: !Ref CognitoUserPoolClient
+          
+  PreSignUpLambda:
+      Type: "AWS::Lambda::Function"
+      Properties:
+        FunctionName: pre-signup-trigger
+        Runtime: nodejs18.x
+        Handler: preSignUpLambda.handler
+        Code:
+          ZipFile: |
+            exports.handler = async (event) => {
+              event.response.autoConfirmUser = true;
+              if (event.request.userAttributes.hasOwnProperty("email")) {
+                event.response.autoVerifyEmail = true;
+              }
+              if (event.request.userAttributes.hasOwnProperty("phone_number")) {
+                event.response.autoVerifyPhone = true;
+              }
+              return event;
+            };
+        Role: !GetAtt 
+          LambdaExecutionRole.Arn
 
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
