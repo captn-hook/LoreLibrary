@@ -1,12 +1,20 @@
 <script lang="ts">
     import { marked } from 'marked';
+    import DOMPurify from 'dompurify';
     export let md: string;
+
+    // Convert markdown to HTML and sanitize it
+    let sanitizedHtml: string;
+
+    $: (async () => {
+        const rawHtml = await Promise.resolve(marked(md));
+        sanitizedHtml = DOMPurify.sanitize(rawHtml);
+    })();
 </script>
 
 <div class="md">
-    {@html marked(md)}
+    {@html sanitizedHtml}
 </div>
-
 
 <style>
     :global(.md h1) {

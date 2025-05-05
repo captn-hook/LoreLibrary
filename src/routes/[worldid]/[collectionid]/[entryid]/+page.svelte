@@ -5,6 +5,7 @@
     import NumberList from "$lib/components/textComponents/numberList.svelte";
     import BulletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
+    import HtmlReader from "$lib/components/textComponents/htmlReader.svelte";
 </script>
 <div class="ml-3">
 {#if browser}
@@ -23,6 +24,8 @@
                 <img src={value} alt={value} />
             {:else if key === 'md'}
                 <MarkdownReader md={value} />
+            {:else if key === 'html'}
+                <HtmlReader html={value} />
             {/if}
         {/each}
     {:catch error}
