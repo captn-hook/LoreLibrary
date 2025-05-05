@@ -175,7 +175,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       FunctionName: lorelibrary-function
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
         S3Bucket: !Ref LambdaCodeS3Bucket
@@ -197,7 +197,7 @@ Resources:
     Type: "AWS::Lambda::Function"
     Properties:
       FunctionName: lorelibrary-authorizer
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
         S3Bucket: !Ref LambdaCodeS3Bucket
@@ -217,7 +217,7 @@ Resources:
       Type: "AWS::Lambda::Function"
       Properties:
         FunctionName: pre-signup-trigger
-        Runtime: nodejs18.x
+        Runtime: nodejs22.x
         Handler: index.handler
         Code:
           ZipFile: |

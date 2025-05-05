@@ -11,12 +11,14 @@ const audience = process.env.COGNITO_AUDIENCE;
 
 const dataTable = process.env.DATA_TABLE;
 const userTable = process.env.USER_TABLE;
+const userPoolId = process.env.COGNITO_USER_POOL_ID;
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
 // Function to verify the token
 async function verifyToken(token) {
+    console.log('Verifying token: ', token);
     try {
         const verifier = CognitoJwtVerifier.create({
             userPoolId,
