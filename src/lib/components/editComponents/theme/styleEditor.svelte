@@ -5,6 +5,7 @@ import { colord, Colord } from 'colord';
 import { onMount } from 'svelte';
 import Controls from '$lib/components/editComponents/theme/generator/Controls/Controls.svelte';
 import { updateSettingsFromCurrentStyles } from '$lib/scripts/generator/generate-css.js';
+import SelectTheme from '$lib/components/editComponents/theme/selectTheme.svelte';
 
 	let group = 'premade';
 
@@ -45,6 +46,7 @@ import { updateSettingsFromCurrentStyles } from '$lib/scripts/generator/generate
 	<Tabs.Panel value="premade">
 		<h2>Pre-made Themes</h2>
 		<p>Choose from a selection of pre-made themes.</p>
+		<SelectTheme/>
 	</Tabs.Panel>
 
 	<Tabs.Panel value="custom">
