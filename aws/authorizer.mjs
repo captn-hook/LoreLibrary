@@ -17,12 +17,13 @@ async function verifyToken(token) {
     try {
         const verifier = CognitoJwtVerifier.create({
             userPoolId,
-            tokenUse: "access",
+            tokenUse: "id",
             clientId: clientId,
         });
 
         const payload = await verifier.verify(token);
         console.log('Decoded JWT:', payload);
+        return payload['cognito:username'];
     } catch (err) {
         console.error('Error verifying JWT:', err);
         throw err;
@@ -56,28 +57,11 @@ export const handler = async (e) => {
                 'isAuthorized': false
             }
         });
-
-        const params = {
-            TableName: process.env.TABLE_NAME,
-            Key: {
-                PK: 'USER#',
-                SK: decoded.username
-            },
-        }
-
-        const user = await docClient.send(new GetCommand(params));
-
-        if (!user.Item) {
-            console.log('User not found in database: ', e);
-            return {
-                'isAuthorized': false
-            }
-        }
-        console.log('User found in database: ', e);
+        console.log('Decoded token: ', decoded);
         return {
             'isAuthorized': true,
             'context': {
-                'username': user.Item.SK
+                'username': decoded,
             }
         };
     } catch (err) {

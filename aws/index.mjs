@@ -547,6 +547,22 @@ async function create_user(data, username) {
         
         const signUpResponse = await cognitoClient.send(signUpCommand);
 
+        console.log("User created in Cognito:", signUpResponse);
+
+        // Create the user in DynamoDB
+        const user = new User(username, [], []);
+        const params = {
+            TableName: userTable,
+            Item: {
+                PK: "USER#",
+                SK: username,
+                content: [],
+                worlds: []
+            }
+        };
+        await ddbDocClient.send(new PutCommand(params));
+        console.log("User created in DynamoDB:", params.Item);
+        
         // Return a success response
         return { message: "User created successfully", username };
     } catch (err) {
