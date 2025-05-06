@@ -1,3 +1,6 @@
+# Intro
+
+Lore Library is a wiki software that allows extensive world creation, with support for many orginization styles and elements.
 NodeJS and AWS CLI (configured to your account) are required
 this project uses github actions to deploy/update cloud formation
 and vercel to host a svelte front end
