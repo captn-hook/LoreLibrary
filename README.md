@@ -1,4 +1,6 @@
 NodeJS and AWS CLI (configured to your account) are required
+this project uses github actions to deploy/update cloud formation
+and vercel to host a svelte front end
 
 # Set Up GitHub Secrets:
 
