@@ -24,12 +24,12 @@ import SelectTheme from '$lib/components/editComponents/theme/selectTheme.svelte
 		right: 0;
 		width: 20%;
 		height: 100%;
-		background-color: #f4f4f4; /* Optional: Add a background color */
+		background-color: #000000; /* Ensure a solid background color */
+		color: #ffffff;
 		box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better visibility */
 		overflow-y: auto; /* Optional: Add scrolling if content overflows */
 		margin: 0; /* Ensure no margin */
 		padding: 0; /* Ensure no padding */
-		
 	}
 </style>
 
@@ -50,7 +50,7 @@ import SelectTheme from '$lib/components/editComponents/theme/selectTheme.svelte
 	</Tabs.Panel>
 
 	<Tabs.Panel value="custom">
-		<div class="flex flex-col gap-4">
+		<div class="flex flex-col">
 			<Controls/>
 		</div>
 	</Tabs.Panel>

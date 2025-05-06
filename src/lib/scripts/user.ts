@@ -46,7 +46,7 @@ export async function login(username: string, password: string) {
 }
 
 // Signup function
-export async function signup(username: string, password: string) {
+export async function signup(username: string, email: string, password: string) {
   if (!PUBLIC_API_URL) {
     console.error('PUBLIC_API_URL is not initialized');
     return;
@@ -60,10 +60,11 @@ export async function signup(username: string, password: string) {
       'Access-Control-Allow-Headers': 'Content-Type',
       'Access-Control-Allow-Methods': 'POST, OPTIONS'
     },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, username, password }),
   })
     .then((response) => {
       if (!response.ok) {
+        console.log(response);
         throw new Error('Failed to sign up');
       }
       return response.json();

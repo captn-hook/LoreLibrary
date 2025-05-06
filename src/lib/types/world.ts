@@ -28,7 +28,7 @@ export class World {
         return {
             imgSrc: this.img_url,
             worldid: this.id,
-            category: this.tags.toString(), // Join keys into a single string
+            category: this.tags, // Join keys into a single string
             title: this.id,
             description: this.description,
             author: this.ownerId, // Assuming ownerId is the id

@@ -42,7 +42,7 @@
         style="background-color: #708090;"
     >
         <h2 id="login-title" class="text-xl font-bold mb-4 text-primary">Login</h2>
-        <label for="username" class="block text-primary font-medium mb-1 text-left">Username or Email</label>
+        <label for="username" class="block text-primary font-medium mb-1 text-left">Username</label>
         <input
             id="username"
             type="text"

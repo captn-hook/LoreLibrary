@@ -6,9 +6,10 @@
   
     let username = '';
     let password = '';
+    let email = '';
   
     function handleSignUp() {
-     signup(username, password);
+     signup(username, email, password);
     onClose();
     }
 
@@ -44,6 +45,14 @@
         style="background-color: #708090;"
     >
         <h2 id="login-title" class="text-xl font-bold mb-4 text-primary">Sign Up</h2>
+        <label for="email" class="block text-primary font-medium mb-1 text-left">Email</label>
+        <input
+            id="email"
+            type="text"
+            placeholder="Email"
+            bind:value={email}
+            class="input input-bordered w-full mb-4 text-primary placeholder-primary"
+        />
         <label for="username" class="block text-primary font-medium mb-1 text-left">Username</label>
         <input
             id="username"
