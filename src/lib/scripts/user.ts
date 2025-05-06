@@ -2,7 +2,6 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { token } from '$lib/state/userState.svelte.js';
-import { get } from 'svelte/store';
 import {PUBLIC_API_URL} from '$env/static/public';
 
 let currentPath: string[] = [];
@@ -19,30 +18,39 @@ export async function login(username: string, password: string) {
     console.error('PUBLIC_API_URL is not initialized');
     return;
   }
-
-  fetch(`${PUBLIC_API_URL}/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, password }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Failed to log in');
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (browser) {
-        token.set(data.token);
-        localStorage.setItem('token', data.token);
-        goto('/dashboard');
-      }
-    })
-    .catch((error) => {
-      console.error('Error during login:', error);
+  try {
+    const response = await fetch(`${PUBLIC_API_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
     });
+
+    if (response.status !== 200) {
+      console.error('Failed to log in');
+      throw new Error('Failed to log in');
+    }
+    console.log('Login response:', response);
+
+    const data = await response.json();
+    console.log('Login data:', data);
+
+    if (data.statusCode && data.statusCode !== 200) {
+      console.error('Login failed:', data.message);
+      return JSON.parse(data.body).message;
+    }
+
+    if (browser) {
+      token.set(data.token);
+      console.log('Token set:', data.token);
+      localStorage.setItem('token', data.token);
+      goto('/dashboard');
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    return "Error during login";
+  }
 }
 
 // Signup function
@@ -52,33 +60,40 @@ export async function signup(username: string, email: string, password: string) 
     return;
   }
 
-  fetch(`${PUBLIC_API_URL}/signup`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS'
-    },
-    body: JSON.stringify({ email, username, password }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        console.log(response);
-        throw new Error('Failed to sign up');
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (browser) {
-        token.set(data.token);
-        localStorage.setItem('token', data.token);
-        goto('/dashboard');
-      }
-    })
-    .catch((error) => {
-      console.error('Error during signup:', error);
+  try {
+    const response = await fetch(`${PUBLIC_API_URL}/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      },
+      body: JSON.stringify({ email, username, password }),
     });
+
+    if (!response.ok) {
+      console.error('Failed to sign up');
+      throw new Error(response.statusText);
+
+    }
+
+    const data = await response.json();
+
+    if (data.statusCode && data.statusCode !== 200) {
+      console.error('Signup failed:', data.message);
+      return JSON.parse(data.body).message;
+    }
+
+    if (browser) {
+      token.set(data.token);
+      localStorage.setItem('token', data.token);
+      goto('/dashboard');
+    }
+  } catch (error) {
+    console.error('Error during signup:', error);
+    return error;
+  }
 }
 
 // Logout function

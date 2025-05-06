@@ -1,24 +1,29 @@
 <script>
-    import {login} from '$lib/scripts/user';
+    import { login } from '$lib/scripts/user';
+    import { writable } from 'svelte/store';
     export let open = false;
     export let onClose = () => {};
     export let openSignUp = () => {};
-  
+
     let username = '';
     let password = '';
-  
-    function handleLogin() {
-      login(username, password);
-      onClose();
+    let errMessage = writable('');
+
+    async function handleLogin() {
+        const error = await login(username, password);
+        errMessage.set(error);
+        if (!error) {
+            onClose();
+        }
     }
 
-    function handleSignUp(){
+    function handleSignUp() {
         console.log('Sign up clicked');
         onClose();
         openSignUp();
     }
 </script>
- {#if open}
+{#if open}
 <div
     class="fixed inset-0 bg-base-100 flex justify-center items-center z-10"
     role="button"
@@ -58,9 +63,18 @@
             bind:value={password}
             class="input input-bordered w-full mb-4 text-primary placeholder-primary"
         />
+        {#if $errMessage}
+            <p class="text-red-500 text-sm mb-4">{$errMessage}</p>
+        {/if}
         <p>Don't have an account? <a href="#" on:click={handleSignUp} class="text-primary underline cursor-pointer">Sign up</a></p>
         <div class="flex justify-center"></div>
-            <button on:click={handleLogin} class="btn preset-tonal-primary mt-4 text-primary">Login</button>
-        </div>
+        <button 
+            on:click={handleLogin} 
+            class="btn preset-tonal-primary mt-4 text-primary"
+            disabled={!username || !password}
+        >
+            Login
+        </button>
     </div>
+</div>
 {/if}

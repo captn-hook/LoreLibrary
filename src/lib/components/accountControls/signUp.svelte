@@ -1,5 +1,6 @@
 <script>
     import {signup} from '$lib/scripts/user'
+    import { writable } from 'svelte/store';
     export let open = false;
     export let onClose = () => {};
     export let openLogin = () => {};
@@ -7,10 +8,13 @@
     let username = '';
     let password = '';
     let email = '';
+    let errMessage = writable('');
   
-    function handleSignUp() {
-     signup(username, email, password);
-    onClose();
+    async function handleSignUp() {
+     errMessage.set( await signup(username, email, password));
+        if (!errMessage) {
+            onClose();
+        }
     }
 
     function handleLogin() {
@@ -69,9 +73,16 @@
             bind:value={password}
             class="input input-bordered w-full mb-4 text-primary placeholder-primary"
         />
+        {#if $errMessage}
+            <p class="text-red-500 text-sm mb-4">{$errMessage}</p>
+        {/if}
         <p>Already have an account? <a href="#" on:click={handleLogin} class="text-primary underline cursor-pointer">Login</a></p>
         <div class="flex justify-center"></div>
-            <button on:click={handleSignUp} class="btn preset-tonal-primary mt-4 text-primary">Sign Up</button>
+            <button 
+            on:click={handleSignUp}
+            class="btn preset-tonal-primary mt-4 text-primary"
+            disabled={!username || !email || !password}
+            >Sign Up</button>
         </div>
     </div>
 {/if}
