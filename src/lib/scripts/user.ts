@@ -1,7 +1,7 @@
 'use client';
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
-import { token } from '$lib/context/userContext.svelte.js';
+import { token } from '$lib/state/userState.svelte.js';
 import { get } from 'svelte/store';
 import {PUBLIC_API_URL} from '$env/static/public';
 

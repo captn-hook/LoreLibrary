@@ -72,12 +72,16 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: us-west-2 # Match region above
+        STACK_NAME: lorelibrary-stack
+        CHANGESET_NAME: changeset-${{ github.run_id }}-${{ github.sha }}
       run: |
         echo "Review the following proposed changes:"
+        echo "STACK_NAME: ${{ env.STACK_NAME }}"
+        echo "CHANGESET_NAME: ${{ env.CHANGESET_NAME }}"
         aws cloudformation describe-change-set \
           --stack-name ${{ env.STACK_NAME }} \
           --change-set-name ${{ env.CHANGESET_NAME }} \
-          --query 'Changes' --output table # Use --output json for full details
+          --query 'Changes' --output table
 
     - name: Execute CloudFormation Change Set
       env:

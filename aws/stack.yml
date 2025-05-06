@@ -18,7 +18,7 @@ Parameters:
 
 Resources:
   ResourcesBucket:
-    Type: 'AWS::S3::Bucket'
+    Type: "AWS::S3::Bucket"
     Properties:
       BucketName: lorelibrary-resources
       PublicAccessBlockConfiguration:
@@ -30,29 +30,106 @@ Resources:
         ErrorDocument: error.html
 
   ResourcesBucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
+    Type: "AWS::S3::BucketPolicy"
     Properties:
       Bucket: !Ref ResourcesBucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
-              AWS: '*'
+              AWS: "*"
             Action:
-              - 's3:GetObject'
+              - "s3:GetObject"
             Resource: !Sub
               - arn:aws:s3:::${ResourcesBucket}/*
-              - {ResourcesBucket: !Ref ResourcesBucket}
+              - { ResourcesBucket: !Ref ResourcesBucket }
+
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: lorelibrary-user-pool
+      LambdaConfig:
+        PreSignUp: !GetAtt PreSignUpLambda.Arn
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: true
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: lorelibrary-user-pool-client
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - https://lore-library.vercel.app/callback
+      LogoutURLs:
+        - https://lore-library.vercel.app/logout
+      ExplicitAuthFlows:
+        - ADMIN_NO_SRP_AUTH
+        - USER_PASSWORD_AUTH
+
+  CognitoIdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: lorelibrary-identity-pool
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref CognitoUserPoolClient
+          ProviderName: !GetAtt CognitoUserPool.ProviderName
+
+  AuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPool
+              "ForAnyValue:StringLike":
+                cognito-identity.amazonaws.com:amr: authenticated
+      Policies:
+        - PolicyName: CognitoAuthorizedPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetObject
+                Resource: "*"
 
   DataTable:
-    Type: 'AWS::DynamoDB::Table'
+    Type: "AWS::DynamoDB::Table"
     Properties:
       TableName: lorelibrary-data
       AttributeDefinitions:
-        - AttributeName: PK # Combines entity type and ID (e.g., USER#username, WORLD#worldId)
+        - AttributeName: PK # Combines entity type and ID (e.g., WORLD#, or COLLECTION#worldId)
           AttributeType: S
-        - AttributeName: SK # Defines relationships (e.g., WORLD#worldId for collections under a world)
+        - AttributeName: SK # Defines relationships (e.g., COLLECTION#worldId)
           AttributeType: S
         - AttributeName: GSI1PK # Used for queries like searching by tags or retrieving all worlds for a user
           AttributeType: S
@@ -71,16 +148,34 @@ Resources:
             - AttributeName: GSI1SK
               KeyType: RANGE
           Projection:
-            ProjectionType: ALL        
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+
+  UserTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: lorelibrary-users
+      AttributeDefinitions:
+        - AttributeName: PK # User ID
+          AttributeType: S
+        - AttributeName: SK # User details (e.g., USER#username)
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
 
   LoreLibraryLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: "AWS::Lambda::Function"
     Properties:
       FunctionName: lorelibrary-function
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
         S3Bucket: !Ref LambdaCodeS3Bucket
@@ -88,15 +183,18 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
-          TABLE_NAME: !Ref DataTable
+          DATA_TABLE: !Ref DataTable
+          USER_TABLE: !Ref UserTable
           BUCKET_NAME: !Ref ResourcesBucket
-          JWT_SECRET: !Ref JWTSecretParameter
+          COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+      Timeout: 7 # seconds
 
   CustomAuthorizerLambda:
-    Type: 'AWS::Lambda::Function'
+    Type: "AWS::Lambda::Function"
     Properties:
       FunctionName: lorelibrary-authorizer
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
         S3Bucket: !Ref LambdaCodeS3Bucket
@@ -104,56 +202,94 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
-          TABLE_NAME: !Ref DataTable
-          JWT_SECRET: !Ref JWTSecretParameter          
+          DATA_TABLE: !Ref DataTable
+          USER_TABLE: !Ref UserTable
+          COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+      Timeout: 5 # seconds
+          
+  PreSignUpLambda:
+      Type: "AWS::Lambda::Function"
+      Properties:
+        FunctionName: pre-signup-trigger
+        Runtime: nodejs22.x
+        Handler: index.handler
+        Code:
+          ZipFile: |
+            exports.handler = async (event) => {
+              event.response.autoConfirmUser = true;
+              if (event.request.userAttributes.hasOwnProperty("email")) {
+                event.response.autoVerifyEmail = true;
+              }
+              if (event.request.userAttributes.hasOwnProperty("phone_number")) {
+                event.response.autoVerifyPhone = true;
+              }
+              return event;
+            };
+        Role: !GetAtt 
+          LambdaExecutionRole.Arn
+        Timeout: 4 # seconds
 
   LambdaExecutionRole:
-    Type: 'AWS::IAM::Role'
+    Type: "AWS::IAM::Role"
     Properties:
-      RoleName: lorelibrary-lambda-role
+      RoleName: lorelibrary-lambda-role 
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: 'sts:AssumeRole'
+            Action: "sts:AssumeRole"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
         - PolicyName: LoreLibraryLambdaPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - 'dynamodb:*'
-                  - 's3:*'
-                Resource: '*'
+                  - "dynamodb:*"
+                  - "s3:*"
+                  - "cognito-idp:*"      
+                  - "cognito-idp:AdminCreateUser"
+                  - "cognito-idp:AdminUpdateUserAttributes"
+                  - "cognito-idp:AdminConfirmSignUp"
+                  - "cognito-idp:ListUsers"
+                Resource: "*"
 
   LambdaInvokePermission:
-    Type: 'AWS::Lambda::Permission'
+    Type: "AWS::Lambda::Permission"
     Properties:
       FunctionName: !GetAtt LoreLibraryLambda.Arn
-      Action: 'lambda:InvokeFunction'
+      Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*'
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*"
+  
+  PreSignUpLambdaInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !GetAtt PreSignUpLambda.Arn
+      Action: "lambda:InvokeFunction"
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
 
   AuthenticationInvokePermission:
-    Type: 'AWS::Lambda::Permission'
+    Type: "AWS::Lambda::Permission"
     Properties:
       FunctionName: !GetAtt CustomAuthorizerLambda.Arn
-      Action: 'lambda:InvokeFunction'
+      Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*'
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*"
 
   LoreLibraryApiGateway:
-    Type: 'AWS::ApiGatewayV2::Api'
+    Type: "AWS::ApiGatewayV2::Api"
     Properties:
       BodyS3Location:
         Bucket: !Ref OpenApiSpecS3Bucket
         Key: !Ref OpenApiSpecS3Key
-        
+
   # LorelibraryAuthorizer:
   #   Type: 'AWS::ApiGatewayV2::Authorizer'
   #   Properties:
@@ -165,30 +301,43 @@ Resources:
   #       - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
   #     EnableSimpleResponses: true
   #     Name: lorelibrary-gateway-authorizer
-    
+
+  ApiGatewayCognitoAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref LoreLibraryApiGateway
+      AuthorizerType: JWT
+      IdentitySource:
+        - "$request.header.Authorization"
+      Name: CognitoAuthorizer
+      JwtConfiguration:
+        Audience:
+          - !Ref CognitoUserPoolClient
+        Issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+
   ApiGatewayIntegration:
-    Type: 'AWS::ApiGatewayV2::Integration'
+    Type: "AWS::ApiGatewayV2::Integration"
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-        - {LambdaArn: !GetAtt LoreLibraryLambda.Arn}
-      PayloadFormatVersion: '2.0'
+        - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
+      PayloadFormatVersion: "2.0"
 
   ApiGatewayDeployment:
-    Type: 'AWS::ApiGatewayV2::Deployment'
+    Type: "AWS::ApiGatewayV2::Deployment"
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
     DependsOn: ApiGatewayIntegration
 
   ApiGatewayStage:
-    Type: 'AWS::ApiGatewayV2::Stage'
+    Type: "AWS::ApiGatewayV2::Stage"
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: prod
-
+   
 Outputs:
   WebsiteURL:
     Description: URL for the website hosted on the S3 bucket
@@ -197,6 +346,10 @@ Outputs:
   DataTableName:
     Description: Name of the DynamoDB table
     Value: !Ref DataTable
+
+  UserTableName:
+    Description: Name of the user DynamoDB table
+    Value: !Ref UserTable
 
   ApiGatewayURL:
     Description: URL for the API Gateway

@@ -18,6 +18,19 @@ tags:
     description: Operations related to resources
   - name: search
     description: Search and browse data
+x-amazon-apigateway-cors:
+  allowOrigins:
+    - '*'
+  allowMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+  allowHeaders:
+    - "*"
+  exposeHeaders:
+    - "*"
+  maxAge: 86400
 paths:
   /worlds:
     get:
@@ -510,7 +523,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignIn'
+              $ref: '#/components/schemas/SignUp'
       responses:
         '201':
           description: User created successfully
@@ -795,6 +808,15 @@ components:
         username:
           type: string
         password:
+          type: string
+    SignUp:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
           type: string
     Token:
       type: object

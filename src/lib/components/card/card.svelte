@@ -6,7 +6,7 @@
 <div
     class="card preset-filled-surface-100-900 border-[1px] border-surface-200-800 card-hover divide-surface-200-800 block max-w-md divide-y overflow-hidden"
 >
-    <a href="/world/{card.worldid}">
+    <a href="/{card.worldid}">
         <header>
             <img
                 src={card.imgSrc}

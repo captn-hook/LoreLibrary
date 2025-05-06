@@ -18,19 +18,62 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-import bcrypt from 'bcrypt';
+import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
 import jwt from 'jsonwebtoken';
+
+const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
+const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
+const userPoolId = process.env.COGNITO_USER_POOL_ID;
+const issuer = process.env.COGNITO_ISSUER;
+const audience = process.env.COGNITO_AUDIENCE;
+
+// Function to get the signing key
+function getSigningKey(header, callback) {
+    client.getSigningKey(header.kid, (err, key) => {
+        if (err) {
+            callback(err);
+        } else {
+            const signingKey = key.getPublicKey();
+            callback(null, signingKey);
+        }
+    });
+}
+
+// Function to verify the token
+function verifyToken(token) {
+    return new Promise((resolve, reject) => {
+        jwt.verify(
+            token,
+            getSigningKey,
+            {
+                audience: audience,
+                issuer: issuer,
+                algorithms: ['RS256'],
+            },
+            (err, decoded) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(decoded);
+                }
+            }
+        );
+    });
+}
 
 const s3Client = new S3Client();
 
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
-const dataTable = process.env.TABLE_NAME;
+const userTable = process.env.USER_TABLE;
+const dataTable = process.env.DATA_TABLE;
 const bucketname = process.env.BUCKET_NAME;
 
-class SignIn {
-    constructor(username, password) {
+class SignUp {
+    constructor(username, email, password) {
         this.username = username; // string
+        this.email = email; // string
         this.password = password; // string, hashed
     }
 }
@@ -48,9 +91,12 @@ class User {
     }
 }
 class World {
-    constructor(name, content = [], tags = [], parentId = null, collections = []) {
+    constructor(name, content = [], description = '', image = '', style = '', tags = [], parentId = null, collections = []) {
         this.name = name; // stringg
         this.content = content; // array of strings
+        this.description = description; // string
+        this.image = image; // string
+        this.style = style; // string
         this.tags = tags; // array of strings
         this.parentId = parentId; // username
         this.ownerId = parentId; // username
@@ -89,9 +135,6 @@ class Resource {
 
 function notFound(message) {
     return {
-        headers: {
-            "Access-Control-Allow-Origin": "*"
-        },
         statusCode: 404,
         body: JSON.stringify({ message })
     };
@@ -99,9 +142,6 @@ function notFound(message) {
 
 function notImplemented(message) {
     return {
-        headers: {
-            "Access-Control-Allow-Origin": "*"
-        },
         statusCode: 501,
         body: JSON.stringify({ message })
     };
@@ -109,23 +149,20 @@ function notImplemented(message) {
 
 function badRequest(message) {
     return {
-        headers: {
-            "Access-Control-Allow-Origin": "*"
-        },
         statusCode: 400,
         body: JSON.stringify({ message })
     };
 }
 
-async function dynamo_get_all(model) {
+async function dynamo_get_all(model, worldId = '', table = dataTable) {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
     }
 
-    const prefix = model.name.toUpperCase() + '#';
+    const prefix = model.name.toUpperCase() + '#' + worldId;
     // Get all items in the table with the given prefix
     const params = {
-        TableName: dataTable,
+        TableName: table,
         KeyConditionExpression: 'PK = :pk',
         ExpressionAttributeValues: {
             ':pk': prefix
@@ -147,7 +184,7 @@ async function dynamo_get_all(model) {
     }
 }
 
-async function dynamo_get_id(model, name, worldId = '') {
+async function dynamo_get_id(model, name, worldId = '', table = dataTable) {
     if (!model || !model.name) {
         console.log('model', model);
         throw new Error("Invalid model: 'model.name' is required.");
@@ -160,7 +197,7 @@ async function dynamo_get_id(model, name, worldId = '') {
     const prefix = model.name.toUpperCase() + '#' + worldId;
     // Get an item by prefix and name
     const params = {
-        TableName: dataTable,
+        TableName: table,
         Key: {
             PK: prefix,
             SK: name
@@ -174,7 +211,7 @@ async function dynamo_get_id(model, name, worldId = '') {
                 return new User(SK, rest.content, rest.worlds);
             } else if (model === World) {
                 const { PK, SK, ...rest } = data.Item;
-                return new World(SK, rest.content, rest.tags, rest.parentId, rest.collections);
+                return new World(SK, rest.content, rest.description, rest.image, rest.style, rest.tags, rest.parentId, rest.collections);
             }
             else if (model === Collection) {
                 const { PK, SK, ...rest } = data.Item;
@@ -193,7 +230,7 @@ async function dynamo_get_id(model, name, worldId = '') {
     }
 }
 
-async function dynamo_create(data, model, username, worldId = '', parentId = '') {
+async function dynamo_create(data, model, username, worldId = '', parentId = '', table = dataTable) {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
     }
@@ -208,7 +245,7 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '')
 
     // Try to get the item in case it already exists
     const params = {
-        TableName: dataTable,
+        TableName: table,
         Key: {
             PK: prefix,
             SK: data.name
@@ -231,6 +268,9 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '')
             PK: prefix,
             SK: data.name,
             content: data.content || [],
+            description: data.description || '',
+            image: data.image || '',
+            style: data.style || '',
             tags: data.tags || [],
             parentId: pId,
             ownerId: username,
@@ -275,7 +315,7 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '')
         // if world, add it to the user
         const userPrefix = 'USER#';
         const userParams = {
-            TableName: dataTable,
+            TableName: userTable,
             Key: {
                 PK: userPrefix,
                 SK: username
@@ -292,7 +332,7 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '')
         user.worlds.push(data.name);
         transactionItems.push({
             Put: {
-                TableName: dataTable,
+                TableName: userTable,
                 Item: user
             }
         });
@@ -359,7 +399,7 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '')
     }
 }
 
-async function dynamo_update(model, data, username, wolrdId = '') {
+async function dynamo_update(model, data, username, wolrdId = '', table = dataTable) {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
     }
@@ -372,7 +412,7 @@ async function dynamo_update(model, data, username, wolrdId = '') {
     // Update an existing item in the database
     const prefix = model.name.toUpperCase() + '#' + wolrdId;
     const params = {
-        TableName: dataTable,
+        TableName: table,
         Key: {
             PK: prefix,
             SK: data.id
@@ -395,7 +435,7 @@ async function dynamo_update(model, data, username, wolrdId = '') {
     }
 }
 
-async function dynamo_delete(model, id, username, wolrdId = '') {
+async function dynamo_delete(model, id, username, wolrdId = '', table = dataTable) {
     // Delete an item from the database and update associated items
     const prefix = model.name.toUpperCase() + '#' + wolrdId;
 
@@ -442,7 +482,7 @@ async function dynamo_delete(model, id, username, wolrdId = '') {
 
     transactionItems.push({
         Delete: {
-            TableName: dataTable,
+            TableName: table,
             Key: {
                 PK: prefix,
                 SK: id
@@ -464,7 +504,8 @@ async function dynamo_delete(model, id, username, wolrdId = '') {
 
     // remove this item from its parent
     if (item.parentId) {
-        const parent = await dynamo_get_id(model, item.parentId, wolrdId);
+        const parentTable = model.name === 'World' ? userTable : dataTable;
+        const parent = await dynamo_get_id(model, item.parentId, wolrdId, parentTable);
         if (!parent) {
             throw new Error("Parent not found");
         }
@@ -474,7 +515,7 @@ async function dynamo_delete(model, id, username, wolrdId = '') {
         }
         transactionItems.push({
             Put: {
-                TableName: dataTable,
+                TableName: parentTable,
                 Item: parent
             }
         });
@@ -491,65 +532,87 @@ async function dynamo_delete(model, id, username, wolrdId = '') {
     }
 }
 
-async function generateToken(username) {
-    // Generate a token for the user
-    const token = await jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    return token;
-}
-
 async function create_user(data, username) {
-    // Create a new user
-    const prefix = 'USER#';
-
-    const newUser = {
-        PK: prefix,
-        SK: username,
-        password: await bcrypt.hash(data.password, 10),
-        content: [],
-        worlds: []
-    };
-
-    const params = {
-        TableName: dataTable,
-        Item: newUser
-    };
-
     try {
-        const result = await ddbDocClient.send(new PutCommand(params));
-        return new Token(await generateToken(username), username);
-    }
-    catch (err) {
-        console.error("Error creating user:", err);
+        // Create the user in Cognito
+        const signUpCommand = new SignUpCommand({
+            ClientId: clientId,
+            Password: data.password,
+            UserPoolId: userPoolId,
+            Username: username,
+            UserAttributes: [
+                {
+                    Name: "email",
+                    Value: data.email,
+                }
+            ],
+        });
+        
+        const signUpResponse = await cognitoClient.send(signUpCommand);
+
+        console.log("User created in Cognito:", signUpResponse);
+
+        // Create the user in DynamoDB
+        const user = new User(username, [], []);
+        const params = {
+            TableName: userTable,
+            Item: {
+                PK: "USER#",
+                SK: username,
+                content: [],
+                worlds: []
+            }
+        };
+        await ddbDocClient.send(new PutCommand(params));
+        console.log("User created in DynamoDB:", params.Item);
+        
+        // Return a success response
+        return { message: "User created successfully", username };
+    } catch (err) {
+        console.error("Error creating user in Cognito:", err);
+
+        // Handle specific Cognito errors
+        if (err.name === "UsernameExistsException") {
+            throw new Error("User already exists");
+        } else if (err.name === "InvalidPasswordException") {
+            throw new Error("Invalid password");
+        } else if (err.name === "InvalidParameterException") {
+            throw new Error("Invalid parameters");
+        }
+
         throw new Error("Error creating user");
     }
 }
 
 async function login_user(data, username) {
-    // Login user
-    const prefix = 'USER#';
-    const params = {
-        TableName: dataTable,
-        Key: {
-            PK: prefix,
-            SK: username
-        }
-    };
 
     try {
-        const result = await ddbDocClient.send(new GetCommand(params));
-        if (!result.Item) {
-            return badRequest('User not found');
-        }
-        const user = result.Item;
-        const match = await bcrypt.compare(data.password, user.password);
-        if (!match) {
-            return badRequest('Invalid password');
-        }
-        const token = await generateToken(username);
+        // Authenticate the user with Cognito
+        const params = {
+            AuthFlow: "USER_PASSWORD_AUTH",
+            ClientId: clientId,
+            AuthParameters: {
+                USERNAME: username,
+                PASSWORD: data.password,
+            },
+        };
+
+        const command = new InitiateAuthCommand(params);
+        const response = await cognitoClient.send(command);
+
+        // If authentication is successful, return the token
+        const token = response.AuthenticationResult.IdToken;
         return new Token(token, username);
-    }
-    catch (err) {
-        console.error("Error logging in user:", err);
+    } catch (err) {
+        console.error("Error logging in user with Cognito:", err);
+
+        // Handle specific Cognito errors
+        if (err.name === "NotAuthorizedException") {
+            return badRequest("Invalid username or password");
+        } else if (err.name === "UserNotFoundException") {
+            return badRequest("User not found");
+        }
+
         throw new Error("Error logging in user");
     }
 }
@@ -576,8 +639,10 @@ export const handler = async (e) => {
         try {
             username = e.requestContext.authorizer.lambda.username;
         } catch (error) {
-            console.log('Error getting username from authorizer:', error);
+            console.log('e, requestContext', e.requestContext);
+            console.error('Error getting username from authorizer:', error);
         }
+
 
         try {
             pathParameters = e.pathParameters;
@@ -598,9 +663,6 @@ export const handler = async (e) => {
             // Get all worlds, paginated with limit and offset
             const worlds = await dynamo_get_all(World)
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(worlds)
             };
@@ -611,9 +673,6 @@ export const handler = async (e) => {
             const world = await dynamo_create(e.body, World, username);
             // Return world
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(world)
             };
@@ -621,17 +680,15 @@ export const handler = async (e) => {
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
             // Check if user already exists
-            const userExists = await dynamo_get_id(User, e.body.username);
+            const userExists = await dynamo_get_id(User, e.body.username, '', userTable);
             if (userExists) {
                 return badRequest('User already exists');
             }
+            console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
             // Create user
             const token = await create_user(e.body, e.body.username);
             // Return token
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(token)
             };
@@ -642,9 +699,6 @@ export const handler = async (e) => {
             // Login user
             const token = await login_user(e.body, e.body.username);
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(token)
             };
@@ -656,9 +710,6 @@ export const handler = async (e) => {
 
             const users = await dynamo_get_all(User);
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(users)
             };
@@ -667,8 +718,8 @@ export const handler = async (e) => {
         else if (operation === 'GET' && path.startsWith('/users/')) {
             // Get user by ID
             if (!username) { return badRequest('Invalid authentication'); }
-
-            let user = await dynamo_get_id(User, username);
+            console.log('username', username, 'table', userTable);
+            let user = await dynamo_get_id(User, username, '', userTable);
             if (!user) {
                 return notFound('User not found');
             }
@@ -676,9 +727,6 @@ export const handler = async (e) => {
             delete user.password;
 
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(user)
             };
@@ -690,9 +738,6 @@ export const handler = async (e) => {
             const updatedUser = await dynamo_update(User, e.body, username);
             // Return updated user
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify(updatedUser)
             };
@@ -708,9 +753,6 @@ export const handler = async (e) => {
 
             // Return success
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 200,
                 body: JSON.stringify({ message: 'User deleted' })
             };
@@ -739,9 +781,6 @@ export const handler = async (e) => {
                     return notFound('World not found');
                 }
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(world)
                 };
@@ -754,9 +793,6 @@ export const handler = async (e) => {
 
                 // Return updated world
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(world)
                 };
@@ -768,9 +804,6 @@ export const handler = async (e) => {
                 const collection = await dynamo_create(e.body, Collection, username, worldId, e.body.parentId);
                 // Return collection
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(collection)
                 };
@@ -786,9 +819,6 @@ export const handler = async (e) => {
 
                 // Return success
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify({ message: 'World deleted' })
                 };
@@ -805,9 +835,6 @@ export const handler = async (e) => {
                     return notFound('Collection not found');
                 }
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(collection)
                 };
@@ -824,9 +851,6 @@ export const handler = async (e) => {
                 }
                 // Return updated collection
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(updatedCollection)
                 };
@@ -840,9 +864,6 @@ export const handler = async (e) => {
                 const entry = await dynamo_create(e.body, Entry, username, worldId, collectionId);
                 // Return entry
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
@@ -860,9 +881,6 @@ export const handler = async (e) => {
 
                 // Return success
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify({ message: 'Collection deleted' })
                 };
@@ -881,9 +899,6 @@ export const handler = async (e) => {
                     return notFound('Entry not found');
                 }
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
@@ -902,9 +917,6 @@ export const handler = async (e) => {
                 }
                 // Return updated entry
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify(entry)
                 };
@@ -924,37 +936,26 @@ export const handler = async (e) => {
 
                 // Return success
                 return {
-                    headers: {
-                        "Access-Control-Allow-Origin": "*"
-                    },
                     statusCode: 200,
                     body: JSON.stringify({ message: 'Entry deleted' })
                 };
             }
         }
         return {
-            headers: {
-                "Access-Control-Allow-Origin": "*"
-            },
             statusCode: 404,
             body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
         };
     } catch (err) {
+        console.error("Error processing request:", err);
         // if error is Item already exists, return 409
         if (err.message === 'Item already exists') {
             return {
-                headers: {
-                    "Access-Control-Allow-Origin": "*"
-                },
                 statusCode: 409,
                 body: JSON.stringify({ message: err.message })
             };
         }
 
         return {
-            headers: {
-                "Access-Control-Allow-Origin": "*"
-            },
             statusCode: 500,
             body: JSON.stringify({ message: err.message })
         };

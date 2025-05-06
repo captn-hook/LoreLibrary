@@ -1,7 +1,8 @@
 'use client';
 
-import { world as worldContext} from "$lib/context/worldContext.svelte";
+import { world as worldContext} from "$lib/state/worldState.svelte";
 import {World} from "$lib/types/world";
+import {Collection} from "$lib/types/collection";
 import { Entry } from "$lib/types/entry";
 import { get } from 'svelte/store';
 import { browser } from '$app/environment';
@@ -18,68 +19,25 @@ function getWorldId() {
 }
 
 export function getWorld(worldId: string) { //TO-DO - this should not return the placeholder world data, but the real one and return errors with issues
-    return fetch(`${PUBLIC_API_URL}/world/${worldId}`)
+    return fetch(`${PUBLIC_API_URL}/${worldId}`)
         .then((response) => {
             if (!response.ok) {
-                console.warn('Network response was not ok, returning base world data.', response);
+                console.warn('Network response was not ok,.', response);
                 return null; // Return null to handle in the next step
             }
             return response.json();
         })
         .then((data) => {
             if (!data) {
-                // If no data, return base world data
-                return new World(
-                    worldId,
-                    "World Name",
-                    [],
-                    [],
-                    "No Description",
-                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg",
-                    "unknown",
-                    new Entry(
-                        worldId,
-                        "World Name",
-                        [
-                            { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-                            { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
-                        ]
-                    )
-                );
+                console.warn('No data received, returning base world data.');
+                return null; // Return null to handle in the next step
             }
-            console.log("World data:", data); // Log the fetched data
-            let world = World.fromJson(data);
-            console.log("World:", world); // Log the mapped world
-            world.entry = new Entry( // Change later, component showcase for now
-                worldId,
-                "World Name",
-                [
-                    { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-                    { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
-                ]
-            );
-            return world;
+            console.log("World JSON:", data); // Log the JSON data
+            return World.fromJson(data); // Convert the JSON data to a World object
         })
         .catch((error) => {
             console.error("Error fetching world:", error); // Log any errors
-            // Return base world data in case of error
-            return new World(
-                worldId,
-                "World Name",
-                [],
-                [],
-                "No Description",
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg",
-                "unknown",
-                new Entry(
-                    worldId,
-                    "World Name",
-                    [
-                        { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-                        { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
-                    ]
-                )
-            );
+            return null; // Return null in case of error
         });
 }
 
@@ -99,4 +57,51 @@ export function getWorlds() {
             return []; // Return an empty array in case of error
         });
 }
+
+
+export function getCollection(worldId: string, collectionId: string) {
+    return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}`)
+        .then((response) => {
+            if (!response.ok) {
+                console.warn('Network response was not ok,.', response);
+                return null; // Return null to handle in the next step
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (!data) {
+                console.warn('No data received, returning base world data.');
+                return null; // Return null to handle in the next step
+            }
+            return Collection.fromJson(data); // Convert the JSON data to a World object
+        })
+        .catch((error) => {
+            console.error("Error fetching world:", error); // Log any errors
+            return null; // Return null in case of error
+        });
+}
+
+export function getEntry(worldId: string, collectionId: string, entryId: string) {
+    return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`)
+    .then((response) => {
+        if (!response.ok) {
+            console.warn('Network response was not ok,.', response);
+            return null; // Return null to handle in the next step
+        }
+        return response.json();
+    })
+    .then((data) => {
+        if (!data) {
+            console.warn('No data received, returning base world data.');
+            return null; // Return null to handle in the next step
+        }
+        console.log("Entry JSON:", data); // Log the JSON data
+        return Entry.fromJson(data); // Convert the JSON data to a World object
+    })
+    .catch((error) => {
+        console.error("Error fetching world:", error); // Log any errors
+        return null; // Return null in case of error
+    });
+
+}  
                     

@@ -1,20 +1,24 @@
 #!/bin/bash
 
 # Define variables
-url="https://440cybvvr6.execute-api.us-west-2.amazonaws.com/prod"
+url="https://0ymvlkimq2.execute-api.us-west-2.amazonaws.com/prod"
 token=""
 username=""
+email1="hookt@oregonstate.edu"
+emalil2="hooktristanshs@gmail.com"
+email3="tristanskyhook@gmail.com"
 
 # Special functions for signup and login
 signup() {
     local user=$1
     local password=$2
+    local email=$3
     
     # Perform signup
     local response=$(curl -X 'POST' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
-        -d "{\"username\":\"$user\", \"password\":\"$password\"}" \
+        -d "{\"username\":\"$user\", \"password\":\"$password\", \"email\":\"$email\"}" \
         "$url/signup")
 
     # Check if signup was successful
@@ -98,6 +102,9 @@ get_user() {
 put_world() {
     local world_name=$1
     local world_content=$2
+    local world_description='a sample description for the world'
+    local world_image='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg'
+    local wolrd_style=''
     local world_id=''
     local world_tags=$3
     local world_parentId=''
@@ -114,7 +121,7 @@ put_world() {
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
-        -d "{\"name\":\"$world_name\", \"content\":$world_content, \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
+        -d "{\"name\":\"$world_name\", \"content\":$world_content, \"description\":\"$world_description\", \"image\":\"$world_image\", \"style\":\"$wolrd_style\", \"id\":\"$world_id\", \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
         "$url/worlds")
 
     # Check if PUT request was successful
@@ -287,10 +294,10 @@ entry4_tags='["ship", "hive", "biopunk"]'
 # Main script execution
 
 # Create user
-signup grubman2 iloveworms123
+signup grubman2 iLoveworms123! "$email1"
 
 # Login user, not strictly necessary to get token, but useful for testing
-login grubman2 iloveworms123
+login grubman2 iLoveworms123!
 
 # Get user information
 get_user grubman2

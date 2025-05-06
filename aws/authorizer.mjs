@@ -3,26 +3,30 @@ import {
     DynamoDBDocumentClient,
     GetCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { CognitoJwtVerifier } from "aws-jwt-verify";
 
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+const userPoolId = process.env.COGNITO_USER_POOL_ID;
+const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
 
-// async function generateToken(username) {
-//     // Generate a token for the user
-//     const token = await jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-//     return token;
-// }
-
-const tableName = process.env.TABLE_NAME;
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
-function verifyToken(token) {
+// Function to verify the token
+async function verifyToken(token) {
+    console.log('Verifying token: ', token);
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        return decoded;
+        const verifier = CognitoJwtVerifier.create({
+            userPoolId,
+            tokenUse: "id",
+            clientId: clientId,
+        });
+
+        const payload = await verifier.verify(token);
+        console.log('Decoded JWT:', payload);
+        return payload['cognito:username'];
     } catch (err) {
-        return null;
+        console.error('Error verifying JWT:', err);
+        throw err;
     }
 }
 
@@ -31,67 +35,37 @@ export const handler = async (e) => {
     try {
         let token;
 
-        console.log('tokeeene', e.Headers);
-        console.log('tokeeene', e.requestBody);
-
         try {
             token = e.identitySource[0]
-            console.log('tokene', token);
         } catch (err) {
-            console.log('Error getting token', err);
+            console.log('Error getting token from request: ', e, ' got error: ', err);
             return {
                 'isAuthorized': false
             }
         }
 
         if (!token) {
-            console.log('No token found');
+            console.log('No token found in request: ', e);
             return {
                 'isAuthorized': false
             }
         }
 
-        const decoded = verifyToken(token);
-
-        if (!decoded) {
-            console.log('Invalid token');
-            return {
-                'isAuthorized': false,
-                'context': {
-                    'username': decoded.username,
-                }
-            }
-        }
-
-        const params = {
-            TableName: process.env.TABLE_NAME,
-            Key: {
-                PK: 'USER#',
-                SK: decoded.username
-            },
-        }
-
-        console.log('params', params);
-
-        const user = await docClient.send(new GetCommand(params));
-
-        console.log('user', user.Item.SK);
-
-        if (!user.Item) {
-            console.log('User not found');
+        const decoded = await verifyToken(token).catch((err) => {
+            console.log('Error verifying token for request: ', e, ' got error: ', err);
             return {
                 'isAuthorized': false
             }
-        }
-        console.log('returning authorized for user', user.Item.SK);
+        });
+        console.log('Decoded token: ', decoded);
         return {
             'isAuthorized': true,
             'context': {
-                'username': user.Item.SK
+                'username': decoded,
             }
         };
     } catch (err) {
-        console.log('Error', err);
+        console.log('Error in authorizer: ', e, ' got error: ', err);
         return {
             'isAuthorized': false
         }
