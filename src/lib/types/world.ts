@@ -1,5 +1,5 @@
-import type { CardType } from '$lib/components/card/card'; // Import the type
-import { Entry } from '$lib/types/entry'; // Import the Entry type
+import type { CardType } from '$lib/components/card/card'; 
+import { Entry } from '$lib/types/entry'; 
 export class World {
     id: string;
     collections: string[];
@@ -8,9 +8,11 @@ export class World {
     date: string;
     content: { key: string; value: any }[];
     img_url: string;
-    ownerId: string; // Assuming ownerId is a property of World
+    ownerId: string;
+    styling: { name: string; styling: string[]};
 
-    constructor(id: string, collections: string[], tags: string[], description: string, date: string, content: { key: string; value: any }[], img_url: string, ownerId: string) {
+
+    constructor(id: string, collections: string[], tags: string[], description: string, date: string, content: { key: string; value: any }[], img_url: string, ownerId: string, styling: { name: string; styling: string[]}) {
         this.id = id;
         this.collections = collections;
         this.tags = tags;
@@ -18,14 +20,15 @@ export class World {
         this.date = date;
         this.content = content;
         this.img_url = img_url;
-        this.ownerId = ownerId; // Assuming ownerId is the id for simplicity
+        this.ownerId = ownerId;
+        this.styling = styling; 
     }
 
     toCardType(): CardType {
         return {
             imgSrc: this.img_url,
             worldid: this.id,
-            category: this.tags.toString(), // Join keys into a single string
+            category: this.tags, // Join keys into a single string
             title: this.id,
             description: this.description,
             author: this.ownerId, // Assuming ownerId is the id
@@ -46,7 +49,8 @@ export class World {
                 return { key, value };
             }),
             json.content[1].image_url || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg',
-            json.ownerId || 'unknown'
+            json.ownerId || 'unknown',
+            {name: "custom", styling: json.styling || []} 
 
         );
     }

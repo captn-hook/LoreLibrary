@@ -1,15 +1,20 @@
 <script>
     import {signup} from '$lib/scripts/user'
+    import { writable } from 'svelte/store';
     export let open = false;
     export let onClose = () => {};
     export let openLogin = () => {};
   
     let username = '';
     let password = '';
+    let email = '';
+    let errMessage = writable('');
   
-    function handleSignUp() {
-     signup(username, password);
-    onClose();
+    async function handleSignUp() {
+     errMessage.set( await signup(username, email, password));
+        if (!errMessage) {
+            onClose();
+        }
     }
 
     function handleLogin() {
@@ -44,6 +49,14 @@
         style="background-color: #708090;"
     >
         <h2 id="login-title" class="text-xl font-bold mb-4 text-primary">Sign Up</h2>
+        <label for="email" class="block text-primary font-medium mb-1 text-left">Email</label>
+        <input
+            id="email"
+            type="text"
+            placeholder="Email"
+            bind:value={email}
+            class="input input-bordered w-full mb-4 text-primary placeholder-primary"
+        />
         <label for="username" class="block text-primary font-medium mb-1 text-left">Username</label>
         <input
             id="username"
@@ -60,9 +73,16 @@
             bind:value={password}
             class="input input-bordered w-full mb-4 text-primary placeholder-primary"
         />
+        {#if $errMessage}
+            <p class="text-red-500 text-sm mb-4">{$errMessage}</p>
+        {/if}
         <p>Already have an account? <a href="#" on:click={handleLogin} class="text-primary underline cursor-pointer">Login</a></p>
         <div class="flex justify-center"></div>
-            <button on:click={handleSignUp} class="btn preset-tonal-primary mt-4 text-primary">Sign Up</button>
+            <button 
+            on:click={handleSignUp}
+            class="btn preset-tonal-primary mt-4 text-primary"
+            disabled={!username || !email || !password}
+            >Sign Up</button>
         </div>
     </div>
 {/if}
