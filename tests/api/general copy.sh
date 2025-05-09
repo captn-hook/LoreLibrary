@@ -248,77 +248,47 @@ get_entry() {
 }
 
 # World Information
-world_name="Grub World"
-world_content=$(jq -n --arg text "Grub World" --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg" --arg name "Grub World" \
+world_name="Grub Fantasy Realm"
+world_content=$(jq -n --arg text "Grub Fantasy Realm" --arg image_url "https://thumbs.dreamstime.com/z/fantasy-landscape-waterfalls-flowers-tropical-plants-foreground-panorama-fantasy-landscape-waterfalls-panorama-305881983.jpg?ct=jpeg" --arg name "Grub Fantasy Realm" \
     '[{"text": $text}, {"image_url": $image_url}, {"name": $name}]')
-world_tags='["grub", "bio", "biopunk", "biologics", "hive", "ship"]'
+world_tags='["grub", "fantasy", "magic", "realm", "creatures"]'
 
 # Collections
-collection1_name="Biologics"
-collection1_content=$(jq -n --arg text "Biologics is the branch of science that deals with the study of living organisms and their interactions with the environment. Throughout our grub history, we have perfected the art of perfecting ourselves." \
+collection1_name="Magical Biologics"
+collection1_content=$(jq -n --arg text "Magical Biologics is the study of living organisms infused with magical properties. In the Grub Fantasy Realm, grubs are often imbued with mystical powers." \
     '[{"text": $text}]')
-collection1_tags='["biologics", "bio", "biopunk"]'
+collection1_tags='["biologics", "magic", "fantasy"]'
 
-collection2_name="Bio Hives"
-collection2_content=$(jq -n --arg text "Bio Hives are the central hubs of our reproduction and growth. They are the heart of our society, where we cultivate and nurture our grubs." \
+collection2_name="Enchanted Hives"
+collection2_content=$(jq -n --arg text "Enchanted Hives are mystical structures where grubs are nurtured and grow. These hives are protected by magical wards and are central to the realm's ecosystem." \
     '[{"text": $text}]')
-collection2_tags='["hive", "grub"]'
+collection2_tags='["hive", "magic", "grub"]'
 
-collection3_name="Bio Ships"
-collection3_content=$(jq -n --arg text "Bio Ships are our vessels of exploration and expansion. They are living organisms that have been genetically engineered to travel through space." \
+collection3_name="Mystic Vessels"
+collection3_content=$(jq -n --arg text "Mystic Vessels are living, enchanted creatures used for transportation and exploration. They are bred and trained to traverse the magical landscapes of the realm." \
     '[{"text": $text}]')
-collection3_tags='["ship"]'
-
-collection4_name="Predatory Organisms"
-collection4_content=$(jq -n --arg text "Predatory Organisms are the apex predators of our world. They are genetically engineered to protect our hives and ships from external threats." \
-    '[{"text": $text}]')
-collection4_tags='["predator", "defense", "biopunk"]'
-
-collection5_name="Grub Lore"
-collection5_content=$(jq -n --arg text "Grub Lore is the collection of myths, legends, and historical accounts of our species. It serves as a guide to our past and a warning for our future." \
-    '[{"text": $text}]')
-collection5_tags='["lore", "history", "grub"]'
+collection3_tags='["ship", "magic", "fantasy"]'
 
 # Entries
-entry1_name="Grub"
-entry1_content=$(jq -n --arg text "Grubs are the larval stage of our species. They are small, soft-bodied organisms that feed on organic matter." \
+entry1_name="Mystic Grub"
+entry1_content=$(jq -n --arg text "Mystic Grubs are the larval stage of magical creatures in the realm. They possess innate magical abilities and are vital to the ecosystem." \
     '[{"text": $text}]')
-entry1_tags='["grub"]'
+entry1_tags='["grub", "magic"]'
 
-entry2_name="Drone"
-entry2_content=$(jq -n --arg text "When most grubs reach maturity, they become drones. Drones are the workers of our society, responsible for gathering food and maintaining the hives." \
+entry2_name="Hive Guardian"
+entry2_content=$(jq -n --arg text "Hive Guardians are mature grubs that have evolved to protect the Enchanted Hives. They are fierce and loyal, using their magical abilities to ward off threats." \
     '[{"text": $text}]')
-entry2_tags='["grub", "hive"]'
+entry2_tags='["grub", "hive", "magic"]'
 
-entry3_name="Vessel"
-entry3_content=$(jq -n --arg text "Vessels are a grub product, created by preventing the grub from maturing into a drone. Vessels are used to transport food and other resources." \
+entry3_name="Ethereal Vessel"
+entry3_content=$(jq -n --arg text "Ethereal Vessels are grubs that have been transformed into magical transport creatures. They are used to carry resources and travelers across the realm." \
     '[{"text": $text}]')
-entry3_tags='["grub", "ship", "hive"]'
+entry3_tags='["grub", "ship", "magic"]'
 
-entry4_name="Vampifier"
-entry4_content=$(jq -n --arg text "The Vampifier is a predatory class of ship. It was designed to establish new hives in hostile environments. It is equipped with advanced weaponry and defensive systems." \
+entry4_name="Arcane Predator"
+entry4_content=$(jq -n --arg text "The Arcane Predator is a powerful, predatory creature bred to defend the realm. It is a hybrid of a grub and a magical beast, equipped with both physical and magical defenses." \
     '[{"text": $text}]')
-entry4_tags='["ship", "hive", "biopunk"]'
-
-entry5_name="Hive Guardian"
-entry5_content=$(jq -n --arg text "Hive Guardians are genetically engineered creatures designed to protect the Bio Hives. They are fierce and loyal, defending the hive at all costs." \
-    '[{"text": $text}]')
-entry5_tags='["hive", "defense", "biopunk"]'
-
-entry6_name="Grub Elder"
-entry6_content=$(jq -n --arg text "Grub Elders are the oldest and wisest of our species. They are the keepers of Grub Lore and guide our society with their knowledge." \
-    '[{"text": $text}]')
-entry6_tags='["lore", "history", "grub"]'
-
-entry7_name="Predator Drone"
-entry7_content=$(jq -n --arg text "Predator Drones are specialized drones designed for combat. They are equipped with sharp appendages and venomous stingers to neutralize threats." \
-    '[{"text": $text}]')
-entry7_tags='["predator", "drone", "defense"]'
-
-entry8_name="The Great Swarm"
-entry8_content=$(jq -n --arg text "The Great Swarm is a legendary event in Grub Lore, where countless grubs united to overcome a catastrophic threat to their existence." \
-    '[{"text": $text}]')
-entry8_tags='["lore", "history", "grub"]'
+entry4_tags='["ship", "hive", "magic", "fantasy"]'
 
 # Main script execution
 
@@ -344,14 +314,10 @@ echo " >>>>>>>>>>>>>>>>>>> world successfully created"
 put_collection "$collection1_name" "$collection1_content" "$collection1_tags" "$world_name"
 put_collection "$collection2_name" "$collection2_content" "$collection2_tags" "$world_name"
 put_collection "$collection3_name" "$collection3_content" "$collection3_tags" "$world_name"
-put_collection "$collection4_name" "$collection4_content" "$collection4_tags" "$world_name"
-put_collection "$collection5_name" "$collection5_content" "$collection5_tags" "$world_name"
 
 get_collection "$collection1_name" "$world_name"
 get_collection "$collection2_name" "$world_name"
 get_collection "$collection3_name" "$world_name"
-get_collection "$collection4_name" "$world_name"
-get_collection "$collection5_name" "$world_name"
 
 echo " >>>>>>>>>>>>>>>>>>> collections successfully created"
 
@@ -360,18 +326,10 @@ put_entry "$entry1_name" "$entry1_content" "$entry1_tags" "$collection2_name" "$
 put_entry "$entry2_name" "$entry2_content" "$entry2_tags" "$collection2_name" "$world_name"
 put_entry "$entry3_name" "$entry3_content" "$entry3_tags" "$collection1_name" "$world_name"
 put_entry "$entry4_name" "$entry4_content" "$entry4_tags" "$collection3_name" "$world_name"
-put_entry "$entry5_name" "$entry5_content" "$entry5_tags" "$collection2_name" "$world_name"
-put_entry "$entry6_name" "$entry6_content" "$entry6_tags" "$collection5_name" "$world_name"
-put_entry "$entry7_name" "$entry7_content" "$entry7_tags" "$collection4_name" "$world_name"
-put_entry "$entry8_name" "$entry8_content" "$entry8_tags" "$collection5_name" "$world_name"
 
 get_entry "$entry1_name" "$collection2_name" "$world_name"
 get_entry "$entry2_name" "$collection2_name" "$world_name"
 get_entry "$entry3_name" "$collection1_name" "$world_name"
 get_entry "$entry4_name" "$collection3_name" "$world_name"
-get_entry "$entry5_name" "$collection2_name" "$world_name"
-get_entry "$entry6_name" "$collection5_name" "$world_name"
-get_entry "$entry7_name" "$collection4_name" "$world_name"
-get_entry "$entry8_name" "$collection5_name" "$world_name"
 
 echo " >>>>>>>>>>>>>>>>>>> entries successfully created"
