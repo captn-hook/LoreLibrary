@@ -6,6 +6,7 @@
     import Navbar from "$lib/components/navigationComponents/navbar.svelte";
   import { showStyleControls } from "$lib/state/editState.svelte";
   import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
+  import Router from "$lib/components/navigationComponents/router.svelte";
     export let data;
     const getNavItems = (collections: Array<{ key: string } | string> | undefined) => 
             collections?.map((collection) => ({
@@ -23,6 +24,7 @@
     {console.log(world)}
     <Navbar navItems={getNavItems(world?.collections)} />
     <div class="ml-3">
+        <Router/>
             {#each world?.content ?? [] as component}
                 {#if component.key === 'text'}
                     <p>{component.value}</p>

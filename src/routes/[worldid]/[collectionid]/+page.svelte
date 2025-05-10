@@ -10,6 +10,7 @@
     import { onMount } from "svelte";
     import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
     import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
+    import Router from "$lib/components/navigationComponents/router.svelte";
 
 </script>
 {#if browser}
@@ -22,12 +23,13 @@
         }})}
     />
     <div class="ml-3">
+        <Router/>
     {#each collection?.content ?? [] as { key, value }}
         {console.log(value)}
                 {#if key === 'title'}
                     <h1 class="text-4xl font-bold text-primary">{value}</h1>
                 {:else if key === 'text'}
-                    <p>{value}</p>
+                    <p class="text-sm">{value}</p>
                 {:else if key === 'numberedList'}
                     <NumberList items={value} />
                 {:else if key === 'bulletList'}
