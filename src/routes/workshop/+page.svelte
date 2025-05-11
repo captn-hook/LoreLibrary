@@ -1,6 +1,7 @@
 <script lang="ts">
 	import BulletListEditor from "$lib/components/editComponents/textComponents/bulletListEditor.svelte";
 	import NumberListEditor from "$lib/components/editComponents/textComponents/numberListEditor.svelte";
+	import MarkdownEditor from "$lib/components/editComponents/textComponents/markdownEditor.svelte";
 	import { editComponentContents } from "$lib/state/editState.svelte";
 
 	// Recursive type definition for nested bullets
@@ -30,6 +31,10 @@
 		id: number;
 		subItems?: EditableNumber[];
 	};
+	var markdown = {
+		key: "md",
+		value: "# Welcome to the Markdown Reader\nThis is a **Markdown** example to test your component.\n\n## Features\n- **Bold text**: **Bold**\n-"
+	}
 
     function convertToEditableBulletList(bulletList: { text: string; subBullets?: any[] }[]): EditableBullet[] {
         let idCounter = 0;
@@ -60,6 +65,7 @@
 
 		return numberList.map(createEditableNumber);
 	}
+	
 	var editableBulletList = {key: bulletList.key, value: [] as EditableBullet[]};
 	var editableNumberList = {key: numberList.key, value: [] as EditableNumber[]};
 	editableBulletList.value = convertToEditableBulletList(bulletList.value);
@@ -69,6 +75,7 @@
 		if (contents.length === 0) {
 			contents.push(editableBulletList);
 			contents.push(editableNumberList);
+			contents.push(markdown);
 		} 
 		return contents;
 	});
@@ -85,5 +92,8 @@
 		<BulletListEditor items={item.value} index={index} />
 	{:else if item.key == "number"}
 		<NumberListEditor items={item.value} index={index} />
+	{:else if item.key == "md"}
+		<MarkdownEditor content={item.value} index={index} />
+
 	{/if}
 {/each}
