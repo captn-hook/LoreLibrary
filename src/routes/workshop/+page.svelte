@@ -1,17 +1,34 @@
 <script lang="ts">
 	import BulletListEditor from "$lib/components/editComponents/textComponents/bulletListEditor.svelte";
+	import NumberListEditor from "$lib/components/editComponents/textComponents/numberListEditor.svelte";
 	import { editComponentContents } from "$lib/state/editState.svelte";
 
 	// Recursive type definition for nested bullets
-    const bulletList = [
+    var bulletList = {
+		key: "bullet",
+		value: [
 			{ text: "Item 1", subBullets: [{ text: "Sub Item 1" }] },
 			{ text: "Item 2", subBullets: [{ text: "Sub Item 1" }] },
 			{ text: "Item 3", subBullets: [{ text: "Sub Item 1" }] }
-		];
+		]	
+	}
 	type EditableBullet = {
 		text: string;
 		id: number;
 		subBullets?: EditableBullet[];
+	};
+	var numberList = {
+		key: "number",
+		value: [
+		{ text: "Item 1", subItems: [{ text: "Sub Item 1" }] },
+		{ text: "Item 2", subItems: [{ text: "Sub Item 1" }] },
+		{ text: "Item 3", subItems: [{ text: "Sub Item 1" }] }
+		]
+	}
+	type EditableNumber = {
+		text: string;
+		id: number;
+		subItems?: EditableNumber[];
 	};
 
     function convertToEditableBulletList(bulletList: { text: string; subBullets?: any[] }[]): EditableBullet[] {
@@ -29,18 +46,44 @@
         return bulletList.map(createEditableBullet);
     }
 
-    convertToEditableBulletList(bulletList);
+	function convertToEditableNumberList(numberList: { text: string; subItems?: any[] }[]): EditableNumber[] {
+		let idCounter = 0;
 
-    const initialBulletList = convertToEditableBulletList(bulletList);
+		function createEditableNumber(item: { text: string; subItems?: any[] }): EditableNumber {
+			const editableNumber: EditableNumber = {
+				text: item.text,
+				id: idCounter++,
+				subItems: item.subItems ? item.subItems.map(createEditableNumber) : undefined
+			};
+			return editableNumber;
+		}
+
+		return numberList.map(createEditableNumber);
+	}
+	var editableBulletList = {key: bulletList.key, value: [] as EditableBullet[]};
+	var editableNumberList = {key: numberList.key, value: [] as EditableNumber[]};
+	editableBulletList.value = convertToEditableBulletList(bulletList.value);
+	editableNumberList.value = convertToEditableNumberList(numberList.value);
 	// Push to store only if empty
 	editComponentContents.update((contents) => {
-		if (contents.length === 0) contents.push(initialBulletList);
+		if (contents.length === 0) {
+			contents.push(editableBulletList);
+			contents.push(editableNumberList);
+		} 
 		return contents;
+	});
+
+	editComponentContents.subscribe((value) => {
+		console.log("editComponentContents", value);
 	});
 </script>
 
 <h1>Workshop</h1>
 
-{#each $editComponentContents as item, index (index)}
-	<BulletListEditor items={item} index={index} />
+{#each $editComponentContents as item, index}
+	{#if item.key == "bullet"} 
+		<BulletListEditor items={item.value} index={index} />
+	{:else if item.key == "number"}
+		<NumberListEditor items={item.value} index={index} />
+	{/if}
 {/each}

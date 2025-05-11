@@ -17,7 +17,7 @@
     };
 </script>
 
-<li class="my-4 flex flex-col gap-2 text-surface">
+<li class="my-4 gap-2 text-surface">
     <div class="flex items-center gap-2">
         <input
             type="text"
