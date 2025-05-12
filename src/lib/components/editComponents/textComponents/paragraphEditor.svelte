@@ -3,29 +3,21 @@
     export let index: number;
     import { editComponentContents } from '$lib/state/editState.svelte';
 
+    $: syncToStore();
 
     function syncToStore() {
+        // content = content.replace(/\n/g, '');
         editComponentContents.update((contents) => {
-            contents[index] = { key: "md", value: content };
+            contents[index] = { key: "text", value: content };
             return contents;
         });
-    }
-
-    $: {
-        syncToStore();
     }
 </script>
 
 <textarea
     bind:value={content}
-    on:input={(e) => {
-        if (e.target) {
-            content = (e.target as HTMLTextAreaElement).value.replace(/\n/g, '');
-        }
-        syncToStore();
-    }}
+    on:input={() => syncToStore()}
+    placeholder="Enter your text here..."
     rows="10"
-    cols="50"
-    placeholder="Enter your texthere..."
-    class="textarea bg-surface-200 max-w-[50%] max-h-40 border-2 border-primary-200 text-surface m-2"
+    class="textarea bg-surface-200 max-w-[50%] border-2 border-primary-200 text-surface m-2"
 ></textarea>
