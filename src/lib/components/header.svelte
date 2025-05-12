@@ -15,7 +15,7 @@
   }
 </script>
 
-<div class="header p-4">
+<div class="header pt-4 pl-4 pr-4">
   <div class="flex justify-between items-center">
     <a href="/" class="flex items-center space-x-4">
       <img src="/images/logo.png" alt="Logo" class="h-12 w-auto" />

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { routerItems } from '$lib/state/routerState.svelte';
     import { get } from 'svelte/store';
-    console.log('routerItems', get(routerItems));
     import {goto} from '$app/navigation';
 
     // Helper function to safely split and decode the path
@@ -20,7 +19,6 @@
             on:click={(e) => {
                 e.preventDefault();
                 $routerItems = $routerItems.slice(0, index);
-                console.log("path", item.getPath());
                 goto(item.getPath());
             }}>
                 {item.id}
@@ -36,7 +34,6 @@
             on:click={(e) => {
                 e.preventDefault();
                 const newPath = '/' + getPathSegments().slice(0, idx + 1).join('/');
-                console.log('newPath', newPath);
                 goto(newPath);
             }}>
                 {segment}

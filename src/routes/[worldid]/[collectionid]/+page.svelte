@@ -1,50 +1,45 @@
 <script lang="ts">
     export let data;
-    import {browser} from "$app/environment";
     import {getCollection} from "$lib/scripts/world";
     import Navbar from "$lib/components/navigationComponents/navbar.svelte";
-    import NumberList from '$lib/components/textComponents/numberList.svelte';
-    import BulletList from "$lib/components/textComponents/bulletList.svelte";
-    import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
-    import { showStyleControls } from "$lib/state/editState.svelte";
     import { onMount } from "svelte";
-    import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
-    import StyleEditor from "$lib/components/editComponents/theme/styleEditor.svelte";
     import Router from "$lib/components/navigationComponents/router.svelte";
+    import {collections} from "$lib/state/worldState.svelte";
+    import {Collection} from "$lib/types/collection";
+    import {editContent} from "$lib/state/editState.svelte";
+    import Content from "$lib/components/content.svelte";
+    import EditableContent from "$lib/components/editComponents/editableContent.svelte";
 
+
+    let collection: Collection;
+    onMount(async () => {
+    if (!$collections?.some(collection => collection.id === data.collectionid)) {
+        await getCollection(data.worldid, data.collectionid);
+    }
+    collections.subscribe(value => {
+        collection = value?.find(collection => collection.id === data.collectionid) ?? {} as Collection;
+    });
+});
+    function getNavItems(collection: Collection): {name: string, href: string}[] {
+        let navItems : {name: string, href: string}[] = [];
+        collection?.collections.forEach(c => {
+            navItems.push({name: c, href: `/${data.worldid}/${c}`});
+        });
+        collection?.entries.forEach(e => {
+            navItems.push({name: e, href: `/${data.worldid}/${collection.id}/${e}`});
+        });
+        return navItems;
+    }
 </script>
-{#if browser}
-    {#await getCollection(data.worldid, data.collectionid) then collection}
-    {console.log(collection?.content ?? [])}
-    <Navbar navItems={collection?.entries.map((entry: string) => {
-        return {
-            name: entry,
-            href: `/${data.worldid}/${data.collectionid}/${entry}`
-        }})}
-    />
+
+<div>
+    <Navbar navItems={getNavItems(collection)} />
     <div class="ml-3">
         <Router/>
-    {#each collection?.content ?? [] as { key, value }}
-        {console.log(value)}
-                {#if key === 'title'}
-                    <h1 class="text-4xl font-bold text-primary">{value}</h1>
-                {:else if key === 'text'}
-                    <p class="text-sm">{value}</p>
-                {:else if key === 'numberedList'}
-                    <NumberList items={value} />
-                {:else if key === 'bulletList'}
-                    <BulletList items={value} />
-                {:else if key === 'image'}
-                    <img src={value} alt={value} />'
-                {:else if key === 'md'}
-                    <MarkdownReader md={value} />
-                {/if}
-            {/each}
+        {#if $editContent == false}
+        <Content content={collection?.content ?? []}/>
+        {:else}
+        <EditableContent content={collection?.content ?? []}/>
+        {/if}
     </div>
-    {:catch error}
-        <p>Error loading world: {error.message}</p>
-    {/await}
-    {#if $showStyleControls}
-        <StyleEditor/>
-    {/if}
-{/if}
+</div>
