@@ -2,6 +2,7 @@
     import { routerItems } from '$lib/state/routerState.svelte';
     import { get } from 'svelte/store';
     import {goto} from '$app/navigation';
+    import {editContent} from '$lib/state/editState.svelte';
 
     // Helper function to safely split and decode the path
     function getPathSegments() {
@@ -12,37 +13,27 @@
     }
 </script>
 <div class="flex-row items-center p-1">
-    {#if $routerItems.length > 0}
-        {#each $routerItems as item, index (item.id)}
-            <a href="#"
-            class="p-1 text-primary-500 hover:bg-primary-50 rounded align-middle"
-            on:click={(e) => {
-                e.preventDefault();
-                $routerItems = $routerItems.slice(0, index);
-                goto(item.getPath());
-            }}>
-                {item.id}
-            </a>
-            {#if index < $routerItems.length - 1}
-                <span class="text-primary-500"> > </span>
-            {/if}
-        {/each}
-    {:else}
-        {#each getPathSegments() as segment, idx}
-            <a href="#"
-            class="p-1 text-primary-500 hover:bg-primary-50 rounded"
-            on:click={(e) => {
-                e.preventDefault();
-                const newPath = '/' + getPathSegments().slice(0, idx + 1).join('/');
-                goto(newPath);
-            }}>
-                {segment}
-            </a>
-            {#if idx < getPathSegments().length - 1}
-                <span class="text-primary-500"> > </span>
-            {/if}
-        {/each}
-    {/if}
+        {#if typeof window !== 'undefined' && $routerItems.length > 0}
+            {#each $routerItems as item, index (item.id)}
+                <a href={$editContent ? undefined : item.getPath()}
+                class="p-1 text-primary-500 hover:bg-primary-50 rounded align-middle">
+                    {item.id}
+                </a>
+                {#if index < $routerItems.length - 1}
+                    <span class="text-primary-500"> > </span>
+                {/if}
+            {/each}
+        {:else if typeof window !== 'undefined'}
+            {#each getPathSegments() as segment, idx}
+                <a href={$editContent? undefined : '/' + getPathSegments().slice(0, idx + 1).join('/')}
+                class="p-1 text-primary-500 hover:bg-primary-50 rounded">
+                    {segment}
+                </a>
+                {#if idx < getPathSegments().length - 1}
+                    <span class="text-primary-500"> > </span>
+                {/if}
+            {/each}
+        {/if}
 </div>
 <style>
     .skeleton-link {

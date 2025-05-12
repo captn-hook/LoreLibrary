@@ -70,7 +70,7 @@
 
     onMount(() => {
         let editableContent = convertContentToEditableContent(content);
-        if ($editComponentContents.length === 0){
+        if ($editComponentContents){
             editComponentContents.set(editableContent);
             }
         });
