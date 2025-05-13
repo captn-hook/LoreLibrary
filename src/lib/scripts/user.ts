@@ -73,8 +73,8 @@ export async function signup(username: string, email: string, password: string) 
     });
 
     if (!response.ok) {
-      console.error('Failed to sign up');
-      throw new Error(response.statusText);
+      console.error(response);
+      throw new Error('Failed to sign up');
 
     }
 
