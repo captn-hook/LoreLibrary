@@ -722,75 +722,43 @@ components:
           type: array
           items:
             type: string
-    World:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-        parentId:
-          type: string
-        ownerId:
-          type: string
-        collections:
-          type: array
-          items:
-            type: string
-    Collection:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-        parentId:
-          type: string
-        ownerId:
-          type: string
-        collections:
-          type: array
-          items:
-            type: string
-        entries:
-          type: array
-          items:
-            type: string
     Entry:
       type: object
       properties:
         name:
           type: string
-        id:
-          type: string
         content:
           type: array
           items:
             type: string
+        description:
+          type: string
+        image:
+          type: string
+        style:
+          type: string
         tags:
           type: array
           items:
             type: string
         parentId:
           type: string
-        ownerId:
-          type: string
+    Collection:
+      allOf:
+        - $ref: '#/components/schemas/Entry'
+        - type: object
+          properties:
+            entries:
+              type: array
+              items:
+                type: string
+            collections:
+              type: array
+              items:
+                type: string
+    World:
+      allOf:
+        - $ref: '#/components/schemas/Collection'
     Resource:
       type: object
       properties:
@@ -814,9 +782,9 @@ components:
       properties:
         username:
           type: string
-        password:
-          type: string
         email:
+          type: string
+        password:
           type: string
     Token:
       type: object
