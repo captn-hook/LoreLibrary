@@ -1,7 +1,41 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+    DynamoDBDocumentClient,
+    PutCommand,
+    GetCommand,
+    UpdateCommand,
+    DeleteCommand,
+    QueryCommand,
+    TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
+
+const ddbClient = new DynamoDBClient({ region: "us-west-2" });
+
 const dataTable = process.env.DATA_TABLE;
+const userTable = process.env.USER_TABLE;
+
+const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
+
+function crud(operation, model, data, username, worldId, collectionId) {
+    switch (operation) {
+        case 'POST':
+            if (!username) { return badRequest('Invalid authentication'); }
+            return dynamo_create(data, model, username, worldId, collectionId);
+        case 'GET':
+            return dynamo_get(model, data, worldId, collectionId);
+        case 'PUT':
+            if (!username) { return badRequest('Invalid authentication'); }
+            return dynamo_update(model, data, username, worldId);
+        case 'DELETE':
+            if (!username) { return badRequest('Invalid authentication'); }
+            return dynamo_delete(model, data, username, worldId);
+        default:
+            throw new Error('Invalid operation');
+    }
+}
 
 async function dynamo_get(instance, table = dataTable) {
-    
+
     const params = {
         TableName: table,
         Key: {
@@ -22,7 +56,7 @@ async function dynamo_get(instance, table = dataTable) {
         throw new Error("Error getting item");
     }
 }
-        
+
 async function dynamo_list(model, username, worldId = '', table = dataTable) {
     if (!model || !model.name) {
         throw new Error("Invalid model: 'model.name' is required.");
@@ -352,3 +386,29 @@ async function dynamo_delete(model, id, username, wolrdId = '', table = dataTabl
         throw new Error("Error deleting item");
     }
 }
+
+async function dynamo_user_create(username) {
+    // Create the user in DynamoDB
+    const params = {
+        TableName: userTable,
+        Item: {
+            PK: "USER#",
+            SK: username,
+            content: [],
+            worlds: []
+        }
+    };
+    await ddbDocClient.send(new PutCommand(params));
+    console.log("User created in DynamoDB:", params.Item);
+    return params.Item;
+}
+
+export {
+    crud,
+    dynamo_get,
+    dynamo_list,
+    dynamo_create,
+    dynamo_update,
+    dynamo_delete,
+    dynamo_user_create,
+};
