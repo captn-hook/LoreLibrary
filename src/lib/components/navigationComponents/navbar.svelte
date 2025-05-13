@@ -1,5 +1,7 @@
 <script lang="ts">
     import { AppBar } from '@skeletonlabs/skeleton-svelte';
+    import {editContent} from '$lib/state/editState.svelte';
+
     export let navItems: { name: string; href: string }[] = [];
 </script>
 
@@ -7,7 +9,7 @@
     {#snippet lead()}
 
     {#each navItems as nav}
-    <a href={nav.href} class="skeleton-app-bar-item">
+    <a href={$editContent ? undefined : nav.href} class="skeleton-app-bar-item { $editContent ? 'disabled' : '' }">
         {nav.name}
     </a>
     {/each}
