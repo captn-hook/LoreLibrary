@@ -61,6 +61,39 @@ function crud(operation, model, body, username) {
     }
 }
 
+async function dynamo_user_create(username) {
+    // Create a new user in the user table
+    const user = new User(username);
+    const params = {
+        TableName: userTable,
+        Item: {
+            PK: user.pk(),
+            SK: user.name,
+            username: user.username,
+            content: user.content,
+            worlds: user.worlds
+        }
+    };
+    try {
+        const res = await ddbDocClient.send(new PutCommand(params));
+        if (!res.Attributes) {
+            throw new Error("Item not found");
+        }
+        // create a new instance of the model with the data
+        const item = user.verify(res.Attributes);
+        if (!item) {
+            throw new Error("Invalid item data");
+        }
+        return {
+            statusCode: 200,
+            body: JSON.stringify(item)
+        };
+    } catch (err) {
+        console.error("Error creating user:", err);
+        throw new Error("Error creating user");
+    }
+}
+
 function update(data, table = dataTable) {
     // get the item to update and replace any present keys
     const instance = DataShort.verify(data);
@@ -334,7 +367,7 @@ async function delete_user(user) {
     let transactionItems = [];
 
     for (const worldName of user.worlds) {
-        const worldTsx = delete_world(new World({ name: worldName, parentId: user.name }), false);
+        const worldTsx = delete_world(new World(worldName, user.name, user.name), false);
         transactionItems.concat(worldTsx);
     }
     transactionItems.push({
@@ -365,7 +398,7 @@ async function delete_world(world, final = true) {
     let transactionItems = [];
 
     for (const collectionName of world.collections) {
-        const collectionTsx = delete_collection(new Collection({ name: collectionName, worldId: world.name }), false);
+        const collectionTsx = delete_collection(new Collection(collectionName, null, world.name), false);
         transactionItems.concat(collectionTsx);
     }
     transactionItems.push({
@@ -424,12 +457,12 @@ async function delete_collection(collection, final = true) {
     let transactionItems = [];
 
     for (const entryName of collection.entries) {
-        const entryTsx = delete_entry(new Entry({ name: entryName, collectionId: collection.name, worldId: collection.worldId }), false);
+        const entryTsx = delete_entry(new Entry(entryName, collection.name, collection.worldId), false);
         transactionItems.concat(entryTsx);
     }
 
     for (const collectionName of collection.collections) {
-        const collectionTsx = delete_collection(new Collection({ name: collectionName, worldId: collection.worldId }), false);
+        const collectionTsx = delete_collection(new Collection(collectionName, null, collection.worldId), false);
         transactionItems.concat(collectionTsx);
     }
 
@@ -444,7 +477,7 @@ async function delete_collection(collection, final = true) {
     });
 
     try {
-        const parent = await dynamo_get(new World({ name: collection.worldId }));
+        const parent = await dynamo_get(new World(collection.worldId), dataTable);
         if (!parent) {
             throw new Error("Parent world not found");
         }
@@ -460,7 +493,7 @@ async function delete_collection(collection, final = true) {
         });
     } catch (err) {
         // if the parent world isnt found, try to find parent collection
-        const parent = await dynamo_get(new Collection({ name: collection.parentId, worldId: collection.worldId }));
+        const parent = await dynamo_get(new Collection(collection.parentId, null, collection.worldId));
         if (!parent) {
             throw new Error("Parent collection not found");
         }
@@ -475,7 +508,7 @@ async function delete_collection(collection, final = true) {
             }
         });
     }
-    
+
     if (final) {
         try {
             const result = await ddbDocClient.send(new TransactWriteCommand({
@@ -498,7 +531,7 @@ async function delete_collection(collection, final = true) {
 async function delete_entry(entry, final = true) {
     if (final) {
         let transactionItems = [];
-        const parent = await dynamo_get(new Collection({ name: entry.collectionId, worldId: entry.worldId }));
+        const parent = await dynamo_get(new Collection(entry.collectionId, null, entry.worldId));
         if (!parent) {
             throw new Error("Parent collection not found");
         }
@@ -552,11 +585,11 @@ async function delete_entry(entry, final = true) {
 
 
 
-    export {
-        crud,
-        dynamo_get,
-        dynamo_list,
-        dynamo_create,
-        dynamo_update,
-        dynamo_delete
-    };
+export {
+    crud,
+    dynamo_get,
+    dynamo_list,
+    dynamo_create,
+    dynamo_update,
+    dynamo_delete
+};
