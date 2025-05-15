@@ -1,11 +1,12 @@
-import { badRequest, notFound, notImplemented } from './utilities.mjs';
+import { badRequest, notImplemented } from './utilities.mjs';
 
-import { SignUp, Token, User, Permissions, DataShort, Entry, Collection, World } from './classes.mjs';
+import { User, DataShort, Entry, Collection, World } from './classes.mjs';
 
-import { dynamo_create, dynamo_list, crud } from './dynamo.mjs';
+import { dynamo_get, dynamo_create, dynamo_list, crud } from './dynamo.mjs';
 
 import { create_user, login_user, user_manage} from './cognito.mjs';
 
+import { s3_crud } from './s3.mjs';
 
 export const handler = async (e) => {
     // The event object contains:
@@ -37,7 +38,7 @@ export const handler = async (e) => {
             pathParameters = e.pathParameters;
 
             // remove newlines from path parameters ???
-            if (pathParameters) {
+            if (pathParameters && typeof pathParameters === 'object') {
                 Object.keys(pathParameters).forEach(key => {
                     pathParameters[key] = pathParameters[key].replace(/(\r\n|\n|\r)/gm, '');
                 });
@@ -49,7 +50,7 @@ export const handler = async (e) => {
 
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
-            // Get all worlds, paginated with limit and offset
+            // Get all worlds, FIX: paginated with limit and offset
             const worlds = await dynamo_list(World)
             return {
                 statusCode: 200,
@@ -59,7 +60,14 @@ export const handler = async (e) => {
         else if (operation === 'PUT' && path === '/worlds') {
             // Create a new world
             if (!username) { return badRequest('Invalid authentication'); }
-            const world = await dynamo_create(e.body, World, username);
+            
+            e.body.parentId = username; 
+            e.body.ownerId = username; 
+            var data = World.verify(e.body);
+            
+            if (data === null) { return badRequest('Invalid world data'); }
+
+            const world = await dynamo_create(data);
             // Return world
             return {
                 statusCode: 200,
@@ -69,50 +77,54 @@ export const handler = async (e) => {
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
             // Check if user already exists
-            const userExists = await dynamo_get_id(User, e.body.username, '', userTable);
+            var data = User.verify(e.body);
+            if (data === null) { return badRequest('Invalid user data'); }
+
+            const userExists = await dynamo_get(data, process.env.USER_TABLE); // Users are in a different table than default
             if (userExists) {
                 return badRequest('User already exists');
             }
+
             console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
-            // Create user
-            const token = await create_user(e.body, e.body.username);
-            // Return token
-            return {
-                statusCode: 200,
-                body: JSON.stringify(token)
-            };
+            const token = await create_user(e.body);
+            return token;
 
         }
         // /login: POST
         else if (operation === 'POST' && path === '/login') {
-            // Login user
-            const token = await login_user(e.body, e.body.username);
-            return {
-                statusCode: 200,
-                body: JSON.stringify(token)
-            };
-        }
-        // /users: GET, PUT, DELETE
-        else if (path === '/users') {
-            if (!username) { return badRequest('Invalid authentication'); }
-            var res = user_manage(operation, User, e.body, username);
-            if (res) {
-                return res;
-            }
-        }
-
-        // NOT IMPLEMENTED
-        // /search: anything at all related to search
-        if (operation === 'GET' && path === '/search') {
-            return notImplemented('Search not implemented');
+            const token = await login_user(e.body);
+            return token;
         }
 
         let pathsplit = path.split('/');
 
-        // /resources: anything at all related to resources (images, files, etc)
-        if (pathsplit[1] === 'resources') {
+        // NOT IMPLEMENTED
+        // /search: anything at all related to search
+        if (pathsplit[1] === 'search') {
+            return notImplemented('Search not implemented');
+        }
+        // /users: GET, PUT, DELETE
+        else if (pathsplit[1] === 'users') {
+            // if no path split[2], and operation is GET, return all users
+            if (pathsplit.length === 2 && operation === 'GET') {
+                if (!username) { return badRequest('Invalid authentication'); }
 
-            var res = s3_crud(path, operation, e.body, username);
+                var res = await dynamo_list(User);
+                if (res) {
+                    return res;
+                }
+            }
+            const user = pathsplit[2];
+            e.body.user = user;
+            var res = await crud(operation, User, e.body, username);
+            if (res) {
+                return res;
+            }
+        } 
+        // /resources: anything at all related to resources (images, files, etc)
+        else if (pathsplit[1] === 'resources') {
+            e.body.path = path;
+            var res = await s3_crud(path, operation, e.body, username);
             if (res) {
                 return res;
             }
@@ -121,7 +133,10 @@ export const handler = async (e) => {
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathParameters.WorldId;
-            var res = crud(operation, World, e.body, username, worldId);
+            e.body.name = worldId;
+            e.body.worldId = worldId;
+            e.body.parentId = username;
+            var res = await crud(operation, World, e.body, username);
             if (res) {
                 return res;
             }
@@ -130,14 +145,22 @@ export const handler = async (e) => {
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
-            var res = crud(operation, Collection, e.body, username, worldId, collectionId);
+            e.body.name = collectionId;
+            e.body.worldId = worldId;
+            var res = await crud(operation, Collection, e.body, username);
             if (res) {
                 return res;
             }
         }
         // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
         else if (pathsplit.length === 4) {
-            var res = crud(operation, Entry, e.body, username, pathParameters.WorldId, pathParameters.CollectionId);
+            const worldId = pathParameters.WorldId;
+            const collectionId = pathParameters.CollectionId;
+            const entryId = pathParameters.EntryId;
+            e.body.name = entryId;
+            e.body.parentId = collectionId;
+            e.body.worldId = worldId;
+            var res = await crud(operation, Entry, e.body, username);
             if (res) {
                 return res;
             }
@@ -148,17 +171,9 @@ export const handler = async (e) => {
         };
     } catch (err) {
         console.error("Error processing request:", err);
-        // if error is Item already exists, return 409
-        if (err.message === 'Item already exists') {
-            return {
-                statusCode: 409,
-                body: JSON.stringify({ message: err.message })
-            };
-        }
-
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: err.message })
+            body: JSON.stringify({ message: err.message }) // Fix this in the future
         };
     }
 }

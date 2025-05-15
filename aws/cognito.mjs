@@ -1,5 +1,8 @@
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { badRequest } from "./s3.mjs";
+import { dynamo_user_create } from "./dynamo.js";
+import { SignUp, Token, User } from "./classes.mjs";
 
 const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
 const userPoolId = process.env.COGNITO_USER_POOL_ID;
@@ -8,14 +11,15 @@ const userTable = process.env.USER_TABLE;
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
-async function create_user(data, username) {
+async function create_user(data) {
     try {
+        data = new SignUp(data.username, data.email, data.password);
         // Create the user in Cognito
         const signUpCommand = new SignUpCommand({
             ClientId: clientId,
             Password: data.password,
             UserPoolId: userPoolId,
-            Username: username,
+            Username: data.username,
             UserAttributes: [
                 {
                     Name: "email",
@@ -26,14 +30,15 @@ async function create_user(data, username) {
         
         const signUpResponse = await cognitoClient.send(signUpCommand);
 
-        console.log("User created in Cognito:", signUpResponse);
+        if (!signUpResponse.UserSub) {
+            throw new Error("Failed to create user in Cognito: " + signUpResponse);
+        }
 
-        await dynamo_user_create(data, username, userTable);
-        
-        // Return a success response
-        return { message: "User created successfully", username };
+        await dynamo_user_create(data.username); // Create the user in DynamoDB
+        // Return a success token
+        return await login_user(data); // Return the token for the user
     } catch (err) {
-        console.error("Error creating user in Cognito:", err);
+        console.error("Error creating user:", err);
 
         // Handle specific Cognito errors
         if (err.name === "UsernameExistsException") {
@@ -44,19 +49,21 @@ async function create_user(data, username) {
             throw new Error("Invalid parameters");
         }
 
-        throw new Error("Error creating user");
+        throw new Error("Error creating user: " + err.message); // Fix this later
     }
 }
 
-async function login_user(data, username) {
-
+async function login_user(data) {
     try {
+        if (!data.username || !data.password) {
+            return badRequest("Invalid username or password");
+        }
         // Authenticate the user with Cognito
         const params = {
             AuthFlow: "USER_PASSWORD_AUTH",
             ClientId: clientId,
             AuthParameters: {
-                USERNAME: username,
+                USERNAME: data.username,
                 PASSWORD: data.password,
             },
         };
@@ -65,8 +72,16 @@ async function login_user(data, username) {
         const response = await cognitoClient.send(command);
 
         // If authentication is successful, return the token
-        const token = response.AuthenticationResult.IdToken;
-        return new Token(token, username);
+        const token = new Token(response.AuthenticationResult.IdToken, data.username);
+
+        if (!token) {
+            throw new Error("Failed to authenticate user: " + response);
+        }
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify(token),
+        }
     } catch (err) {
         console.error("Error logging in user with Cognito:", err);
 
@@ -77,7 +92,7 @@ async function login_user(data, username) {
             return badRequest("User not found");
         }
 
-        throw new Error("Error logging in user");
+        throw new Error("Error logging in user: " + err.message); // Fix this later
     }
 }
 

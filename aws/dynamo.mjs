@@ -8,6 +8,9 @@ import {
     QueryCommand,
     TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { badRequest } from "./utilities.mjs";
+import { World, Collection, Entry, User, DataShort } from "./classes.mjs";
+
 
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 
@@ -16,40 +19,86 @@ const userTable = process.env.USER_TABLE;
 
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
-function crud(operation, model, data, username, worldId, collectionId) {
+function crud(operation, model, body, username) {
+    var table;
+    if (model == User) {
+        table = userTable;
+    } else {
+        table = dataTable;
+    }
+
     switch (operation) {
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
-            return dynamo_create(data, model, username, worldId, collectionId);
+
+            var data = model.verify(body);
+            if (data === null) {
+                return badRequest('Invalid body');
+            }
+            return dynamo_create(data, table);
+
         case 'GET':
-            return dynamo_get(model, data, worldId, collectionId);
+            if (model === User && !username) { return badRequest('Invalid authentication'); }
+
+            var data = DataShort.verify(body);
+            if (data === null) {
+                return badRequest('Invalid body');
+            }
+
+            return dynamo_get(data, table);
         case 'PUT':
             if (!username) { return badRequest('Invalid authentication'); }
-            return dynamo_update(model, data, username, worldId);
+
+            return dynamo_update(data, table);
         case 'DELETE':
             if (!username) { return badRequest('Invalid authentication'); }
-            return dynamo_delete(model, data, username, worldId);
+
+            var data = DataShort.verify(body);
+
+            return dynamo_delete(data, table);
         default:
             throw new Error('Invalid operation');
     }
 }
 
-async function dynamo_get(instance, table = dataTable) {
+function update(data, table = dataTable) {
+    // get the item to update and replace any present keys
+    const instance = DataShort.verify(data);
+    var item = dynamo_get(instance, table);
+    if (!item) { throw new Error('Item not found'); }
+    
+    for (const key in data) {
+        if (item.hasOwnProperty(key) && data[key] !== undefined) {
+            item[key] = data[key];
+        }
+    }
+    return item;
+}
+
+async function dynamo_get(data, table = dataTable) {
 
     const params = {
         TableName: table,
         Key: {
-            PK: instance.pk(),
-            SK: instance.name
+            PK: data.pk(),
+            SK: data.name
         }
     };
 
     try {
-        const data = await ddbDocClient.send(new GetCommand(params));
-        if (!data.Item) {
+        const res = await ddbDocClient.send(new GetCommand(params));
+        if (!res.Item) {
             throw new Error("Item not found");
         }
-        return new instance.constructor(data.Item);
+        // create a new instance of the model with the data
+        const item = data.verify(res.Item);
+        if (!item) {
+            throw new Error("Invalid item data");
+        }
+        return {
+            statusCode: 200,
+            body: JSON.stringify(item)
+        };
     }
     catch (err) {
         console.error("Error getting item:", err);
@@ -57,27 +106,34 @@ async function dynamo_get(instance, table = dataTable) {
     }
 }
 
-async function dynamo_list(model, username, worldId = '', table = dataTable) {
-    if (!model || !model.name) {
-        throw new Error("Invalid model: 'model.name' is required.");
+async function dynamo_list(model, sk = '') {
+
+    if (model === User) {
+        //list all users in the user table
+        const params = {
+            TableName: userTable,
+            KeyConditionExpression: 'PK = :pk',
+            ExpressionAttributeValues: {
+                ':pk': 'USER#'
+            }
+        };
+    } else {
+        const prefix = model.name.toUpperCase() + '#' + sk;
+        const params = {
+            TableName: table,
+            KeyConditionExpression: 'PK = :pk',
+            ExpressionAttributeValues: {
+                ':pk': prefix
+            }
+        };
     }
-    if (!username) {
-        throw new Error("Invalid username: 'username' is required.");
-    }
-
-    const prefix = model.name.toUpperCase() + '#' + worldId;
-
-    const params = {
-        TableName: table,
-        KeyConditionExpression: 'PK = :pk',
-        ExpressionAttributeValues: {
-            ':pk': prefix
-        }
-    };
-
     try {
-        const data = await ddbDocClient.send(new QueryCommand(params));
-        return data.Items.map(item => new model(item));
+        let data = await ddbDocClient.send(new QueryCommand(params));
+        data = data.Items.map(item => new model(item));
+        return {
+            statusCode: 200,
+            body: JSON.stringify(data)
+        }
     } catch (err) {
         console.error("Error listing items:", err);
         throw new Error("Error listing items");
@@ -85,24 +141,15 @@ async function dynamo_list(model, username, worldId = '', table = dataTable) {
 }
 
 
-async function dynamo_create(data, model, username, worldId = '', parentId = '', table = dataTable) {
-    if (!model || !model.name) {
-        throw new Error("Invalid model: 'model.name' is required.");
-    }
-    if (!data || !data.name) {
-        throw new Error("Invalid data: 'data.name' is required.");
-    }
-    if (!username) {
-        throw new Error("Invalid username: 'username' is required.");
-    }
-
-    const prefix = model.name.toUpperCase() + '#' + worldId;
+async function dynamo_create(data, table = dataTable) {
 
     // Try to get the item in case it already exists
+    const sh = DataShort.verify(data);
+    if (!sh) { return badRequest('Invalid data'); }
     const params = {
         TableName: table,
         Key: {
-            PK: prefix,
+            PK: data.pk(),
             SK: data.name
         }
     };
@@ -112,49 +159,12 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '',
         throw new Error("Item already exists");
     }
 
-    // Create a new item in the database and update associated items
-
-    const pId = model === World ? username : parentId;
-
-    let newItem;
-
-    if (model === World) {
-        newItem = {
-            PK: prefix,
-            SK: data.name,
-            content: data.content || [],
-            description: data.description || '',
-            image: data.image || '',
-            style: data.style || '',
-            tags: data.tags || [],
-            parentId: pId,
-            ownerId: username,
-            collections: []
-
-        };
-    } else if (model === Collection) {
-        newItem = {
-            PK: prefix,
-            SK: data.name,
-            content: data.content || [],
-            tags: data.tags || [],
-            parentId: pId,
-            ownerId: username,
-            collections: [],
-            entries: []
-        };
-    } else if (model === Entry) {
-        newItem = {
-            PK: prefix,
-            SK: data.name,
-            content: data.content || [],
-            tags: data.tags || [],
-            parentId: pId,
-            ownerId: username
-        };
-    } else {
-        throw new Error("Invalid model: 'model' must be World, Collection, or Entry.");
-    }
+    const { name, ...rest } = data;
+    const newItem = {
+        PK: data.pk(),
+        SK: name,
+        ...rest
+    };
 
     let transactionItems = [];
 
@@ -173,7 +183,7 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '',
             TableName: userTable,
             Key: {
                 PK: userPrefix,
-                SK: username
+                SK: data.parentId
             }
         };
         const userData = await ddbDocClient.send(new GetCommand(userParams));
@@ -247,161 +257,117 @@ async function dynamo_create(data, model, username, worldId = '', parentId = '',
         const result = await ddbDocClient.send(new TransactWriteCommand({
             TransactItems: transactionItems
         }));
-        return dynamo_get_id(model, data.name, data.worldId);
+        return dynamo_get(data.verify(result.Attributes), table);
     } catch (err) {
         console.error("Error creating item:", err);
         throw new Error("Error creating item");
     }
 }
 
-async function dynamo_update(model, data, username, wolrdId = '', table = dataTable) {
-    if (!model || !model.name) {
-        throw new Error("Invalid model: 'model.name' is required.");
-    }
-    if (!data || !data.id) {
-        throw new Error("Invalid data: 'data.id' is required.");
-    }
-    if (!username) {
-        throw new Error("Invalid username: 'username' is required.");
-    }
-    // Update an existing item in the database
-    const prefix = model.name.toUpperCase() + '#' + wolrdId;
+async function dynamo_update(data, table = dataTable) {
+    
+    const newItem = update(data, table);
+
+    const updateExpression = Object.keys(newItem).map(key => `#${key} = :${key}`).join(', ');
+    const expressionAttributeNames = Object.keys(newItem).reduce((acc, key) => {
+        acc[`#${key}`] = key;
+        return acc;
+    }, {});
+    const expressionAttributeValues = Object.keys(newItem).reduce((acc, key) => {
+        acc[`:${key}`] = newItem[key];
+        return acc;
+    }, {});
+
     const params = {
         TableName: table,
         Key: {
-            PK: prefix,
-            SK: data.id
+            PK: data.pk(),
+            SK: data.name
         },
-        UpdateExpression: 'SET #data = :data',
-        ExpressionAttributeNames: {
-            '#data': 'data'
-        },
-        ExpressionAttributeValues: {
-            ':data': data
-        }
+        UpdateExpression: `SET ${updateExpression}`,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues
     };
 
     try {
-        const result = await ddbDocClient.send(new UpdateCommand(params));
-        return result.Attributes;
+        const res = await ddbDocClient.send(new UpdateCommand(params));
+        if (!res.Attributes) {
+            throw new Error("Item not found");
+        }
+        // create a new instance of the model with the data
+        const item = data.verify(res.Attributes);
+        if (!item) {
+            throw new Error("Invalid item data");
+        }
+        return {
+            statusCode: 200,
+            body: JSON.stringify(item)
+        };
     } catch (err) {
         console.error("Error updating item:", err);
         throw new Error("Error updating item");
     }
 }
 
-async function dynamo_delete(model, id, username, wolrdId = '', table = dataTable) {
+async function dynamo_delete(data) {
     // Delete an item from the database and update associated items
-    const prefix = model.name.toUpperCase() + '#' + wolrdId;
 
     // get the item to delete
-    const item = await dynamo_get_id(model, id, wolrdId);
-    if (!item) {
-        throw new Error("Item not found");
-    }
-    if (!item.ownerId || item.ownerId !== username) {
-        throw new Error("Unauthorized");
-    }
+    const item = await dynamo_get(data, table);
+    
+    let worldIds = [];
+    let collectionIds = [];
+    let entryIds = [];
 
-    let associatedItems = [];
-
-    let children = [];
-
-    // if the item has collections or entries, add them to the children array
-    if (item.collections) {
-        children = children.concat(item.collections);
+    // if the item is a user, get all the worlds with their id
+    if (item instanceof User) {
+        worldIds = item.worlds;
     }
-    if (item.entries) {
-        children = children.concat(item.entries);
+    else if (item instanceof World) {
+        worldIds = [item.name];
+        collectionIds = item.collections;
     }
-
-    // while there are children, get the item and add it to the associatedItems array,
-    // add its children to the children array
-    while (children.length > 0) {
-        const childId = children.pop();
-        const child = await dynamo_get_id(model, childId, wolrdId);
-        if (!child) {
-            throw new Error("Child not found");
-        }
-        associatedItems.push(child);
-        if (child.collections) {
-            children = children.concat(child.collections);
-        }
-        if (child.entries) {
-            children = children.concat(child.entries);
-        }
+    else if (item instanceof Collection) {
+        collectionIds = [item.name];
+        entryIds = item.entries;
+    }
+    else if (item instanceof Entry) {
+        entryIds = [item.name];
     }
 
-    // delete item and all associated items
     let transactionItems = [];
 
-    transactionItems.push({
-        Delete: {
-            TableName: table,
+    for (const worldId of worldIds) {
+        // get the world
+        const worldParams = {
+            TableName: dataTable,
             Key: {
-                PK: prefix,
-                SK: id
+                PK: 'WORLD#',
+                SK: worldId
             }
+        };
+        const worldData = await ddbDocClient.send(new GetCommand(worldParams));
+        if (!worldData.Item) {
+            throw new Error("World not found");
         }
-    });
-
-    for (const item of associatedItems) {
+        const world = worldData.Item;
+        
+        // add the world to the transaction items
         transactionItems.push({
             Delete: {
                 TableName: dataTable,
                 Key: {
-                    PK: item.PK,
-                    SK: item.SK
+                    PK: 'WORLD#',
+                    SK: worldId
                 }
             }
         });
-    }
 
-    // remove this item from its parent
-    if (item.parentId) {
-        const parentTable = model.name === 'World' ? userTable : dataTable;
-        const parent = await dynamo_get_id(model, item.parentId, wolrdId, parentTable);
-        if (!parent) {
-            throw new Error("Parent not found");
-        }
-        const index = parent.collections.indexOf(id);
-        if (index > -1) {
-            parent.collections.splice(index, 1);
-        }
-        transactionItems.push({
-            Put: {
-                TableName: parentTable,
-                Item: parent
-            }
-        });
-    }
+        // 
 
-    try {
-        const result = await ddbDocClient.send(new TransactWriteItemsCommand({
-            TransactItems: transactionItems
-        }));
-        return item;
-    } catch (err) {
-        console.error("Error deleting item:", err);
-        throw new Error("Error deleting item");
     }
 }
 
-async function dynamo_user_create(username) {
-    // Create the user in DynamoDB
-    const params = {
-        TableName: userTable,
-        Item: {
-            PK: "USER#",
-            SK: username,
-            content: [],
-            worlds: []
-        }
-    };
-    await ddbDocClient.send(new PutCommand(params));
-    console.log("User created in DynamoDB:", params.Item);
-    return params.Item;
-}
 
 export {
     crud,
@@ -409,6 +375,5 @@ export {
     dynamo_list,
     dynamo_create,
     dynamo_update,
-    dynamo_delete,
-    dynamo_user_create,
+    dynamo_delete
 };
