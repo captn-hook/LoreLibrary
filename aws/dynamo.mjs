@@ -108,9 +108,10 @@ async function dynamo_get(data, table = dataTable) {
 
 async function dynamo_list(model, sk = '') {
 
+    let params;
     if (model === User) {
         //list all users in the user table
-        const params = {
+        params = {
             TableName: userTable,
             KeyConditionExpression: 'PK = :pk',
             ExpressionAttributeValues: {
@@ -119,8 +120,8 @@ async function dynamo_list(model, sk = '') {
         };
     } else {
         const prefix = model.name.toUpperCase() + '#' + sk;
-        const params = {
-            TableName: table,
+        params = {
+            TableName: dataTable,
             KeyConditionExpression: 'PK = :pk',
             ExpressionAttributeValues: {
                 ':pk': prefix
