@@ -32,6 +32,7 @@ export function getWorld(worldId: string) { //TO-DO - this should not return the
             if (!data) {
                 console.warn('No data received, returning base world data.');
             }
+            console.log("World data:", data); // Log the world data for debugging
             let w = World.fromJson(data); // Convert the JSON data to a World object
             routerItems.set([new RouterItem(w.id, null, "world")]); // Set the router items with the new world
             worldContext.set(w); // Update the world context store with the new world
@@ -45,6 +46,7 @@ export function getWorlds() {
     return fetch(`${PUBLIC_API_URL}/worlds`)
         .then((response) => response.json())
         .then((data) => {
+            console.log(data);
             let worlds = data.map((world: any) => {
                 return  World.fromJson(world);
             }
@@ -74,6 +76,7 @@ export function getCollection(worldId: string, collectionId: string) {
                 console.warn('No data received, returning base world data.');
                 return;
             }
+            console.log(data);
             let c = Collection.fromJson(data); // Convert the JSON data to a World object
             if (get(routerItems).length > 0) {
                 if (!get(routerItems).some(item => item.id === c.id)) {
@@ -109,6 +112,7 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
             console.warn('No data received, returning base world data.');
             return null; // Return null to handle in the next step
         }
+        console.log(data);
         let e = Entry.fromJson(data); // Convert the JSON data to a World object
         if (get(routerItems).length > 0) {
 
