@@ -61,12 +61,45 @@ function crud(operation, model, body, username) {
     }
 }
 
+async function dynamo_user_create(username) {
+    // Create a new user in the user table
+    const user = new User(username);
+    const params = {
+        TableName: userTable,
+        Item: {
+            PK: user.pk(),
+            SK: user.name,
+            username: user.username,
+            content: user.content,
+            worlds: user.worlds
+        }
+    };
+    try {
+        const res = await ddbDocClient.send(new PutCommand(params));
+        if (!res.Attributes) {
+            throw new Error("Item not found");
+        }
+        // create a new instance of the model with the data
+        const item = user.verify(res.Attributes);
+        if (!item) {
+            throw new Error("Invalid item data");
+        }
+        return {
+            statusCode: 200,
+            body: JSON.stringify(item)
+        };
+    } catch (err) {
+        console.error("Error creating user:", err);
+        throw new Error("Error creating user");
+    }
+}
+
 function update(data, table = dataTable) {
     // get the item to update and replace any present keys
     const instance = DataShort.verify(data);
     var item = dynamo_get(instance, table);
     if (!item) { throw new Error('Item not found'); }
-    
+
     for (const key in data) {
         if (item.hasOwnProperty(key) && data[key] !== undefined) {
             item[key] = data[key];
@@ -266,7 +299,7 @@ async function dynamo_create(data, table = dataTable) {
 }
 
 async function dynamo_update(data, table = dataTable) {
-    
+
     const newItem = update(data, table);
 
     const updateExpression = Object.keys(newItem).map(key => `#${key} = :${key}`).join(', ');
@@ -315,59 +348,242 @@ async function dynamo_delete(data) {
 
     // get the item to delete
     const item = await dynamo_get(data, table);
-    
-    let worldIds = [];
-    let collectionIds = [];
-    let entryIds = [];
 
     // if the item is a user, get all the worlds with their id
     if (item instanceof User) {
-        worldIds = item.worlds;
+        delete_user(item);
     }
     else if (item instanceof World) {
-        worldIds = [item.name];
-        collectionIds = item.collections;
+        delete_world(item);
     }
     else if (item instanceof Collection) {
-        collectionIds = [item.name];
-        entryIds = item.entries;
+        delete_collection(item);
     }
     else if (item instanceof Entry) {
-        entryIds = [item.name];
+        delete_entry(item);
     }
+}
 
+async function delete_user(user) {
     let transactionItems = [];
 
-    for (const worldId of worldIds) {
-        // get the world
-        const worldParams = {
+    for (const worldName of user.worlds) {
+        const worldTsx = delete_world(new World(worldName, user.name, user.name), false);
+        transactionItems.concat(worldTsx);
+    }
+    transactionItems.push({
+        Delete: {
+            TableName: userTable,
+            Key: {
+                PK: user.pk(),
+                SK: user.name
+            }
+        }
+    });
+
+    try {
+        const result = await ddbDocClient.send(new TransactWriteCommand({
+            TransactItems: transactionItems
+        }));
+        return {
+            statusCode: 200,
+            body: JSON.stringify(result)
+        };
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        throw new Error("Error deleting user");
+    }
+}
+
+async function delete_world(world, final = true) {
+    let transactionItems = [];
+
+    for (const collectionName of world.collections) {
+        const collectionTsx = delete_collection(new Collection(collectionName, null, world.name), false);
+        transactionItems.concat(collectionTsx);
+    }
+    transactionItems.push({
+        Delete: {
             TableName: dataTable,
             Key: {
-                PK: 'WORLD#',
-                SK: worldId
+                PK: world.pk(),
+                SK: world.name
             }
-        };
-        const worldData = await ddbDocClient.send(new GetCommand(worldParams));
-        if (!worldData.Item) {
-            throw new Error("World not found");
         }
-        const world = worldData.Item;
-        
-        // add the world to the transaction items
+    });
+
+    // remove the world from the user
+    const params = {
+        TableName: userTable,
+        Key: {
+            PK: 'USER#',
+            SK: world.parentId
+        }
+    };
+    const userData = await ddbDocClient.send(new GetCommand(params));
+    if (!userData.Item) {
+        throw new Error("User not found");
+    }
+    const user = userData.Item;
+    if (user.worlds) {
+        user.worlds = user.worlds.filter(w => w !== world.name);
+    }
+    transactionItems.push({
+        Put: {
+            TableName: userTable,
+            Item: user
+        }
+    });
+
+    if (final) {
+        try {
+            const result = await ddbDocClient.send(new TransactWriteCommand({
+                TransactItems: transactionItems
+            }));
+            return {
+                statusCode: 200,
+                body: JSON.stringify(result)
+            };
+        } catch (err) {
+            console.error("Error deleting world:", err);
+            throw new Error("Error deleting world");
+        }
+    }
+    else {
+        return transactionItems;
+    }
+}
+
+async function delete_collection(collection, final = true) {
+    let transactionItems = [];
+
+    for (const entryName of collection.entries) {
+        const entryTsx = delete_entry(new Entry(entryName, collection.name, collection.worldId), false);
+        transactionItems.concat(entryTsx);
+    }
+
+    for (const collectionName of collection.collections) {
+        const collectionTsx = delete_collection(new Collection(collectionName, null, collection.worldId), false);
+        transactionItems.concat(collectionTsx);
+    }
+
+    transactionItems.push({
+        Delete: {
+            TableName: dataTable,
+            Key: {
+                PK: collection.pk(),
+                SK: collection.name
+            }
+        }
+    });
+
+    try {
+        const parent = await dynamo_get(new World(collection.worldId), dataTable);
+        if (!parent) {
+            throw new Error("Parent world not found");
+        }
+        // remove the collection from the world
+        if (parent.collections) {
+            parent.collections = parent.collections.filter(c => c !== collection.name);
+        }
+        transactionItems.push({
+            Put: {
+                TableName: dataTable,
+                Item: parent
+            }
+        });
+    } catch (err) {
+        // if the parent world isnt found, try to find parent collection
+        const parent = await dynamo_get(new Collection(collection.parentId, null, collection.worldId));
+        if (!parent) {
+            throw new Error("Parent collection not found");
+        }
+        // remove the collection from the parent collection
+        if (parent.collections) {
+            parent.collections = parent.collections.filter(c => c !== collection.name);
+        }
+        transactionItems.push({
+            Put: {
+                TableName: dataTable,
+                Item: parent
+            }
+        });
+    }
+
+    if (final) {
+        try {
+            const result = await ddbDocClient.send(new TransactWriteCommand({
+                TransactItems: transactionItems
+            }));
+            return {
+                statusCode: 200,
+                body: JSON.stringify(result)
+            };
+        } catch (err) {
+            console.error("Error deleting collection:", err);
+            throw new Error("Error deleting collection");
+        }
+    }
+    else {
+        return transactionItems;
+    }
+}
+
+async function delete_entry(entry, final = true) {
+    if (final) {
+        let transactionItems = [];
+        const parent = await dynamo_get(new Collection(entry.collectionId, null, entry.worldId));
+        if (!parent) {
+            throw new Error("Parent collection not found");
+        }
+        // remove the entry from the collection
+        if (parent.entries) {
+            parent.entries = parent.entries.filter(e => e !== entry.name);
+        }
+        transactionItems.push({
+            Put: {
+                TableName: dataTable,
+                Item: parent
+            }
+        });
         transactionItems.push({
             Delete: {
                 TableName: dataTable,
                 Key: {
-                    PK: 'WORLD#',
-                    SK: worldId
+                    PK: entry.pk(),
+                    SK: entry.name
                 }
             }
         });
-
-        // 
-
+        try {
+            const result = await ddbDocClient.send(new TransactWriteCommand({
+                TransactItems: transactionItems
+            }));
+            return {
+                statusCode: 200,
+                body: JSON.stringify(result)
+            };
+        } catch (err) {
+            console.error("Error deleting entry:", err);
+            throw new Error("Error deleting entry");
+        }
+    } else {
+        return [{
+            Delete: {
+                TableName: dataTable,
+                Key: {
+                    PK: entry.pk(),
+                    SK: entry.name
+                }
+            }
+        }];
     }
 }
+
+
+
+
+
 
 
 export {

@@ -1,7 +1,7 @@
 import { CognitoIdentityProviderClient, InitiateAuthCommand } from "@aws-sdk/client-cognito-identity-provider";
 import { SignUpCommand } from "@aws-sdk/client-cognito-identity-provider";
-import { badRequest } from "./s3.mjs";
-import { dynamo_user_create } from "./dynamo.js";
+import { badRequest } from "./utilities.mjs";
+import { dynamo_user_create } from "./dynamo.mjs";
 import { SignUp, Token, User } from "./classes.mjs";
 
 const clientId = process.env.COGNITO_USER_POOL_CLIENT_ID;
