@@ -233,7 +233,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: lorelibrary-lambda-role 
+      RoleName: lorelibrary-lambda-role-dev
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
