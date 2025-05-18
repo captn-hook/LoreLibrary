@@ -9,6 +9,8 @@
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import { onDestroy, onMount } from "svelte";
     import { world as worldContext} from "$lib/state/worldState.svelte";
+    import { routerItems } from "$lib/state/routerState.svelte.js";
+    import { RouterItem } from "$lib/types/routerItem";
 
 
     let editContentValue;
@@ -30,6 +32,7 @@
         if ($worldContext?.id !== data.worldid) {
             await getWorld(data.worldid);
         }
+        routerItems.set([new RouterItem(data.worldid, `/${data.worldid}`)]);
     })
 </script>
 <div>

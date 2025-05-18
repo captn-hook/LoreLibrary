@@ -3,6 +3,7 @@
     import { get } from 'svelte/store';
     import {goto} from '$app/navigation';
     import {editContent} from '$lib/state/editState.svelte';
+  import Page from '../../../routes/+page.svelte';
 
     // Helper function to safely split and decode the path
     function getPathSegments() {
@@ -11,12 +12,17 @@
             .filter(Boolean)
             .map(segment => decodeURIComponent(segment));
     }
+
+    function onNavigate(itemIndex: number) {
+        routerItems.update(items => items.slice(0, itemIndex + 1));
+    }
 </script>
 <div class="flex-row items-center p-1">
         {#if typeof window !== 'undefined' && $routerItems.length > 0}
             {#each $routerItems as item, index (item.id)}
-                <a href={$editContent ? undefined : item.getPath()}
-                class="p-1 text-primary-500 hover:bg-primary-50 rounded align-middle">
+                <a href={$editContent ? undefined : item.href}
+                class="p-1 text-primary-500 hover:bg-primary-50 rounded align-middle"
+                onclick={() => onNavigate(index)}>
                     {item.id}
                 </a>
                 {#if index < $routerItems.length - 1}

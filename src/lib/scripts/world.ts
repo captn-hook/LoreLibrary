@@ -19,7 +19,7 @@ function getWorldId() {
   return worldId;
 }
 
-export function getWorld(worldId: string) { //TO-DO - this should not return the placeholder world data, but the real one and return errors with issues
+export function getWorld(worldId: string) { 
     return fetch(`${PUBLIC_API_URL}/${worldId}`)
         .then((response) => {
             if (!response.ok) {
@@ -60,9 +60,6 @@ export function getWorlds() {
 
 
 export function getCollection(worldId: string, collectionId: string) {
-    if (get(collectionsContext)?.some(collection => collection.id == collectionId)) { // Check if the collection is already in the context
-        return;
-    }
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}`)
         .then((response) => {
             if (!response.ok) {
@@ -78,14 +75,6 @@ export function getCollection(worldId: string, collectionId: string) {
             }
             console.log(data);
             let c = Collection.fromJson(data); // Convert the JSON data to a World object
-            if (get(routerItems).length > 0) {
-                if (!get(routerItems).some(item => item.id === c.id)) {
-                    const parentItem = get(routerItems).find((item: RouterItem) => item.id === c.parentId);
-                    if (parentItem) {
-                        routerItems.update(items => [...items, new RouterItem(c.id, parentItem, "collection")]); // Add the collection to the router items
-                    }
-                }
-            }
             collectionsContext.update(collections => collections ? [...collections, c] : [c]); // Add the collection to the collections context
             return;
         })
@@ -96,9 +85,6 @@ export function getCollection(worldId: string, collectionId: string) {
 }
 
 export async function getEntry(worldId: string, collectionId: string, entryId: string) {
-    if (get(entryContext)?.id == entryId) { // Check if the entry is already in the context
-        return;
-    }
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`)
     .then((response) => {
         if (!response.ok) {

@@ -19,7 +19,9 @@
         unsubscribe();
     });
     onMount(async () => {
-        await getEntry(data.worldid, data.collectionid, data.entryid);
+        if ($entryContext?.id !== data.entryid) {
+            await getEntry(data.worldid, data.collectionid, data.entryid);
+        }
     })
 </script>
 <div>
