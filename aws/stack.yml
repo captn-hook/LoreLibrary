@@ -20,7 +20,7 @@ Resources:
   ResourcesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: lorelibrary-resources
+      BucketName: lorelibrary-resources${environment}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
@@ -48,7 +48,7 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: lorelibrary-user-pool
+      UserPoolName: lorelibrary-user-pool${environment}
       LambdaConfig:
         PreSignUp: !GetAtt PreSignUpLambda.Arn
       AutoVerifiedAttributes:
@@ -68,7 +68,7 @@ Resources:
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: lorelibrary-user-pool-client
+      ClientName: lorelibrary-user-pool-client${environment}
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       AllowedOAuthFlows:
@@ -90,7 +90,7 @@ Resources:
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
-      IdentityPoolName: lorelibrary-identity-pool
+      IdentityPoolName: lorelibrary-identity-pool${environment}
       AllowUnauthenticatedIdentities: false
       CognitoIdentityProviders:
         - ClientId: !Ref CognitoUserPoolClient
@@ -125,7 +125,7 @@ Resources:
   DataTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: lorelibrary-data
+      TableName: lorelibrary-data${environment}
       AttributeDefinitions:
         - AttributeName: PK # Combines entity type and ID (e.g., WORLD#, or COLLECTION#worldId)
           AttributeType: S
@@ -156,7 +156,7 @@ Resources:
   UserTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: lorelibrary-users
+      TableName: lorelibrary-users${environment}
       AttributeDefinitions:
         - AttributeName: PK # User ID
           AttributeType: S
@@ -174,7 +174,7 @@ Resources:
   LoreLibraryLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: lorelibrary-function
+      FunctionName: lorelibrary-function${environment}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
@@ -193,7 +193,7 @@ Resources:
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: lorelibrary-authorizer
+      FunctionName: lorelibrary-authorizer${environment}
       Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
@@ -211,7 +211,7 @@ Resources:
   PreSignUpLambda:
       Type: "AWS::Lambda::Function"
       Properties:
-        FunctionName: pre-signup-trigger
+        FunctionName: pre-signup-trigger${environment}
         Runtime: nodejs22.x
         Handler: index.handler
         Code:
@@ -233,7 +233,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: lorelibrary-lambda-role-dev
+      RoleName: lorelibrary-lambda-role${environment}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -309,7 +309,7 @@ Resources:
       AuthorizerType: JWT
       IdentitySource:
         - "$request.header.Authorization"
-      Name: CognitoAuthorizer
+      Name: CognitoAuthorizer${environment}
       JwtConfiguration:
         Audience:
           - !Ref CognitoUserPoolClient
