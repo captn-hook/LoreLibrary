@@ -68,7 +68,7 @@ jobs:
       run: |
         echo "Waiting for change set changeset-${{ github.run_id }}-${{ github.sha }} to be created..."
         aws cloudformation wait change-set-create-complete \
-          --stack-name lorelibrary-stack \
+          --stack-name lorelibrary-stack-dev \
           --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
         echo "Change set created successfully."
 
@@ -77,14 +77,14 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: us-west-2 # Match region above
-        STACK_NAME: lorelibrary-stack
+        STACK_NAME: lorelibrary-stack-dev
         CHANGESET_NAME: changeset-${{ github.run_id }}-${{ github.sha }}
       run: |
         echo "Review the following proposed changes:"
         echo "STACK_NAME: ${{ env.STACK_NAME }}"
         echo "CHANGESET_NAME: ${{ env.CHANGESET_NAME }}"
         aws cloudformation describe-change-set \
-          --stack-name ${{ env.STACK_NAME }} \
+          --stack-name lorelibrary-stack-dev \
           --change-set-name ${{ env.CHANGESET_NAME }} \
           --query 'Changes' --output table
 
@@ -96,7 +96,7 @@ jobs:
       run: |
         echo "Executing change set changeset-${{ github.run_id }}-${{ github.sha }}..."
         aws cloudformation execute-change-set \
-          --stack-name lorelibrary-stack \
+          --stack-name lorelibrary-stack-dev \
           --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
         echo "Change set execution initiated. Stack update/creation is in progress."
   
