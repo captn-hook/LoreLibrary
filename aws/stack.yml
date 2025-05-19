@@ -17,10 +17,10 @@ Parameters:
     Description: The secret key for JWT authentication
   Env:
     Type: String
-    Default: 
+    Default: ""
     AllowedValues:
       - -dev
-      - 
+      - ""
     Description: The environment for the deployment (-dev or none)
 
 Resources:
