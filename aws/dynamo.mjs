@@ -68,8 +68,7 @@ async function dynamo_user_create(username) {
         TableName: userTable,
         Item: {
             PK: user.pk(),
-            SK: user.name,
-            username: user.username,
+            SK: user.sk(),
             content: user.content,
             worlds: user.worlds
         }
@@ -386,7 +385,7 @@ async function delete_user(user) {
             TableName: userTable,
             Key: {
                 PK: user.pk(),
-                SK: user.name
+                SK: user.sk()
             }
         }
     });
@@ -417,17 +416,19 @@ async function delete_world(world, final = true) {
             TableName: dataTable,
             Key: {
                 PK: world.pk(),
-                SK: world.name
+                SK: world.sk()
             }
         }
     });
+
+    const usero = User.verify(world.parentId);
 
     // remove the world from the user
     const params = {
         TableName: userTable,
         Key: {
-            PK: 'USER#',
-            SK: world.parentId
+            PK: usero.pk(),
+            SK: usero.sk()
         }
     };
     const userData = await ddbDocClient.send(new GetCommand(params));
@@ -482,7 +483,7 @@ async function delete_collection(collection, final = true) {
             TableName: dataTable,
             Key: {
                 PK: collection.pk(),
-                SK: collection.name
+                SK: collection.sk()
             }
         }
     });
@@ -561,7 +562,7 @@ async function delete_entry(entry, final = true) {
                 TableName: dataTable,
                 Key: {
                     PK: entry.pk(),
-                    SK: entry.name
+                    SK: entry.sk()
                 }
             }
         });
@@ -583,7 +584,7 @@ async function delete_entry(entry, final = true) {
                 TableName: dataTable,
                 Key: {
                     PK: entry.pk(),
-                    SK: entry.name
+                    SK: entry.sk()
                 }
             }
         }];

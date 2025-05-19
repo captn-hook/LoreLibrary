@@ -73,11 +73,15 @@ export class User extends Body {
     }
 
     pk() {
+        return 'USER#'
+    }
+
+    sk() {
         return this.username;
     }
 
     id() {
-        return this.pk();
+        return this.pk() + this.sk();
     }
 }
 
@@ -105,6 +109,10 @@ export class DataShort extends Body {
 
     pk() {
         return this.worldId + '#' + this.parentId;
+    }
+
+    sk() {
+        return this.name;
     }
 
     id() {
