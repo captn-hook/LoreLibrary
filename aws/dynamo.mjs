@@ -594,5 +594,6 @@ export {
     dynamo_list,
     dynamo_create,
     dynamo_update,
-    dynamo_delete
+    dynamo_delete,
+    dynamo_user_create
 };
