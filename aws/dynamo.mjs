@@ -74,6 +74,7 @@ async function dynamo_user_create(username) {
             worlds: user.worlds
         }
     };
+    console.error('params', params);
     try {
         const res = await ddbDocClient.send(new PutCommand(params));
         if (!res.Attributes) {
@@ -179,6 +180,7 @@ async function dynamo_list(model, sk = '') {
 
 async function dynamo_create(data, table = dataTable) {
 
+    console.log('Creating item:', data);
     // Try to get the item in case it already exists
     const sh = DataShort.verify(data);
     if (!sh) { return badRequest('Invalid data'); }

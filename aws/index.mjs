@@ -30,8 +30,7 @@ export const handler = async (e) => {
         try {
             username = e.requestContext.authorizer.lambda.username;
         } catch (error) {
-            console.log('e, requestContext', e.requestContext);
-            console.error('Error getting username from authorizer:', error);
+            console.log('No auth from authorizer:', error);
         }
 
         try {
@@ -80,9 +79,14 @@ export const handler = async (e) => {
             var data = User.verify(e.body);
             if (data === null) { return badRequest('Invalid user data'); }
 
-            const userExists = await dynamo_get(data, process.env.USER_TABLE); // Users are in a different table than default
-            if (userExists) {
-                return badRequest('User already exists');
+            try {
+                const userExists = await dynamo_get(data, process.env.USER_TABLE); // Users are in a different table than default
+                if (userExists) {
+                    return badRequest('User already exists');
+                }
+            } catch (error) {
+                // User does not exist, so we can create it
+                console.log('User does not exist, creating user');
             }
 
             console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
