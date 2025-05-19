@@ -46,7 +46,7 @@ jobs:
       id: changeset
       run: |
           aws cloudformation create-change-set \
-            --stack-name lorelibrary-stack \
+            --stack-name lorelibrary-stack-dev \
             --change-set-name changeset-${{ github.run_id }}-${{ github.sha }} \
             --template-body file://aws/stack.yml \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
