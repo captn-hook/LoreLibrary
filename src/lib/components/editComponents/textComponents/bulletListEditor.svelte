@@ -2,17 +2,17 @@
     import BulletItem from './bulletItem.svelte';
     import { editComponentContents } from '$lib/state/editState.svelte';
 
-    export let items: { id: string; text: string; subBullets?: any[] }[] = [];
+    export let items: { id: string; text: string; subItems?: any[] }[] = [];
     export let index: number;
      function syncToStore() {
 		editComponentContents.update((contents) => {
-			contents[index] = {key: "bullet", value: items};
+			contents[index] = {key: "bulletList", value: items};
 			return contents;
 		});
 	}
 
 	const addItem = () => {
-		items = [...items, { id: crypto.randomUUID(), text: '', subBullets: [] }];
+		items = [...items, { id: crypto.randomUUID(), text: '', subItems: [] }];
 		syncToStore();
 	};
 
@@ -21,22 +21,22 @@
 		syncToStore();
 	};
 
-	function addSubBullet(parent: { subBullets?: any[] }) {
-		parent.subBullets = parent.subBullets || [];
-		parent.subBullets.push({ id: crypto.randomUUID(), text: '', subBullets: [] });
+	function addsubItem(parent: { subItems?: any[] }) {
+		parent.subItems = parent.subItems || [];
+		parent.subItems.push({ id: crypto.randomUUID(), text: '', subItems: [] });
 		items = [...items];
 		syncToStore();
 	}
 
-	function removeSubBullet(parent: { subBullets?: any[] }, subId: string) {
-		if (parent.subBullets) {
-			parent.subBullets = parent.subBullets.filter((b) => b.id !== subId);
+	function removesubItem(parent: { subItems?: any[] }, subId: string) {
+		if (parent.subItems) {
+			parent.subItems = parent.subItems.filter((b) => b.id !== subId);
 			items = [...items];
 			syncToStore();
 		}
 	}
 
-	const updateItem = (idx: number, updatedItem: { id: string; text: string; subBullets?: any[] }) => {
+	const updateItem = (idx: number, updatedItem: { id: string; text: string; subItems?: any[] }) => {
 		items[idx] = updatedItem;
 		items = [...items];
 		syncToStore();
@@ -47,8 +47,8 @@
     {#each items as bullet, i (bullet.id)}
         <BulletItem
             item={bullet}
-            {addSubBullet}
-            {removeSubBullet}
+            {addsubItem}
+            {removesubItem}
             removeItem={removeItem}
             updateItem={(updatedItem) => updateItem(i, updatedItem)}
         />

@@ -9,6 +9,7 @@ import { browser } from '$app/environment';
 import { PUBLIC_API_URL } from '$env/static/public';
 import { routerItems } from "$lib/state/routerState.svelte";
 import {RouterItem} from "$lib/types/routerItem";
+import {token} from "$lib/state/userState.svelte";
 
 function getWorldId() {
   if (!browser) {
@@ -40,6 +41,24 @@ export function getWorld(worldId: string) {
         .catch((error) => {
             console.error("Error fetching world:", error); // Log any errors
         });
+}
+
+export function updateWorld() {
+    const world = get(worldContext);
+    if (!world) {
+        return;
+    }
+    return fetch(`${PUBLIC_API_URL}/${world.id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${get(token)}` // Add the token to the headers
+        },
+        body: JSON.stringify({ id: world.id, content: world.content })
+    })
+    .then((response) => {
+        console.log(response);
+    });
 }
 
 export function getWorlds() {
@@ -84,6 +103,29 @@ export function getCollection(worldId: string, collectionId: string) {
         });
 }
 
+export function updateCollection(id : string){
+    const collections = get(collectionsContext);
+    if (!collections) {
+        return;
+    }
+    const collection = collections.find((collection: Collection) => collection.id === id);
+    if (!collection) {
+        return;
+    }
+    return fetch(`${PUBLIC_API_URL}/${collection.parentId}/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${get(token)}` // Add the token to the headers
+        },
+        body: JSON.stringify({ worldId: collection.parentId, id: collection.id, content: collection.content })
+    })
+    .then((response) => {
+        console.log(response);
+    });
+
+}
+
 export async function getEntry(worldId: string, collectionId: string, entryId: string) {
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`)
     .then((response) => {
@@ -118,4 +160,26 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
     });
 
 }  
+
+export async function updateEntry() {
+    const entry = get(entryContext);
+    if (!entry){
+        return
+    }
+    let currentUrl = window.location.pathname.split('/');
+    const worldId = currentUrl[1];
+    return fetch(`${PUBLIC_API_URL}/${worldId}/${entry.parentId}/${entry.id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${get(token)}` // Add the token to the headers
+        },
+        body: JSON.stringify({ worldId: worldId, collectionId: entry.parentId, id: entry.id, content: entry.content })
+    })
+    .then((response) => {
+        console.log(response);
+    });
+
+
+}
         

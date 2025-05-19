@@ -10,23 +10,23 @@
 
     type EditableBullet = {
 		text: string;
-		id: number;
-		subBullets?: EditableBullet[];
+		id: string;
+		subItems?: EditableBullet[];
 	};
 	type EditableNumber = {
 		text: string;
-		id: number;
+		id: string;
 		subItems?: EditableNumber[];
 	};
 
-    function convertToEditableBulletList(bulletList: { text: string; subBullets?: any[] }[]): EditableBullet[] {
+    function convertToEditableBulletList(bulletList: { text: string; subItems?: any[] }[]): EditableBullet[] {
         let idCounter = 0;
 
-        function createEditableBullet(item: { text: string; subBullets?: any[] }): EditableBullet {
+        function createEditableBullet(item: { text: string; subItems?: any[] }): EditableBullet {
             const editableBullet: EditableBullet = {
                 text: item.text,
-                id: idCounter++,
-                subBullets: item.subBullets ? item.subBullets.map(createEditableBullet) : undefined
+                id: (idCounter++).toString(),
+                subItems: item.subItems ? item.subItems.map(createEditableBullet) : undefined
             };
             return editableBullet;
         }
@@ -40,7 +40,7 @@
 		function createEditableNumber(item: { text: string; subItems?: any[] }): EditableNumber {
 			const editableNumber: EditableNumber = {
 				text: item.text,
-				id: idCounter++,
+				id: (idCounter++).toString(),
 				subItems: item.subItems ? item.subItems.map(createEditableNumber) : undefined
 			};
 			return editableNumber;
@@ -51,9 +51,9 @@
 
     function convertContentToEditableContent(content: Array<{key: string; value: any }>){
         let editableContent = content.map((item: any, index: number) => {
-            if (item.key === 'bullet') {
-                return {key: item.key, value: convertToEditableBulletList(item)};
-            } else if (item.key === 'number') {
+            if (item.key === 'bulletList') {
+                return {key: item.key, value: convertToEditableBulletList(item.value)};
+            } else if (item.key === 'numberedList') {
                 return {key: item.key, value: convertToEditableNumberList(item)};
             } else if (item.key === 'md') {
                 return { key: 'md', value: item.value };
@@ -77,9 +77,9 @@
 </script>
 
 {#each $editComponentContents as item, index}
-	{#if item.key == "bullet"} 
+	{#if item.key == "bulletList"} 
 		<BulletListEditor items={item.value} index={index} />
-	{:else if item.key == "number"}
+	{:else if item.key == "numberedList"}
 		<NumberListEditor items={item.value} index={index} />
 	{:else if item.key == "md"}
 		<MarkdownEditor content={item.value} index={index} />
