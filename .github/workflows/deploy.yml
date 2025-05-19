@@ -30,6 +30,10 @@ jobs:
         cd aws
         npm install
 
+    - name: Preprocess OpenAPI Spec
+      run: |
+          sed -i "s/\${Env}//g" aws/api.yaml
+          
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
@@ -52,6 +56,7 @@ jobs:
               ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelibrary-deployment-artifacts \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }}
+              ParameterKey=Env,ParameterValue= \
           echo "Change set creation initiated."
           echo "Change set creation initiated."
 

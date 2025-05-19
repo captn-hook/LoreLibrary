@@ -4,7 +4,7 @@ import { User, DataShort, Entry, Collection, World } from './classes.mjs';
 
 import { dynamo_get, dynamo_create, dynamo_list, crud } from './dynamo.mjs';
 
-import { create_user, login_user, user_manage} from './cognito.mjs';
+import { create_user, login_user } from './cognito.mjs';
 
 import { s3_crud } from './s3.mjs';
 
