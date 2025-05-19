@@ -181,7 +181,7 @@ Resources:
   LoreLibraryLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-lambda${Env}
+      FunctionName: !Sub lorelibrary-function${Env}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
