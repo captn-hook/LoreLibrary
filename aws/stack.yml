@@ -15,13 +15,19 @@ Parameters:
   JWTSecretParameter:
     Type: String
     Description: The secret key for JWT authentication
+  Env:
+    Type: String
+    Default: 
+    AllowedValues:
+      - -dev
+      - 
+    Description: The environment for the deployment (-dev or none)
 
 Resources:
   ResourcesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: lorelibrary-resources${_dev}
-      PublicAccessBlockConfiguration:
+      BucketName: !Sub lorelibrary-resources${Env}
         BlockPublicAcls: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
@@ -48,7 +54,7 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: lorelibrary-user-pool${_dev}
+      UserPoolName: !Sub lorelibrary-user-pool${Env}
       LambdaConfig:
         PreSignUp: !GetAtt PreSignUpLambda.Arn
       AutoVerifiedAttributes:
@@ -68,7 +74,7 @@ Resources:
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: lorelibrary-user-pool-client${_dev}
+      ClientName: !Sub lorelibrary-client${Env}
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       AllowedOAuthFlows:
@@ -90,7 +96,7 @@ Resources:
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
-      IdentityPoolName: lorelibrary-identity-pool${_dev}
+      IdentityPoolName: !Sub lorelibrary-identity-pool${Env}
       AllowUnauthenticatedIdentities: false
       CognitoIdentityProviders:
         - ClientId: !Ref CognitoUserPoolClient
@@ -112,7 +118,7 @@ Resources:
               "ForAnyValue:StringLike":
                 cognito-identity.amazonaws.com:amr: authenticated
       Policies:
-        - PolicyName: CognitoAuthorizedPolicy
+        - PolicyName: !Sub lorelibrary-authenticated-policy${Env}
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -125,7 +131,7 @@ Resources:
   DataTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: lorelibrary-data${_dev}
+      TableName: !Sub lorelibrary-data${Env}
       AttributeDefinitions:
         - AttributeName: PK # Combines entity type and ID (e.g., WORLD#, or COLLECTION#worldId)
           AttributeType: S
@@ -156,7 +162,7 @@ Resources:
   UserTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: lorelibrary-users${_dev}
+      TableName: !Sub lorelibrary-user${Env}
       AttributeDefinitions:
         - AttributeName: PK # User ID
           AttributeType: S
@@ -174,7 +180,7 @@ Resources:
   LoreLibraryLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: lorelibrary-function${_dev}
+      FunctionName: !Sub lorelibrary-lambda${Env}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
@@ -193,7 +199,7 @@ Resources:
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: lorelibrary-authorizer${_dev}
+      FunctionName: !Sub lorelibrary-authorizer${Env}
       Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
@@ -211,7 +217,7 @@ Resources:
   PreSignUpLambda:
       Type: "AWS::Lambda::Function"
       Properties:
-        FunctionName: pre-signup-trigger${_dev}
+        FunctionName: !Sub lorelibrary-pre-signup${Env}
         Runtime: nodejs22.x
         Handler: index.handler
         Code:
@@ -233,7 +239,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: lorelibrary-lambda-role${_dev}
+      RoleName: !Sub lorelibrary-lambda-role${Env}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -244,7 +250,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: LoreLibraryLambdaPolicy
+        - PolicyName: !Sub lorelibrary-lambda-policy${Env}
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -309,7 +315,7 @@ Resources:
       AuthorizerType: JWT
       IdentitySource:
         - "$request.header.Authorization"
-      Name: CognitoAuthorizer${_dev}
+      Name: !Sub lorelibrary-cognito-authorizer${Env}
       JwtConfiguration:
         Audience:
           - !Ref CognitoUserPoolClient
