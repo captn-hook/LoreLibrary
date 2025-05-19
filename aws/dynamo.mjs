@@ -192,7 +192,13 @@ async function dynamo_create(data, table = dataTable) {
         }
     };
 
-    const existingItem = await ddbDocClient.send(new GetCommand(params));
+    let existingItem;
+    try {
+        existingItem = await ddbDocClient.send(new GetCommand(params));
+    } catch (err) {
+        console.log('Item not found, creating new item');
+    }
+
     if (existingItem.Item) {
         throw new Error("Item already exists");
     }
