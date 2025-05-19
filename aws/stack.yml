@@ -19,7 +19,7 @@ Parameters:
     Type: String
     Default: 
     AllowedValues:
-      - -dev
+      - dev
       - 
     Description: The environment for the deployment (-dev or none)
 
