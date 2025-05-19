@@ -118,6 +118,8 @@ async function dynamo_get(data, table = dataTable) {
         }
     };
 
+    console.error('params', params);
+
     try {
         const res = await ddbDocClient.send(new GetCommand(params));
         if (!res.Item) {
