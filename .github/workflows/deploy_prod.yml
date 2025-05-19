@@ -1,0 +1,102 @@
+name: Deploy to AWS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
+    - name: Install node dependencies
+      run: |
+        cd aws
+        npm install
+
+    - name: Preprocess OpenAPI Spec
+      run: |
+          sed -i "s/\${Env}//g" aws/api.yaml
+          
+    - name: Package Lambda Code
+      run: |
+        zip -r index.zip aws/*
+        aws s3 cp index.zip s3://lorelibrary-deployment-artifacts/
+
+    - name: Upload OpenAPI Spec
+      run: aws s3 cp aws/api.yaml s3://lorelibrary-deployment-artifacts/
+
+    - name: Create Change Set
+      id: changeset
+      run: |
+          aws cloudformation create-change-set \
+            --stack-name lorelibrary-stack \
+            --change-set-name changeset-${{ github.run_id }}-${{ github.sha }} \
+            --template-body file://aws/stack.yml \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --parameters \
+              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelibrary-deployment-artifacts \
+              ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
+              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelibrary-deployment-artifacts \
+              ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
+              ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }}
+              ParameterKey=Env,ParameterValue= \
+          echo "Change set creation initiated."
+          echo "Change set creation initiated."
+
+    - name: Wait for Change Set creation to complete
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-west-2 # Match region above
+      run: |
+        echo "Waiting for change set changeset-${{ github.run_id }}-${{ github.sha }} to be created..."
+        aws cloudformation wait change-set-create-complete \
+          --stack-name lorelibrary-stack \
+          --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
+        echo "Change set created successfully."
+
+    - name: Describe Change Set (Optional - for review in logs)
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-west-2 # Match region above
+        STACK_NAME: lorelibrary-stack
+        CHANGESET_NAME: changeset-${{ github.run_id }}-${{ github.sha }}
+      run: |
+        echo "Review the following proposed changes:"
+        echo "STACK_NAME: ${{ env.STACK_NAME }}"
+        echo "CHANGESET_NAME: ${{ env.CHANGESET_NAME }}"
+        aws cloudformation describe-change-set \
+          --stack-name ${{ env.STACK_NAME }} \
+          --change-set-name ${{ env.CHANGESET_NAME }} \
+          --query 'Changes' --output table
+
+    - name: Execute CloudFormation Change Set
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-west-2 # Match region above
+      run: |
+        echo "Executing change set changeset-${{ github.run_id }}-${{ github.sha }}..."
+        aws cloudformation execute-change-set \
+          --stack-name lorelibrary-stack \
+          --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
+        echo "Change set execution initiated. Stack update/creation is in progress."
+  
+
+    # - name: Deploy CloudFormation Stack
+    #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts OpenApiSpecS3Key=api.yaml --region us-west-2
+
+    - name: Close Bucket
+      run: aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
