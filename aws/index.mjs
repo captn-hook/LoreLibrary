@@ -28,9 +28,13 @@ export const handler = async (e) => {
         let pathParameters = {};
 
         try {
-            username = e.requestContext.authorizer.lambda.username;
+            if (e.requestContext.authorizer && e.requestContext.authorizer.lambda) {
+                username = e.requestContext.authorizer.lambda.username;
+            } else {
+                console.log('No auth from authorizer');
+            }
         } catch (error) {
-            console.log('No auth from authorizer:', error);
+            throw new Error('Authorizer error: ' + error.message);
         }
 
         try {
@@ -59,11 +63,11 @@ export const handler = async (e) => {
         else if (operation === 'PUT' && path === '/worlds') {
             // Create a new world
             if (!username) { return badRequest('Invalid authentication'); }
-            
-            e.body.parentId = username; 
-            e.body.ownerId = username; 
+
+            e.body.parentId = username;
+            e.body.ownerId = username;
             var data = World.verify(e.body);
-            
+
             if (data === null) { return badRequest('Invalid world data'); }
 
             const world = await dynamo_create(data);
@@ -120,11 +124,12 @@ export const handler = async (e) => {
             }
             const user = pathsplit[2];
             e.body.user = user;
+            console.log('User crud: ', operation, ' ', pathsplit[2] , ' ', e.body);
             var res = await crud(operation, User, e.body, username);
             if (res) {
                 return res;
             }
-        } 
+        }
         // /resources: anything at all related to resources (images, files, etc)
         else if (pathsplit[1] === 'resources') {
             e.body.path = path;
