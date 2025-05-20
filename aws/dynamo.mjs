@@ -83,22 +83,16 @@ async function dynamo_user_create(username) {
             worlds: user.worlds
         }
     };
-    console.log('params', params);
     try {
         const res = await ddbDocClient.send(new PutCommand(params));
-        console.log('new user res', res);
-        if (!res.Attributes) {
-            throw new Error("Item not found");
+        if (!(res.$metadata.httpStatusCode === 200)) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: "User created successfully" })
+            };
+        } else {
+            throw new Error("Failed to create user");
         }
-        // create a new instance of the model with the data
-        const item = user.verify(res.Attributes);
-        if (!item) {
-            throw new Error("Invalid item data");
-        }
-        return {
-            statusCode: 200,
-            body: JSON.stringify(item)
-        };
     } catch (err) {
         console.error("Error creating user:", err);
         throw new Error("Error creating user");
