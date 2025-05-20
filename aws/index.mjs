@@ -17,6 +17,7 @@ export const handler = async (e) => {
     // headers: typical headers,
     // requestContext: amazon stuff,
     // isBase64Encoded: false,
+    console.log('Event: ', e);
     try {
         const [operation, path] = e.routeKey.split(' ');
 
@@ -36,7 +37,7 @@ export const handler = async (e) => {
         } catch (error) {
             throw new Error('Authorizer error: ' + error.message);
         }
-
+        console.log('Username: ', username, ' Operation: ', operation, ' Path: ', path, ' Body: ', e.body);
         try {
             pathParameters = e.pathParameters;
 
