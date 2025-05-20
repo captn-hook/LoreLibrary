@@ -48,36 +48,44 @@ class Body {
 }
 
 export class SignUp extends Body {
-    constructor(username, email, password) {
+    constructor(name, email, password) {
         super();
-        this.username = username; // string
+        this.name = name; // string
         this.email = email; // string
         this.password = password; // string, hashed
     }
 }
 
 export class Token extends Body {
-    constructor(token, username) {
+    constructor(token, name) {
         super();
         this.token = token; // string
-        this.username = username; // string
+        this.name = name; // string
     }
 }
 
 export class User extends Body {
-    constructor(username, content = [], worlds = []) {
+    constructor(name, content = [], worlds = []) {
         super();
-        this.username = username; // string
+        this.name = name; // string
         this.content = Array.isArray(content) ? content : [content]; // array of strings
         this.worlds = Array.isArray(worlds) ? worlds : [worlds]; // array of worldIds
     }
 
+    get username() {
+        return this.name;
+    }
+
+    set username(value) {
+        this.name = value;
+    }
+
     pk() {
-        return 'USER#'
+        return 'USER#';
     }
 
     sk() {
-        return this.username;
+        return this.name;
     }
 
     id() {
@@ -150,12 +158,12 @@ export class World extends Collection {
 function test() {
     // Example usage
     const user = User.verify({
-        username: 'john_doe',
+        name: 'john_doe',
         content: ['entry1', 'entry2'],
         worlds: ['world1', 'world2']
     });
     console.log(user);
-    // Output: User { username: 'john_doe', content: [ 'entry1', 'entry2' ], worlds: [ 'world1', 'world2' ] }
+    // Output: User { name: 'john_doe', content: [ 'entry1', 'entry2' ], worlds: [ 'world1', 'world2' ] }
     const entry = Entry.verify({
         name: 'entry1',
         parentId: 'collection1',
@@ -220,5 +228,3 @@ function test() {
         worldId: 'world1'
     });
 }
-
-test();

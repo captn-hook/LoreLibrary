@@ -27,6 +27,8 @@ function crud(operation, model, body, username) {
         table = dataTable;
     }
 
+    body.username = username;
+
     switch (operation) {
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
@@ -114,11 +116,11 @@ async function dynamo_get(data, table = dataTable) {
         TableName: table,
         Key: {
             PK: data.pk(),
-            SK: data.name
+            SK: data.sk()
         }
     };
 
-    console.error('params', params);
+    console.error('get params', params);
 
     try {
         const res = await ddbDocClient.send(new GetCommand(params));
@@ -187,7 +189,7 @@ async function dynamo_create(data, table = dataTable) {
         TableName: table,
         Key: {
             PK: data.pk(),
-            SK: data.name
+            SK: data.sk()
         }
     };
 
@@ -205,7 +207,7 @@ async function dynamo_create(data, table = dataTable) {
     const { name, ...rest } = data;
     const newItem = {
         PK: data.pk(),
-        SK: name,
+        SK: data.sk(),
         ...rest
     };
 
@@ -271,7 +273,7 @@ async function dynamo_create(data, table = dataTable) {
         });
     } else if (model === Entry) {
         // if entry, add it to the collection
-        const collectionPrefix = 'COLLECTION#' + worldId;
+        const collectionPrefix = 'COLLECTION#' + worldId; // fix this to use the correct parent
         const collectionParams = {
             TableName: dataTable,
             Key: {
@@ -325,7 +327,7 @@ async function dynamo_update(data, table = dataTable) {
         TableName: table,
         Key: {
             PK: data.pk(),
-            SK: data.name
+            SK: data.sk()
         },
         UpdateExpression: `SET ${updateExpression}`,
         ExpressionAttributeNames: expressionAttributeNames,

@@ -11,7 +11,7 @@ const userTable = process.env.USER_TABLE;
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
-async function create_user(data) {
+async function create_user(data) { // unstructired data
     try {
         data = new SignUp(data.username, data.email, data.password);
         // Create the user in Cognito
@@ -19,7 +19,7 @@ async function create_user(data) {
             ClientId: clientId,
             Password: data.password,
             UserPoolId: userPoolId,
-            Username: data.username,
+            Username: data.name,
             UserAttributes: [
                 {
                     Name: "email",
@@ -34,7 +34,7 @@ async function create_user(data) {
             throw new Error("Failed to create user in Cognito: " + signUpResponse);
         }
 
-        await dynamo_user_create(data.username); // Create the user in DynamoDB
+        await dynamo_user_create(data.name); // Create the user in DynamoDB
         // Return a success token
         return await login_user(data); // Return the token for the user
     } catch (err) {
