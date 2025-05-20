@@ -4,7 +4,7 @@ info:
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
 servers:
-  - url: https://1a7bd4xlti.execute-api.us-west-2.amazonaws.com/prod
+  - url: https://oldbnfexu6.execute-api.us-west-2.amazonaws.com/prod
 tags:
   - name: user
     description: Operations related to users
@@ -705,7 +705,7 @@ components:
       x-amazon-apigateway-authorizer:
         type: request
         identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer${Env}/invocations
         authorizerPayloadFormatVersion: '2.0'
         enableSimpleResponses: true
   schemas:

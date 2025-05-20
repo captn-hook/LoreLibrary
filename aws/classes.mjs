@@ -65,19 +65,19 @@ export class Token extends Body {
 }
 
 export class User extends Body {
-    constructor(name, content = [], worlds = []) {
+    constructor(username, content = [], worlds = []) {
         super();
-        this.name = name; // string
+        this.username = username; // string
         this.content = Array.isArray(content) ? content : [content]; // array of strings
         this.worlds = Array.isArray(worlds) ? worlds : [worlds]; // array of worldIds
     }
 
-    get username() {
-        return this.name;
+    get name() {
+        return this.username;
     }
 
-    set username(value) {
-        this.name = value;
+    set name(value) {
+        this.username = value;
     }
 
     pk() {
