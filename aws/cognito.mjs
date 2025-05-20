@@ -33,8 +33,12 @@ async function create_user(data) { // unstructired data
         if (!signUpResponse.UserSub) {
             throw new Error("Failed to create user in Cognito: " + signUpResponse);
         }
-
-        await dynamo_user_create(data.name); // Create the user in DynamoDB
+        try {
+            await dynamo_user_create(data.name); // Create the user in DynamoDB
+        } catch (err) {
+            console.error("Error creating user in DynamoDB:", err);
+            throw new Error("Failed to create user in DynamoDB: " + err.message);
+        }
         // Return a success token
         return await login_user(data); // Return the token for the user
     } catch (err) {

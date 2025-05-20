@@ -54,11 +54,10 @@ export const handler = async (e) => {
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
             // Get all worlds, FIX: paginated with limit and offset
-            const worlds = await dynamo_list(World)
-            return {
-                statusCode: 200,
-                body: JSON.stringify(worlds)
-            };
+            var res = await dynamo_list(World)
+            if (res) {
+                return res;
+            }
         }
         else if (operation === 'PUT' && path === '/worlds') {
             // Create a new world
@@ -66,16 +65,16 @@ export const handler = async (e) => {
 
             e.body.parentId = username;
             e.body.ownerId = username;
+            e.body.worldId = e.body.name;
             var data = World.verify(e.body);
 
             if (data === null) { return badRequest('Invalid world data'); }
 
-            const world = await dynamo_create(data);
+            var res = await dynamo_create(data);
             // Return world
-            return {
-                statusCode: 200,
-                body: JSON.stringify(world)
-            };
+            if (res) {
+                return res;
+            }
         }
         // /signup: POST 
         else if (operation === 'POST' && path === '/signup') {
@@ -122,8 +121,12 @@ export const handler = async (e) => {
                     return res;
                 }
             }
-            const user = pathsplit[2];
-            e.body.user = user;
+            console.log('Path: ', path, ' ', pathsplit);
+            const user = pathParameters.username;
+            console.log('User: ', user);
+            console.log('e.body: ', e.body);
+            e.body = {}
+            e.body.username = user;
             console.log('User crud: ', operation, ' ', pathsplit[2] , ' ', e.body);
             var res = await crud(operation, User, e.body, username);
             if (res) {
@@ -142,9 +145,14 @@ export const handler = async (e) => {
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathParameters.WorldId;
+            if (!e.body) {
+                e.body = {};
+            }
             e.body.name = worldId;
             e.body.worldId = worldId;
             e.body.parentId = username;
+            console.log('World crud: ', operation, ' ', pathsplit[1] , ' ', e.body);
+            console.log(World.verify(e.body));
             var res = await crud(operation, World, e.body, username);
             if (res) {
                 return res;

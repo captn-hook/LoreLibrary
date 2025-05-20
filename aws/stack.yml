@@ -163,7 +163,7 @@ Resources:
   UserTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: !Sub lorelibrary-user${Env}
+      TableName: !Sub lorelibrary-users${Env}
       AttributeDefinitions:
         - AttributeName: PK # User ID
           AttributeType: S

@@ -33,31 +33,39 @@ function crud(operation, model, body, username) {
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
 
-            var data = model.verify(body);
-            if (data === null) {
+            let pd = model.verify(body);
+            if (pd === null) {
                 return badRequest('Invalid body');
             }
-            return dynamo_create(data, table);
+            return dynamo_create(pd, table);
 
         case 'GET':
             if (model === User && !username) { return badRequest('Invalid authentication'); }
 
-            var data = DataShort.verify(body);
-            if (data === null) {
-                return badRequest('Invalid body');
+            let gd;
+            if (model === User) {
+                gd = User.verify(body);
+                if (gd === null) {
+                    return badRequest('Invalid body');
+                }
+            } else {
+                gdd = DataShort.verify(body);
+                if (gd === null) {
+                    return badRequest('Invalid body');
+                }
             }
 
-            return dynamo_get(data, table);
+            return dynamo_get(gd, table);
         case 'PUT':
             if (!username) { return badRequest('Invalid authentication'); }
-
-            return dynamo_update(data, table);
+            let cd = model.verify(body);
+            return dynamo_update(cd, table);
         case 'DELETE':
             if (!username) { return badRequest('Invalid authentication'); }
 
-            var data = DataShort.verify(body);
+            let dd = DataShort.verify(body);
 
-            return dynamo_delete(data, table);
+            return dynamo_delete(dd, table);
         default:
             throw new Error('Invalid operation');
     }
@@ -75,9 +83,10 @@ async function dynamo_user_create(username) {
             worlds: user.worlds
         }
     };
-    console.error('params', params);
+    console.log('params', params);
     try {
         const res = await ddbDocClient.send(new PutCommand(params));
+        console.log('new user res', res);
         if (!res.Attributes) {
             throw new Error("Item not found");
         }
@@ -127,14 +136,15 @@ async function dynamo_get(data, table = dataTable) {
         if (!res.Item) {
             throw new Error("Item not found");
         }
-        // create a new instance of the model with the data
-        const item = data.verify(res.Item);
-        if (!item) {
-            throw new Error("Invalid item data");
+        // update the item with the new data
+        for (const key in data) {
+            if (res.Item.hasOwnProperty(key) && data[key] !== undefined) {
+                data[key] = res.Item[key];
+            }
         }
         return {
             statusCode: 200,
-            body: JSON.stringify(item)
+            body: JSON.stringify(data)
         };
     }
     catch (err) {
@@ -221,7 +231,7 @@ async function dynamo_create(data, table = dataTable) {
         }
     });
 
-    if (model === World) {
+    if (data instanceof World) {
         // if world, add it to the user
         const userPrefix = 'USER#';
         const userParams = {
@@ -246,7 +256,7 @@ async function dynamo_create(data, table = dataTable) {
                 Item: user
             }
         });
-    } else if (model === Collection) {
+    } else if (data instanceof Collection) {
         // if collection, add it to the world
         const worldPrefix = 'WORLD#';
         const worldParams = {
@@ -271,7 +281,7 @@ async function dynamo_create(data, table = dataTable) {
                 Item: world
             }
         });
-    } else if (model === Entry) {
+    } else if (data instanceof Entry) {
         // if entry, add it to the collection
         const collectionPrefix = 'COLLECTION#' + worldId; // fix this to use the correct parent
         const collectionParams = {
@@ -302,7 +312,13 @@ async function dynamo_create(data, table = dataTable) {
         const result = await ddbDocClient.send(new TransactWriteCommand({
             TransactItems: transactionItems
         }));
-        return dynamo_get(data.verify(result.Attributes), table);
+        for (const key in data) {
+            console.log('result', result);
+            if (result.Attributes && result.Attributes.hasOwnProperty(key) && data[key] !== undefined) {
+                data[key] = result.Attributes[key];
+            }
+        }
+        return dynamo_get(data, table);
     } catch (err) {
         console.error("Error creating item:", err);
         throw new Error("Error creating item");
@@ -340,13 +356,14 @@ async function dynamo_update(data, table = dataTable) {
             throw new Error("Item not found");
         }
         // create a new instance of the model with the data
-        const item = data.verify(res.Attributes);
-        if (!item) {
-            throw new Error("Invalid item data");
+        for (const key in data) {
+            if (res.Item.hasOwnProperty(key) && data[key] !== undefined) {
+                data[key] = res.Item[key];
+            }
         }
         return {
             statusCode: 200,
-            body: JSON.stringify(item)
+            body: JSON.stringify(data)
         };
     } catch (err) {
         console.error("Error updating item:", err);
