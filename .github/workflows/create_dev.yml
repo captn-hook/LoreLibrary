@@ -1,4 +1,4 @@
-name: Create AWS dev
+name: Create AWS dev 
 
 on:
   workflow_dispatch:
