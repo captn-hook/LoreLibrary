@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Define variables
-url="https://hpwvv5xn81.execute-api.us-west-2.amazonaws.com/prod"
+# Define variablesurl=""
+source "$(dirname "$0")/env.sh"
+load_env_url
+echo "Using URL: $url"
 token=""
 username=""
 email1="hookt@oregonstate.edu"
