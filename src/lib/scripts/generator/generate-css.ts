@@ -39,14 +39,14 @@ export function updateSettingsFromCurrentStyles() {
     const rootStyles = getComputedStyle(document.documentElement);
 
     function oklchToHex(oklchValue: string): string {
-    try {
-        const color = oklch(oklchValue);
-        const hex = formatHex(color);
-        return hex;
-    } catch (error) {
-        console.warn(`Failed to convert oklch to hex. Input: ${oklchValue}`, error);
-        return '#000001'; // Fallback to black
-    }
+        try {
+            const color = oklch(oklchValue);
+            const hex = formatHex(color);
+            return hex;
+        } catch (error) {
+            console.warn(`Failed to convert oklch to hex. Input: ${oklchValue}`, error);
+            return '#000001'; // Fallback to black
+        }
     }
 
     // Update settingsColors
@@ -65,7 +65,6 @@ export function updateSettingsFromCurrentStyles() {
     Object.keys(settingsBackgrounds).forEach((key) => {
         const typedKey = key as keyof typeof settingsBackgrounds;
         let value = rootStyles.getPropertyValue(key).trim();
-		console.log("value", value)
         if (value) {
             if (value.startsWith('oklch(')) {
                 value = oklchToHex(value);
@@ -79,9 +78,6 @@ export function updateSettingsFromCurrentStyles() {
         const typedKey = key as keyof typeof settingsTypography;
         let value = rootStyles.getPropertyValue(key).trim();
         if (value) {
-            if (value.startsWith('oklch(')) {
-                value = oklchToHex(value);
-            }
             settingsTypography[typedKey] = value;
         }
     });
@@ -91,9 +87,6 @@ export function updateSettingsFromCurrentStyles() {
         const typedKey = key as keyof typeof settingsSpacing;
         let value = rootStyles.getPropertyValue(key).trim();
         if (value) {
-            if (value.startsWith('oklch(')) {
-                value = oklchToHex(value);
-            }
             settingsSpacing[typedKey] = value;
         }
     });
@@ -103,11 +96,9 @@ export function updateSettingsFromCurrentStyles() {
         const typedKey = key as keyof typeof settingsEdges;
         let value = rootStyles.getPropertyValue(key).trim();
         if (value) {
-            if (value.startsWith('oklch(')) {
-                value = oklchToHex(value);
-            }
             settingsEdges[typedKey] = value;
         }
     });
 
+    console.log('Theme settings updated from current styles.');
 }

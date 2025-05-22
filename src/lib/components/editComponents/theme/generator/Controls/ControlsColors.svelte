@@ -28,7 +28,7 @@
 		{ label: 'Tertiary', description: 'A tertiary accent color.', value: 'tertiary', class: 'preset-filled-tertiary-500' },
 		{ label: 'Success', description: 'Used for successful states.', value: 'success', class: 'preset-filled-success-500' },
 		{ label: 'Warning', description: 'Used for warning states.', value: 'warning', class: 'preset-filled-warning-500' },
-		// { label: 'Error', description: 'Used for error states.', value: 'error', class: 'preset-filled-error-500' },
+		{ label: 'Error', description: 'Used for error states/delete buttons', value: 'error', class: 'preset-filled-error-500' },
 		{ label: 'Surface', description: 'The neutral surface tones.', value: 'surface', class: 'preset-filled-surface-500' }
 	];
 	const shadesAll = constants.colorShades;
