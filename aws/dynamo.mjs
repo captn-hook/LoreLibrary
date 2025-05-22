@@ -48,8 +48,13 @@ function crud(operation, model, body, username) {
                 if (gd === null) {
                     return badRequest('Invalid body');
                 }
+            } else if (model === World) {
+                gd = World.verify(body);
+                if (gd === null) {
+                    return badRequest('Invalid body');
+                }
             } else {
-                gdd = DataShort.verify(body);
+                gd = DataShort.verify(body);
                 if (gd === null) {
                     return badRequest('Invalid body');
                 }
@@ -85,7 +90,8 @@ async function dynamo_user_create(username) {
     };
     try {
         const res = await ddbDocClient.send(new PutCommand(params));
-        if (!(res.$metadata.httpStatusCode === 200)) {
+        console.log('User created:', res.$metadata.httpStatusCode);
+        if (res.$metadata.httpStatusCode == '200') {
             return {
                 statusCode: 200,
                 body: JSON.stringify({ message: "User created successfully" })

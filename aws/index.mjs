@@ -151,7 +151,7 @@ export const handler = async (e) => {
             }
             e.body.name = worldId;
             e.body.worldId = worldId;
-            e.body.parentId = username;
+            e.body.parentId = username? username : null;
             console.log('World crud: ', operation, ' ', pathsplit[1] , ' ', e.body);
             console.log(World.verify(e.body));
             var res = await crud(operation, World, e.body, username);
