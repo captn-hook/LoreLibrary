@@ -1,0 +1,43 @@
+name: Create AWS dev 
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
+    - name: Install node dependencies
+      run: |
+        cd aws
+        npm install
+    
+    - name: Preprocess OpenAPI Spec
+      run: |
+        sed -i "s/\${Env}/-dev/g" aws/api.yaml
+        
+    - name: Package Lambda Code
+      run: |
+        zip -r index.zip aws/*
+        aws s3 cp index.zip s3://lorelibrary-deployment-artifacts-dev/
+
+    - name: Upload OpenAPI Spec
+      run: aws s3 cp aws/api.yaml s3://lorelibrary-deployment-artifacts-dev/
+
+    - name: Deploy CloudFormation Stack
+      run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack-dev --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env=-dev --region us-west-2
+
+    - name: Close Bucket
+      run: aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
