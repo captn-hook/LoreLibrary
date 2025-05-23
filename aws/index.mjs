@@ -71,7 +71,6 @@ export const handler = async (e) => {
 
             if (data === null) { return badRequest('Invalid world data'); }
 
-            
             var res = await dynamo_create(data);
             // Return world
             if (res) {
