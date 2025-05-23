@@ -240,7 +240,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !Sub ${AWS::StackName}-lambda${Env}
+      RoleName: !Sub lorelibrary-lambda-role${Env}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
