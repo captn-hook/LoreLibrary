@@ -352,19 +352,8 @@ Resources:
       StageName: prod
       AccessLogSettings:
         DestinationArn: !GetAtt AccessLogGroup.Arn
-        Format: |
-          {
-            "requestId": "$context.requestId",
-            "ip": "$context.identity.sourceIp",
-            "caller": "$context.identity.caller",
-            "user": "$context.identity.user",
-            "requestTime": "$context.requestTime",
-            "httpMethod": "$context.httpMethod",
-            "resourcePath": "$context.resourcePath",
-            "status": $context.status,
-            "responseLength": $context.responseLength
-          }
-      
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
+
    
 Outputs:
   WebsiteURL:
