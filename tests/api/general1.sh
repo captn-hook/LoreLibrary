@@ -19,7 +19,8 @@ signup() {
     local email=$3
     
     # Perform signup
-    local response=$(curl -X 'POST' \
+    local response=$(curl -i \
+        -X 'POST' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         -d "{\"username\":\"$user\", \"password\":\"$password\", \"email\":\"$email\"}" \
@@ -27,20 +28,6 @@ signup() {
 
     # Check if signup was successful
     echo "Signup response: $response"
-    if [[ $(echo "$response" | jq -r '.username') == "$user" ]]; then
-        echo "Signup successful"
-        # Extract token and username from the response
-        token=$(echo "$response" | jq -r '.token')
-        username=$(echo "$response" | jq -r '.username')
-        # Check if token and username are not empty
-        if [[ -z "$token" || -z "$username" ]]; then
-            echo "Failed to extract token or username from signup response"
-            exit 1
-        fi
-        # Store token and username in environment variables
-        export TOKEN="$token"
-        export USERNAME="$username"
-    # else if
     elif [[ $(echo "$response" | jq -r '.message') == "User already exists" ]]; then
         echo "User already exists, logging in"
         login "$user" "$password"
