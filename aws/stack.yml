@@ -335,7 +335,7 @@ Resources:
   AccessLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: "/aws/apigateway/lore-library-access-logs${Env}"
+      LogGroupName: !Sub lorelibrary-access-logs${Env}
       RetentionInDays: 1
 
   ApiGatewayDeployment:

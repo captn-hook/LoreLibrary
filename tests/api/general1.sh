@@ -26,8 +26,12 @@ signup() {
         -d "{\"username\":\"$user\", \"password\":\"$password\", \"email\":\"$email\"}" \
         "$url/signup")
 
-    # Check if signup was successful
+    # Check if signup was 200 OK
     echo "Signup response: $response"
+    if [[ $(echo "$response" | jq -r '.status') == "200" ]]; then
+        echo "Signup successful"
+        login "$user" "$password"
+        return
     elif [[ $(echo "$response" | jq -r '.message') == "User already exists" ]]; then
         echo "User already exists, logging in"
         login "$user" "$password"
