@@ -71,7 +71,7 @@ paths:
           description: Bad request
         '500':
           description: Internal server error
-    post:
+    put:
       tags:
         - world
       summary: Create a new world (requires a user)
@@ -130,13 +130,13 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-    put:
+    post:
       tags:
         - world
       summary: Update a world (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
-        httpMethod: PUT
+        httpMethod: POST
         uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
@@ -167,7 +167,7 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-    post:
+    put:
       tags:
         - collection
       summary: Create a new collection (requires a user)
@@ -264,7 +264,7 @@ paths:
           description: Collection not found
         '500':
           description: Internal server error
-    put:
+    post:
       tags:
         - collection
       summary: Update a collection (requires a user)
@@ -307,7 +307,7 @@ paths:
           description: Collection not found
         '500':
           description: Internal server error
-    post:
+    put:
       tags:
         - entry
       summary: Create a new entry (requires a user)
@@ -422,7 +422,7 @@ paths:
           description: Entry not found
         '500':
           description: Internal server error
-    put:
+    post:
       tags:
         - entry
       summary: Update an entry (requires a user)

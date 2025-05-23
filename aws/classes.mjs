@@ -54,6 +54,14 @@ export class SignUp extends Body {
         this.email = email; // string
         this.password = password; // string, hashed
     }
+
+    get username() {
+        return this.name;
+    }
+
+    set username(value) {
+        this.name = value;
+    }
 }
 
 export class Token extends Body {

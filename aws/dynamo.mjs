@@ -23,11 +23,12 @@ function crud(operation, model, body, username) {
     var table;
     if (model == User) {
         table = userTable;
+        if (operation === 'GET' && body.username !== username) {
+            return dynamo_get(new User(body.username), table);
+        }
     } else {
         table = dataTable;
     }
-
-    body.ownerId = username ? username : null;
 
     switch (operation) {
         case 'POST':
@@ -143,7 +144,6 @@ async function dynamo_get(data, table = dataTable) {
         }
     };
 
-    console.error('get params', params);
 
     try {
         const res = await ddbDocClient.send(new GetCommand(params));
@@ -159,6 +159,7 @@ async function dynamo_get(data, table = dataTable) {
                 data[key] = res.Item[key];
             }
         }
+        console.log('Item found:', data);
         return {
             statusCode: 200,
             body: JSON.stringify(data)
