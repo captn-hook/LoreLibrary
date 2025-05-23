@@ -332,6 +332,12 @@ Resources:
         - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
       PayloadFormatVersion: "2.0"
 
+  AccessLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: "/aws/apigateway/lore-library-access-logs${Env}"
+      RetentionInDays: 1
+
   ApiGatewayDeployment:
     Type: "AWS::ApiGatewayV2::Deployment"
     Properties:
@@ -344,6 +350,21 @@ Resources:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: prod
+      AccessLogSettings:
+        DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: |
+          {
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "caller": "$context.identity.caller",
+            "user": "$context.identity.user",
+            "requestTime": "$context.requestTime",
+            "httpMethod": "$context.httpMethod",
+            "resourcePath": "$context.resourcePath",
+            "status": $context.status,
+            "responseLength": $context.responseLength
+          }
+      
    
 Outputs:
   WebsiteURL:

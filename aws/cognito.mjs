@@ -40,7 +40,8 @@ async function create_user(data) { // unstructired data
             throw new Error("Failed to create user in DynamoDB: " + err.message);
         }
         // Return a success token
-        return await login_user(data); // Return the token for the user
+        console.log("Logging in user with Cognito:", data);
+        return await login_user(data);
     } catch (err) {
         console.error("Error creating user:", err);
 

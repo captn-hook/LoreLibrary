@@ -108,7 +108,7 @@ async function dynamo_user_create(username) {
 function update(data, table = dataTable) {
     // get the item to update and replace any present keys
     const instance = DataShort.verify(data);
-    var item = dynamo_get(instance, table);
+    var item = dynamo_get(instance, table).body;
     if (!item) { throw new Error('Item not found'); }
 
     for (const key in data) {
@@ -134,7 +134,10 @@ async function dynamo_get(data, table = dataTable) {
     try {
         const res = await ddbDocClient.send(new GetCommand(params));
         if (!res.Item) {
-            throw new Error("Item not found");
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ message: "Item not found" })
+            }
         }
         // update the item with the new data
         for (const key in data) {
@@ -375,7 +378,7 @@ async function dynamo_delete(data) {
     // Delete an item from the database and update associated items
 
     // get the item to delete
-    const item = await dynamo_get(data, table);
+    const item = await dynamo_get(data, table).body;
 
     // if the item is a user, get all the worlds with their id
     if (item instanceof User) {
@@ -508,7 +511,7 @@ async function delete_collection(collection, final = true) {
     });
 
     try {
-        const parent = await dynamo_get(new World(collection.worldId), dataTable);
+        const parent = await dynamo_get(new World(collection.worldId), dataTable).body;
         if (!parent) {
             throw new Error("Parent world not found");
         }
@@ -524,7 +527,7 @@ async function delete_collection(collection, final = true) {
         });
     } catch (err) {
         // if the parent world isnt found, try to find parent collection
-        const parent = await dynamo_get(new Collection(collection.parentId, null, collection.worldId));
+        const parent = await dynamo_get(new Collection(collection.parentId, null, collection.worldId)).body;
         if (!parent) {
             throw new Error("Parent collection not found");
         }
@@ -562,7 +565,7 @@ async function delete_collection(collection, final = true) {
 async function delete_entry(entry, final = true) {
     if (final) {
         let transactionItems = [];
-        const parent = await dynamo_get(new Collection(entry.collectionId, null, entry.worldId));
+        const parent = (await dynamo_get(new Collection(entry.collectionId, null, entry.worldId))).body;
         if (!parent) {
             throw new Error("Parent collection not found");
         }
