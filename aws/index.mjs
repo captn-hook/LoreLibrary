@@ -85,17 +85,26 @@ export const handler = async (e) => {
 
             try {
                 const userExists = await dynamo_get(data, process.env.USER_TABLE); // Users are in a different table than default
-                if (userExists) {
+                if (userExists.statusCode === 404) {
+                    console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
+                    const token = await create_user(e.body);
+                    return token;
+                } else if (userExists.statusCode === 200) {
                     return badRequest('User already exists');
+                } else {
+                    console.error('Error checking user existence:', userExists);
+                    return { 
+                        statusCode: 500,
+                        body: JSON.stringify({ message: 'Error checking user existence' })
+                    };
                 }
             } catch (error) {
-                // User does not exist, so we can create it
-                console.log('User does not exist, creating user');
+                console.error('Error checking user existence:', error);
+                return { 
+                    statusCode: 500,
+                    body: JSON.stringify({ message: 'Error checking user existence' })
+                };
             }
-
-            console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
-            const token = await create_user(e.body);
-            return token;
 
         }
         // /login: POST
@@ -149,14 +158,23 @@ export const handler = async (e) => {
             if (!e.body) {
                 e.body = {};
             }
-            e.body.name = worldId;
             e.body.worldId = worldId;
-            e.body.parentId = username? username : null;
-            console.log('World crud: ', operation, ' ', pathsplit[1] , ' ', e.body);
-            console.log(World.verify(e.body));
-            var res = await crud(operation, World, e.body, username);
-            if (res) {
-                return res;
+            if (operation === 'POST') {
+                // creating a collection
+                if (!username) { return badRequest('Invalid authentication'); }
+                e.body.parentId = worldId;
+                e.body.ownerId = username? username : null;
+                var res = await crud(operation, Collection, e.body, username);
+                if (res) {
+                    return res;
+                }
+            } else {
+                e.body.name = worldId;
+                e.body.parentId = username? username : null;
+                var res = await crud(operation, World, e.body, username);
+                if (res) {
+                    return res;
+                }
             }
         }
         // /{WorldId}/{CollectionId}: GET, POST, PUT DELETE

@@ -61,6 +61,7 @@ async function create_user(data) { // unstructired data
 async function login_user(data) {
     try {
         if (!data.username || !data.password) {
+            console.error("Invalid login data:", data);
             return badRequest("Invalid username or password");
         }
         // Authenticate the user with Cognito

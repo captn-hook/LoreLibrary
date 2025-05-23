@@ -32,13 +32,8 @@ function crud(operation, model, body, username) {
     switch (operation) {
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
-
-            let pd = model.verify(body);
-            if (pd === null) {
-                return badRequest('Invalid body');
-            }
-            return dynamo_create(pd, table);
-
+            let cd = model.verify(body);
+            return dynamo_update(cd, table);
         case 'GET':
             if (model === User && !username) { return badRequest('Invalid authentication'); }
 
@@ -63,8 +58,12 @@ function crud(operation, model, body, username) {
             return dynamo_get(gd, table);
         case 'PUT':
             if (!username) { return badRequest('Invalid authentication'); }
-            let cd = model.verify(body);
-            return dynamo_update(cd, table);
+
+            let pd = model.verify(body);
+            if (pd === null) {
+                return badRequest('Invalid body');
+            }
+            return dynamo_create(pd, table);
         case 'DELETE':
             if (!username) { return badRequest('Invalid authentication'); }
 
@@ -107,9 +106,9 @@ async function dynamo_user_create(username) {
 
 function update(data, table = dataTable) {
     // get the item to update and replace any present keys
-    const instance = DataShort.verify(data);
-    var item = dynamo_get(instance, table).body;
-    if (!item) { throw new Error('Item not found'); }
+    var item = dynamo_get(data, table).body;
+
+    console.log('Updating item:', item);
 
     for (const key in data) {
         if (item.hasOwnProperty(key) && data[key] !== undefined) {
@@ -194,10 +193,6 @@ async function dynamo_list(model, sk = '') {
 
 async function dynamo_create(data, table = dataTable) {
 
-    console.log('Creating item:', data);
-    // Try to get the item in case it already exists
-    const sh = DataShort.verify(data);
-    if (!sh) { return badRequest('Invalid data'); }
     const params = {
         TableName: table,
         Key: {
