@@ -9,7 +9,7 @@ import {
     TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { badRequest } from "./utilities.mjs";
-import { World, Collection, Entry, User, DataShort } from "./classes.mjs";
+import { World, Collection, Entry, User } from "./classes.mjs";
 
 
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
@@ -27,7 +27,7 @@ function crud(operation, model, body, username) {
         table = dataTable;
     }
 
-    body.username = username;
+    body.ownerId = username ? username : null;
 
     switch (operation) {
         case 'POST':
@@ -36,6 +36,14 @@ function crud(operation, model, body, username) {
             return dynamo_update(cd, table);
         case 'GET':
             if (model === User && !username) { return badRequest('Invalid authentication'); }
+
+            if (!body) {
+                body = {};
+            } else if (!body.parentId) {
+                body.parentId = null;
+            } else if (!body.worldId) {
+                body.worldId = null;
+            }
 
             let gd;
             if (model === User) {
@@ -48,13 +56,20 @@ function crud(operation, model, body, username) {
                 if (gd === null) {
                     return badRequest('Invalid body');
                 }
-            } else {
-                gd = DataShort.verify(body);
+            } else if (model === Collection) {
+                gd = Collection.verify(body);
                 if (gd === null) {
                     return badRequest('Invalid body');
                 }
+            } else if (model === Entry) {
+                gd = Entry.verify(body);
+                if (gd === null) {
+                    return badRequest('Invalid body');
+                }
+            } else {
+                console.error('Invalid model:', model);
+                return badRequest('Invalid model');
             }
-
             return dynamo_get(gd, table);
         case 'PUT':
             if (!username) { return badRequest('Invalid authentication'); }
@@ -67,7 +82,7 @@ function crud(operation, model, body, username) {
         case 'DELETE':
             if (!username) { return badRequest('Invalid authentication'); }
 
-            let dd = DataShort.verify(body);
+            let dd = model.verify(body);
 
             return dynamo_delete(dd, table);
         default:
@@ -209,14 +224,14 @@ async function dynamo_create(data, table = dataTable) {
     }
 
     if (existingItem.Item) {
+        console.error("Item already exists:", existingItem.Item);
         throw new Error("Item already exists");
     }
 
-    const { name, ...rest } = data;
     const newItem = {
         PK: data.pk(),
         SK: data.sk(),
-        ...rest
+        ...data.getBody(),
     };
 
     let transactionItems = [];
@@ -281,14 +296,14 @@ async function dynamo_create(data, table = dataTable) {
         });
     } else if (data instanceof Entry) {
         // if entry, add it to the collection
-        const collectionPrefix = 'COLLECTION#' + worldId; // fix this to use the correct parent
         const collectionParams = {
             TableName: dataTable,
             Key: {
-                PK: collectionPrefix,
-                SK: data.collectionId
+                PK: data.worldId + '#COLLECTION',
+                SK: data.parentId
             }
         };
+        console.log('collectionParams', collectionParams);
         const collectionData = await ddbDocClient.send(new GetCommand(collectionParams));
         if (!collectionData.Item) {
             throw new Error("Collection not found");

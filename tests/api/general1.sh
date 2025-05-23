@@ -17,27 +17,34 @@ signup() {
     local user=$1
     local password=$2
     local email=$3
-    
+
     # Perform signup
-    local response=$(curl -i \
+    local response=$(curl -s -w "\n%{http_code}" \
         -X 'POST' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         -d "{\"username\":\"$user\", \"password\":\"$password\", \"email\":\"$email\"}" \
         "$url/signup")
 
-    # Check if signup was 200 OK
-    echo "Signup response: $response"
-    if [[ $(echo "$response" | jq -r '.status') == "200" ]]; then
+    # Separate response body and HTTP status code
+    local body=$(echo "$response" | sed '$d')
+    local status_code=$(echo "$response" | tail -n1)
+
+    # Debugging output
+    echo "Signup response body: $body"
+    echo "Signup HTTP status code: $status_code"
+
+    # Check if signup was successful
+    if [[ "$status_code" == "200" ]]; then
         echo "Signup successful"
         login "$user" "$password"
         return
-    elif [[ $(echo "$response" | jq -r '.message') == "User already exists" ]]; then
+    elif [[ $(echo "$body" | jq -r '.message') == "User already exists" ]]; then
         echo "User already exists, logging in"
         login "$user" "$password"
         return
     else
-        echo "Signup failed: $(echo "$response")"
+        echo "Signup failed: $body"
         exit 1
     fi
 }

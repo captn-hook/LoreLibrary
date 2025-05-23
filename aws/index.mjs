@@ -1,6 +1,6 @@
 import { badRequest, notImplemented } from './utilities.mjs';
 
-import { User, DataShort, Entry, Collection, World } from './classes.mjs';
+import { User, Entry, Collection, World } from './classes.mjs';
 
 import { dynamo_get, dynamo_create, dynamo_list, crud } from './dynamo.mjs';
 
@@ -66,7 +66,7 @@ export const handler = async (e) => {
 
             e.body.parentId = username;
             e.body.ownerId = username;
-            e.body.worldId = e.body.name;
+            e.body.worldId = e.body.name? e.body.name : username;
             var data = World.verify(e.body);
 
             if (data === null) { return badRequest('Invalid world data'); }
@@ -159,8 +159,8 @@ export const handler = async (e) => {
                 e.body = {};
             }
             e.body.worldId = worldId;
-            if (operation === 'POST') {
-                // creating a collection
+            if (operation === 'PUT') {
+                // Creating a collection
                 if (!username) { return badRequest('Invalid authentication'); }
                 e.body.parentId = worldId;
                 e.body.ownerId = username? username : null;
@@ -181,11 +181,26 @@ export const handler = async (e) => {
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
-            e.body.name = collectionId;
+            if (!e.body) {
+                e.body = {};
+            }
             e.body.worldId = worldId;
-            var res = await crud(operation, Collection, e.body, username);
-            if (res) {
-                return res;
+            if (operation === 'PUT') {
+                // Creating an entry
+                if (!username) { return badRequest('Invalid authentication'); }
+                e.body.parentId = collectionId;
+                e.body.ownerId = username? username : null;
+                var res = await crud(operation, Entry, e.body, username);
+                if (res) {
+                    return res;
+                }
+            } else {
+                e.body.name = collectionId;
+                e.body.worldId = worldId;
+                var res = await crud(operation, Collection, e.body, username);
+                if (res) {
+                    return res;
+                }
             }
         }
         // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
@@ -193,9 +208,14 @@ export const handler = async (e) => {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
             const entryId = pathParameters.EntryId;
+            if (!e.body) {
+                e.body = {};
+            }
+            e.body.worldId = worldId;
+
+
             e.body.name = entryId;
             e.body.parentId = collectionId;
-            e.body.worldId = worldId;
             var res = await crud(operation, Entry, e.body, username);
             if (res) {
                 return res;

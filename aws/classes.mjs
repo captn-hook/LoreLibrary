@@ -115,8 +115,24 @@ export class DataShort extends Body {
         this.tags = Array.isArray(tags) ? tags : [tags]; // array of strings// array of worldIds
     }
 
+    getBody() {
+        // usage:
+        // const newItem = {
+        //     PK: data.pk(),
+        //     SK: data.sk(),
+        //     ...data.getBody(),
+        // };
+        return {
+            parentId: this.parentId,
+            description: this.description,
+            image: this.image,
+            tags: this.tags
+        };
+    }
+    
+
     pk() {
-        return this.worldId + '#' + this.parentId;
+        return this.worldId + '#'
     }
 
     sk() {
@@ -135,6 +151,22 @@ export class Entry extends DataShort {
         this.style = style; // string
         this.permissions = permissions; // Permissions object
     }
+    
+    getBody() {
+        return {
+            parentId: this.parentId,
+            description: this.description,
+            image: this.image,
+            tags: this.tags,
+            content: this.content,
+            style: this.style,
+            permissions: this.permissions,
+        };
+    }
+
+    pk() {
+        return this.worldId + '#ENTRY'
+    }
 }
     
 export class Collection extends Entry {
@@ -143,11 +175,43 @@ export class Collection extends Entry {
         this.collections = Array.isArray(collections) ? collections : [collections]; // array of collectionIds
         this.entries = Array.isArray(entries) ? entries : [entries]; // array of entryIds
     }
+
+    getBody() {
+        return {
+            parentId: this.parentId,
+            description: this.description,
+            image: this.image,
+            tags: this.tags,
+            content: this.content,
+            style: this.style,
+            permissions: this.permissions,
+            collections: this.collections,
+            entries: this.entries,
+        };
+    }
+
+    pk() {
+        return this.worldId + '#COLLECTION'
+    }
 }
 
 export class World extends Collection {
     constructor(name, parentId, worldId, content = [], description = '', image = '', style = '', tags = [], permissions = {}, collections = [], entries = []) {
         super(name, parentId, worldId, content, description, image, style, tags, permissions, collections, entries);
+    }
+
+    getBody() {
+        return {
+            parentId: this.parentId,
+            description: this.description,
+            image: this.image,
+            tags: this.tags,
+            content: this.content,
+            style: this.style,
+            permissions: this.permissions,
+            collections: this.collections,
+            entries: this.entries,
+        };
     }
 
     pk() {
