@@ -1,4 +1,4 @@
-name: Create AWS prod
+name: Create AWS prod 
 
 on:
   workflow_dispatch:
