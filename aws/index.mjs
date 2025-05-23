@@ -71,6 +71,8 @@ export const handler = async (e) => {
 
             if (data === null) { return badRequest('Invalid world data'); }
 
+            console.log('Creating world: ', data );
+
             var res = await dynamo_create(data);
             // Return world
             if (res) {
@@ -135,7 +137,9 @@ export const handler = async (e) => {
             const user = pathParameters.username;
             console.log('User: ', user);
             console.log('e.body: ', e.body);
-            e.body = {}
+            if (!e.body) {
+                e.body = {};
+            }
             e.body.username = user;
             console.log('User crud: ', operation, ' ', pathsplit[2] , ' ', e.body);
             var res = await crud(operation, User, e.body, username);
