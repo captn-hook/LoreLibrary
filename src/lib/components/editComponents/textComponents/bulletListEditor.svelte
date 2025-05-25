@@ -42,17 +42,20 @@
 		syncToStore();
 	};
 </script>
-
-<ul>
-    {#each items as bullet, i (bullet.id)}
-        <BulletItem
-            item={bullet}
-            {addSubBullet}
-            {removeSubBullet}
-            removeItem={removeItem}
-            updateItem={(updatedItem) => updateItem(i, updatedItem)}
-        />
-    {/each}
-</ul>
-
-<button on:click={addItem} class="btn preset-tonal-secondary ml-2 button-filled">Add Item</button>
+<div class="border-2 border-primary-200 bg-surface-500 rounded-lg">
+	<div class="ml-[2.5%]">
+		<ul class='list-disc'>
+			{#each items as bullet, i (bullet.id)}
+				<BulletItem
+					item={bullet}
+					{addSubBullet}
+					{removeSubBullet}
+					removeItem={removeItem}
+					updateItem={(updatedItem) => updateItem(i, updatedItem)}
+				/>
+			{/each}
+		</ul>
+		
+	</div>
+	<button on:click={addItem} class="btn preset-tonal-primary button-filled max-w-40 ml-4 my-2">Add Item</button>
+</div>	

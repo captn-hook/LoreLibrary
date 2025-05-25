@@ -76,7 +76,7 @@
             }
         });
 </script>
-<div class="w-[50%] flex flex-col items-center mx-0">
+<div class="w-[50%] flex flex-col mx-0">
 <AddComponentButton index={0} />
 {#each $editComponentContents as item, index}
 	{#if item.key == "bulletList"} 

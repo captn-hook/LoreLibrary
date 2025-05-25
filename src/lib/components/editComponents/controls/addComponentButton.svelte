@@ -1,7 +1,7 @@
 <script lang="ts">
-import { Plus } from 'lucide-svelte';
-import AddComponentMenu from './addComponentMenu.svelte';
-export let index;
+    import { Plus } from 'lucide-svelte';
+    import AddComponentMenu from './addComponentMenu.svelte';
+    export let index;
 
     let menuVisible = false;
     let menuPosition = { x: 0, y: 0 };
@@ -10,29 +10,51 @@ export let index;
         menuPosition = { x: event.clientX, y: event.clientY };
         menuVisible = true;
         console.log('Menu opened at:', menuPosition);
+
+        // Add a click listener to detect clicks outside the menu
+        document.addEventListener('click', handleOutsideClick);
     }
 
     function closeMenu() {
         menuVisible = false;
+        console.log('Menu closed');
+
+        // Remove the click listener when the menu is closed
+        document.removeEventListener('click', handleOutsideClick);
+    }
+
+    function handleOutsideClick(event: MouseEvent) {
+        const menuElement = document.querySelector('.add-component-menu');
+        if (menuElement && !menuElement.contains(event.target as Node)) {
+            closeMenu();
+        }
+        console.log('Clicked outside the menu, closing it');
     }
 </script>
+
 <button
-    on:click={openMenu}
+    on:click={(event) => { event.stopPropagation(); openMenu(event); }}
     type="button"
-    class="btn-icon variant-filled bg-surface-500 w-full box-border"
+    class="btn-icon variant-filled preset-tonal-primary w-full box-border mb-2 mt-2"
 >
     <Plus />
 </button>
-{#if index !== undefined}
-    <AddComponentMenu {index} {menuVisible} {menuPosition}/>
-{/if}
 
-<style>
-/* Ensure the button respects the parent's width */
-button {
-    max-width: 100%; /* Prevent the button from exceeding the parent's width */
-    box-sizing: border-box; /* Include padding and border in the width calculation */
-    padding-top: 0.75rem; /* Adjust vertical padding (example: 0.75rem) */
-    padding-bottom: 0.75rem; /* Adjust vertical padding (example: 0.75rem) */
-}
-</style>
+{#if menuVisible}
+    <AddComponentMenu
+        {index}
+        {menuPosition}
+        {closeMenu}
+        on:closeMenu={closeMenu}
+    />
+{/if}
+    
+    <style>
+    /* Ensure the button respects the parent's width */
+    button {
+        max-width: 100%; /* Prevent the button from exceeding the parent's width */
+        box-sizing: border-box; /* Include padding and border in the width calculation */
+        padding-top: 0.75rem; /* Adjust vertical padding (example: 0.75rem) */
+        padding-bottom: 0.75rem; /* Adjust vertical padding (example: 0.75rem) */
+    }
+    </style>
