@@ -1,5 +1,5 @@
 import type { CardType } from '$lib/components/card/card'; 
-import { Entry } from '$lib/types/entry'; 
+
 export class World {
     id: string;
     collections: string[];
@@ -38,18 +38,18 @@ export class World {
 
     static fromJson(json: any): World {
         return new World(
-            json.content[2].name || 'No ID',
+            json.content[2].name || 'No ID', //needs updated later
             json.collections || [],
             json.tags || [],
-            json.content[0].text || 'No Description',
+            json.description|| 'No Description',
             json.date || 'unknown',
             json.content.map((item: any) => {
                 const key = Object.keys(item)[0];
                 const value = item[key];
                 return { key, value };
             }),
-            json.content[1].image_url || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg',
-            json.ownerId || 'unknown',
+            json.content[1].image_url || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg', //needs updated later
+            json.parentId || 'unknown',
             {name: "custom", styling: json.styling || []} 
 
         );

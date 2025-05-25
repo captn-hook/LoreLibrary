@@ -35,7 +35,7 @@ export function getWorld(worldId: string) {
             }
             console.log("World data:", data); // Log the world data for debugging
             let w = World.fromJson(data); // Convert the JSON data to a World object
-            routerItems.set([new RouterItem(w.id, null, "world")]); // Set the router items with the new world
+            routerItems.set([new RouterItem(w.id, `/${w.id}`)]); // Set the router items with the new world
             worldContext.set(w); // Update the world context store with the new world
         })
         .catch((error) => {
@@ -52,9 +52,10 @@ export function updateWorld() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': `Bearer ${get(token)}` // Add the token to the headers
+            'authorization': `Bearer ${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*', // Allow CORS for all origins
         },
-        body: JSON.stringify({ id: world.id, content: world.content })
+        body: JSON.stringify({ id: world.id, content: world.content, parentId: world.ownerId })
     })
     .then((response) => {
         console.log(response);
@@ -63,11 +64,13 @@ export function updateWorld() {
 
 export function getWorlds() {
     return fetch(`${PUBLIC_API_URL}/worlds`)
-        .then((response) => response.json())
+        .then((response) => {
+            console.log(response);
+            return response.json()})
         .then((data) => {
             console.log(data);
             let worlds = data.map((world: any) => {
-                return  World.fromJson(world);
+                return  World.fromJson(world.name);
             }
             );
             return worlds;
@@ -118,7 +121,7 @@ export function updateCollection(id : string){
             'Content-Type': 'application/json',
             'authorization': `Bearer ${get(token)}` // Add the token to the headers
         },
-        body: JSON.stringify({ worldId: collection.parentId, id: collection.id, content: collection.content })
+        body: JSON.stringify({worldId: collection.parentId, id: collection.id, content: collection.content })
     })
     .then((response) => {
         console.log(response);
@@ -174,7 +177,7 @@ export async function updateEntry() {
             'Content-Type': 'application/json',
             'authorization': `Bearer ${get(token)}` // Add the token to the headers
         },
-        body: JSON.stringify({ worldId: worldId, collectionId: entry.parentId, id: entry.id, content: entry.content })
+        body: JSON.stringify({content: entry.content })
     })
     .then((response) => {
         console.log(response);
