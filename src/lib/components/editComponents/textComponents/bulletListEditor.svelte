@@ -6,7 +6,7 @@
     export let index: number;
      function syncToStore() {
 		editComponentContents.update((contents) => {
-			contents[index] = {key: "bullet", value: items};
+			contents[index] = {key: "bulletList", value: items};
 			return contents;
 		});
 	}

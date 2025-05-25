@@ -28,7 +28,6 @@
             switch (option){
             case 'Header':
                 component = { key: "title", value: "" };
-                console.log('Header added');
                 break;
             case 'Paragraph':
                 component = { key: "text", value: "" };
@@ -40,10 +39,10 @@
                 component =  { key: "html", value: "" };
                 break;
             case 'Number List':
-                component = { key: "numberedList", value: {text: 'HI',id: 0, subItems: []} };
+                component = { key: "numberedList", value: [{text: 'HI',id: 0, subItems: []}] };
                 break;
             case 'Bullet List':
-                component = { key: "bulletList", value: {text: '',id: 0, subBullets: []} };
+                component = { key: "bulletList", value: [{text: '',id: 0, subBullets: []}] };
                 break;
             }  
             editComponentContents.update((contents) => {
@@ -114,7 +113,7 @@
         <button
           type="button"
           class="w-full text-left px-3 py-2 rounded-md text-surface transition-colors hover:bg-surface-50 hover:text-primary-contrast-50 focus:bg-gray-200"
-          on:click={addComponent(option)}
+          on:click={() => addComponent(option)}
         >
           {option}
         </button>

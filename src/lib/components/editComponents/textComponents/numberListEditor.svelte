@@ -6,9 +6,10 @@
     export let index: number;
      function syncToStore() {
 		editComponentContents.update((contents) => {
-			contents[index] = {key: "number", value: items};
+			contents[index] = {key: "numberedList", value: items};
 			return contents;
 		});
+		console.log(items);
 	}
 
 	const addItem = () => {

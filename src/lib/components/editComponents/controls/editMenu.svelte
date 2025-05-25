@@ -43,17 +43,50 @@
     const dismiss = useDismiss(floating.context);
     const interactions = useInteractions([role, click, dismiss]);
 
+    
+function cleanContents() { //bullet and number lists are assigned ids while editing, this removes them to save some space in db
+    $editComponentContents = $editComponentContents.map(item => {
+        function removeIds(content: any[]): any[] {
+            if (!Array.isArray(content)) {
+                console.warn("Invalid content:", content);
+                return []; // Return an empty array if content is not valid
+            }
+
+            return content.map((subItem: any) => {
+                if (subItem.subItems && Array.isArray(subItem.subItems)) {
+                    subItem.subItems = removeIds(subItem.subItems); // Recursively clean subItems
+                }
+                const { id, ...rest } = subItem; // Remove the id property
+                return rest;
+            });
+        }
+
+        if (item.key === 'bulletList' || item.key === 'numberedList') {
+            if (Array.isArray(item.value)) {
+                item.value = removeIds(item.value); // Apply removeIds to the value array
+            } else {
+                console.warn("item.value is not an array:", item.value);
+            }
+            const { id, ...rest } = item; // Remove the id property from the top-level item
+            return rest;
+        }
+
+        return item; // Return the updated item
+    });
+}
     function handleSave() { //needs to make post to api
         editContent.set(false);
+        cleanContents();
+        console.log("Saving contents:", $editComponentContents);
         let path = window.location.pathname.split("/");
         switch (path.length) {
             case 2: 
             //world
-            console.log($editComponentContents);
             let updatedWorld = $world;
             if (updatedWorld) {
                 updatedWorld.content = $editComponentContents;
                 world.set(updatedWorld);
+                // updateWorld();
             }
             case 3: 
             //collection
@@ -64,6 +97,7 @@
                     c.id === collectionId ? { ...c, content: $editComponentContents } : c
                 );
                 collections.set(updatedCollections || []);
+                // updateCollection(collectionId);
             }
             case 4: 
             //entry
@@ -72,8 +106,10 @@
             if (updatedEntry) {
                 updatedEntry.content = $editComponentContents;
                 entry.set(updatedEntry);
+                // updateEntry();
             }
         }
+        editComponentContents.set([]);
     }
 </script>
     

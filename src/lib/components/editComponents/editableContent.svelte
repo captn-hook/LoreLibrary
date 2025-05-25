@@ -20,7 +20,7 @@
 		subItems?: EditableNumber[];
 	};
 
-    function convertToEditableBulletList(bulletList: { text: string; subBullets?: any[] }[]): EditableBullet[] {
+    function convertToEditableBulletList(bulletList: {key: string, value: { text: string; subBullets?: any[] }[]}): EditableBullet[] {
         let idCounter = 0;
 
         function createEditableBullet(item: { text: string; subBullets?: any[] }): EditableBullet {
@@ -32,10 +32,10 @@
             return editableBullet;
         }
 
-        return bulletList.map(createEditableBullet);
+        return bulletList.value.map(createEditableBullet);
     }
 
-	function convertToEditableNumberList(numberList: { text: string; subItems?: any[] }[]): EditableNumber[] {
+	function convertToEditableNumberList(numberList: {key: string, value: {text: string; subItems?: any[] }[]}): EditableNumber[] {
 		let idCounter = 0;
 
 		function createEditableNumber(item: { text: string; subItems?: any[] }): EditableNumber {
@@ -46,8 +46,8 @@
 			};
 			return editableNumber;
 		}
-
-		return numberList.map(createEditableNumber);
+        console.log(numberList);
+		return numberList.value.map(createEditableNumber);
 	}
 
     function convertContentToEditableContent(content: Array<{key: string; value: any }>){
