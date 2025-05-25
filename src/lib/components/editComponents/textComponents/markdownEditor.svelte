@@ -22,5 +22,5 @@
     rows="10"
     cols="50"
     placeholder="Enter your markdown content here..."
-    class="textarea bg-surface-200 max-w-[50%] border-2 border-primary-200 text-surface m-2"
+    class="textarea bg-surface-500 max-w-[100%] border-2 border-primary-200 text-surface "
 ></textarea>
