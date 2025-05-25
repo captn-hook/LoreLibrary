@@ -34,7 +34,7 @@ export function getWorld(worldId: string) {
             }
             console.log("World data:", data); // Log the world data for debugging
             let w = World.fromJson(data); // Convert the JSON data to a World object
-            routerItems.set([new RouterItem(w.id, null, "world")]); // Set the router items with the new world
+            routerItems.set([new RouterItem(w.id, `/${w.id}`)]); // Set the router items with the new world
             worldContext.set(w); // Update the world context store with the new world
         })
         .catch((error) => {
@@ -48,7 +48,7 @@ export function getWorlds() {
         .then((data) => {
             console.log(data);
             let worlds = data.map((world: any) => {
-                return  World.fromJson(world);
+                return  World.fromJson(world.name); // this will need to be updated later
             }
             );
             return worlds;
