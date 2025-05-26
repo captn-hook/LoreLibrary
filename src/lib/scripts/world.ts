@@ -9,6 +9,7 @@ import { browser } from '$app/environment';
 import { PUBLIC_API_URL } from '$env/static/public';
 import { routerItems } from "$lib/state/routerState.svelte";
 import {RouterItem} from "$lib/types/routerItem";
+import {token} from "$lib/state/userState.svelte";
 
 function getWorldId() {
   if (!browser) {
@@ -40,6 +41,41 @@ export function getWorld(worldId: string) {
         .catch((error) => {
             console.error("Error fetching world:", error); // Log any errors
         });
+}
+
+export function createWorld(name: string, tags: string[], description: string, imageUrl: string, type: string){
+    return fetch(`${PUBLIC_API_URL}/world`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `Bearer ${token}` // Ensure you have a valid token
+        },
+        body: JSON.stringify({
+            worldId:name,
+            tags:tags,
+            description:description,
+            img_url: imageUrl,
+        }),
+    })
+    .then((response) => {
+        if (!response.ok) {
+            console.warn('Network response was not ok,.', response);
+            return null; // Return null to handle in the next step
+        }
+        return response.json();
+    })
+    .then((data) => {
+        if (!data) {
+            console.warn('No data received, returning base world data.');
+            return;
+        }
+        console.log("Created World:", data); // Log the created world data for debugging
+        let w = World.fromJson(data); // Convert the JSON data to a World object
+        worldContext.set(w); // Update the world context store with the new world
+    })
+    .catch((error) => {
+        console.error("Error creating world:", error); // Log any errors
+    });
 }
 
 export function getWorlds() {
