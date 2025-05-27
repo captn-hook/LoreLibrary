@@ -47,6 +47,8 @@ jobs:
     - name: Create Change Set
       id: changeset
       run: |
+          echo "Creating CloudFormation change set for dev environment..."
+          echo "SHORT_SHA: $SHORT_SHA"
           aws cloudformation create-change-set \
             --stack-name lorelibrary-stack-dev \
             --change-set-name changeset-${{ github.run_id }}-${{ github.sha }} \
