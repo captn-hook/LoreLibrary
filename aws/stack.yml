@@ -22,6 +22,10 @@ Parameters:
       - -dev
       - ""
     Description: The environment for the deployment (-dev or none)
+  Ver:
+    Type: String
+    Default: ""
+    Description: The version of the deployment (github commit hash or similar)
 
 Resources:
   ResourcesBucket:
@@ -181,7 +185,7 @@ Resources:
   LoreLibraryLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-function${Env}
+      FunctionName: !Sub lorelibrary-function${Env}-${Ver}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
@@ -195,12 +199,13 @@ Resources:
           BUCKET_NAME: !Ref ResourcesBucket
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+          VER: !Ref Ver
       Timeout: 7 # seconds
 
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-authorizer${Env}
+      FunctionName: !Sub lorelibrary-authorizer${Env}-${Ver}
       Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:

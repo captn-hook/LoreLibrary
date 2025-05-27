@@ -51,6 +51,7 @@ jobs:
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }}
               ParameterKey=Env,ParameterValue= \
+              ParameterKey=Ver,ParameterValue=${{ github.sha }} \
           echo "Change set creation initiated."
           echo "Change set creation initiated."
 

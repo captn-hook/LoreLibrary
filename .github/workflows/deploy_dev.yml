@@ -56,7 +56,8 @@ jobs:
               ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelibrary-deployment-artifacts \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
-              ParameterKey=Env,ParameterValue=-dev
+              ParameterKey=Env,ParameterValue=-dev \
+              ParameterKey=Ver,ParameterValue=${{ github.sha }}
           echo "Change set creation initiated."
           echo "Change set creation initiated."
 
