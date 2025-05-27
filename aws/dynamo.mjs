@@ -19,6 +19,37 @@ const userTable = process.env.USER_TABLE;
 
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
+function dynamo_to_item(item, model) {
+    console.log('dynamo_to_item', item, model);
+    if (model === User) {
+        item.username = item.SK
+    } else {
+        if (model === World) {
+            item.worldId = item.SK
+        } else if (model === Collection) {
+            if (!item.worldId) {
+                item.worldId = item.PK.split('#')[1];
+            }
+            if (!item.parentId) {
+                item.parentId = item.worldId;
+            }
+        } else if (model === Entry) {
+            if (!item.worldId) {
+                item.worldId = item.PK.split('#')[1];
+            }
+        }
+        item.name = item.SK;
+    }
+    delete item.PK;
+    delete item.SK;
+    console.log('dynamo_to_item after', item);
+    item = model.verify(item);
+    if (item === null) {
+        throw new Error("Invalid item data");
+    } 
+    return item;
+}
+
 function crud(operation, model, body, username) {
     var table;
     if (model == User) {
@@ -33,8 +64,7 @@ function crud(operation, model, body, username) {
     switch (operation) {
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
-            let cd = model.verify(body);
-            return dynamo_update(cd, table);
+            return dynamo_update(body, model, table);
         case 'GET':
             if (model === User && !username) { return badRequest('Invalid authentication'); }
 
@@ -120,18 +150,51 @@ async function dynamo_user_create(username) {
     }
 }
 
-function update(data, table = dataTable) {
+async function update(data, instance, table = dataTable) {
     // get the item to update and replace any present keys
-    var item = dynamo_get(data, table).body;
+    const getParams = {
+        TableName: table,
+        Key: {
+            PK: instance.pk(),
+            SK: instance.sk()
+        }
+    };
 
-    console.log('Updating item:', item);
+    let item;
+    try {
+        const res = await ddbDocClient.send(new GetCommand(getParams));
+        if (!res.Item) {
+            throw new Error("Item not found");
+        }
+        item = dynamo_to_item(res.Item, instance.constructor);
+        item = instance.constructor.verify(item);
+        
+    } catch (err) {
+        console.error("Error getting item:", err);
+        throw new Error("Error getting item");
+    }
+
+    if (!item) {
+        throw new Error("Item not found");
+    }
 
     for (const key in data) {
         if (item.hasOwnProperty(key) && data[key] !== undefined) {
             item[key] = data[key];
         }
     }
-    return item;
+    
+
+    try {
+        item = instance.constructor.verify(item);
+        if (item === null) {
+            throw new Error("Invalid item data");
+        }    
+       return item;
+    } catch (err) {
+        console.error("Error verifying item:", err);
+        throw new Error("Error verifying item");
+    }
 }
 
 async function dynamo_get(data, table = dataTable) {
@@ -195,7 +258,15 @@ async function dynamo_list(model, sk = '') {
     }
     try {
         let data = await ddbDocClient.send(new QueryCommand(params));
-        data = data.Items.map(item => new model(item));
+        if (!data.Items || data.Items.length === 0) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify([])
+            };
+        }
+        // rename sk to name
+        data = dynamo_to_item(data.Items, model);
+
         return {
             statusCode: 200,
             body: JSON.stringify(data)
@@ -339,29 +410,32 @@ async function dynamo_create(data, table = dataTable) {
     }
 }
 
-async function dynamo_update(data, table = dataTable) {
+async function dynamo_update(data, model, table = dataTable) {
 
-    const newItem = update(data, table);
-
-    const updateExpression = Object.keys(newItem).map(key => `#${key} = :${key}`).join(', ');
-    const expressionAttributeNames = Object.keys(newItem).reduce((acc, key) => {
-        acc[`#${key}`] = key;
-        return acc;
-    }, {});
-    const expressionAttributeValues = Object.keys(newItem).reduce((acc, key) => {
-        acc[`:${key}`] = newItem[key];
-        return acc;
-    }, {});
-
+    const newItem = await update(data, model.verify(data), table);
     const params = {
         TableName: table,
         Key: {
-            PK: data.pk(),
-            SK: data.sk()
+            PK: newItem.pk(),
+            SK: newItem.sk()
         },
-        UpdateExpression: `SET ${updateExpression}`,
-        ExpressionAttributeNames: expressionAttributeNames,
-        ExpressionAttributeValues: expressionAttributeValues
+        UpdateExpression: "SET " + Object.keys(newItem)
+            .filter(key => key !== "PK" && key !== "SK") // Exclude PK and SK
+            .map((key, index) => `#key${index} = :value${index}`)
+            .join(", "),
+        ExpressionAttributeNames: Object.keys(newItem)
+            .filter(key => key !== "PK" && key !== "SK") // Exclude PK and SK
+            .reduce((acc, key, index) => {
+                acc[`#key${index}`] = key;
+                return acc;
+            }, {}),
+        ExpressionAttributeValues: Object.keys(newItem)
+            .filter(key => key !== "PK" && key !== "SK") // Exclude PK and SK
+            .reduce((acc, key, index) => {
+                acc[`:value${index}`] = newItem[key];
+                return acc;
+            }, {}),
+        ReturnValues: "ALL_NEW"
     };
 
     try {
@@ -369,15 +443,9 @@ async function dynamo_update(data, table = dataTable) {
         if (!res.Attributes) {
             throw new Error("Item not found");
         }
-        // create a new instance of the model with the data
-        for (const key in data) {
-            if (res.Item.hasOwnProperty(key) && data[key] !== undefined) {
-                data[key] = res.Item[key];
-            }
-        }
         return {
             statusCode: 200,
-            body: JSON.stringify(data)
+            body: JSON.stringify(dynamo_to_item(res.Attributes, model))
         };
     } catch (err) {
         console.error("Error updating item:", err);
