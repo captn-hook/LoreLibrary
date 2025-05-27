@@ -39,11 +39,7 @@ jobs:
       run: aws s3 cp aws/api.yaml s3://lorelibrary-deployment-artifacts/
 
     - name: Deploy CloudFormation Stack
-      run: |
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          echo "Creating CloudFormation change set for dev environment..."
-          echo "SHORT_SHA: $SHORT_SHA"
-          aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env= Ver=${SHORT_SHA} --region us-west-2
+      run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env= Ver=${SHORT_SHA} --region us-west-2
 
     - name: Close Bucket
       run: aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
