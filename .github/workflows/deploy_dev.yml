@@ -32,8 +32,9 @@ jobs:
 
     - name: Preprocess OpenAPI Spec
       run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           sed -i "s/\${Env}/-dev/g" aws/api.yaml
-          sed -i "s/\${Ver}/${{ github.sha::7 }}/g" aws/api.yaml
+          sed -i "s/\${Ver}/${SHORT_SHA}/g" aws/api.yaml
           
     - name: Package Lambda Code
       run: |
@@ -58,7 +59,7 @@ jobs:
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue=-dev \
-              ParameterKey=Ver,ParameterValue=${{ github.sha::7 }} \
+              ParameterKey=Ver,ParameterValue=${SHORT_SHA} \
           echo "Change set creation initiated."
           echo "Change set creation initiated."
 
