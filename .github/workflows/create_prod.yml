@@ -27,7 +27,7 @@ jobs:
     - name: Preprocess OpenAPI Spec
       run: |
           sed -i "s/\${Env}//g" aws/api.yaml
-          sed -i "s/\${Ver}/${{ github.sha }}/g" aws/api.yaml
+          sed -i "s/\${Ver}/${{ github.sha::7 }}/g" aws/api.yaml
         
     - name: Package Lambda Code
       run: |
@@ -38,7 +38,7 @@ jobs:
       run: aws s3 cp aws/api.yaml s3://lorelibrary-deployment-artifacts/
 
     - name: Deploy CloudFormation Stack
-      run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env= Ver=${{ github.sha }} --region us-west-2
+      run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env= Ver=${{ github.sha::7 }} --region us-west-2
 
     - name: Close Bucket
       run: aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
