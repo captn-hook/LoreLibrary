@@ -711,7 +711,7 @@ components:
       x-amazon-apigateway-authorizer:
         type: request
         identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer${Env}/invocations
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer${Env}-${Ver}/invocations
         authorizerPayloadFormatVersion: '2.0'
         enableSimpleResponses: true
   schemas:
