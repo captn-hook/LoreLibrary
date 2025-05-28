@@ -22,6 +22,9 @@ Parameters:
       - -dev
       - ""
     Description: The environment for the deployment (-dev or none)
+  Ver:
+    Type: String
+    Description: The version of the deployment (github commit hash or similar)
 
 Resources:
   ResourcesBucket:
@@ -195,6 +198,7 @@ Resources:
           BUCKET_NAME: !Ref ResourcesBucket
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+          VER: !Ref Ver
       Timeout: 7 # seconds
 
   CustomAuthorizerLambda:
@@ -349,7 +353,7 @@ Resources:
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
-      StageName: prod
+      StageName: !Sub "${Env}-${Ver}"
       AccessLogSettings:
         DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
