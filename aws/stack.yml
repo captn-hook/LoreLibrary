@@ -24,7 +24,6 @@ Parameters:
     Description: The environment for the deployment (-dev or none)
   Ver:
     Type: String
-    Default: ""
     Description: The version of the deployment (github commit hash or similar)
 
 Resources:
@@ -185,7 +184,7 @@ Resources:
   LoreLibraryLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-function${Env}-${Ver}
+      FunctionName: !Sub lorelibrary-function${Env}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
@@ -205,7 +204,7 @@ Resources:
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-authorizer${Env}-${Ver}
+      FunctionName: !Sub lorelibrary-authorizer${Env}
       Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
@@ -354,7 +353,7 @@ Resources:
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
-      StageName: prod
+      StageName: !Sub "${Env}-${Ver}"
       AccessLogSettings:
         DestinationArn: !GetAtt AccessLogGroup.Arn
         Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'

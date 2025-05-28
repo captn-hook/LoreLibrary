@@ -108,4 +108,4 @@ jobs:
     #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts OpenApiSpecS3Key=api.yaml --region us-west-2
 
     - name: Close Bucket
-      run: aws s3api put-public-access-block --bucket lorelibrary-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
+      run: aws s3api put-public-access-block --bucket lorelibrary-resources-dev --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
