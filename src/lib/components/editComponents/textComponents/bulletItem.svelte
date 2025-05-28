@@ -26,7 +26,7 @@
             class="input input-ghost w-full text-surface bg-surface border-primary-200 border-2 max-w-[15%]"
             placeholder="Enter text"
         />
-        <button on:click={() => addSubBullet(item)} class="btn btn-primary preset-tonal-secondary">
+        <button on:click={() => addSubBullet(item)} class="btn btn-primary preset-tonal-primary">
             Add Sub-Bullet
         </button>
         <button on:click={handleRemoveItem} class="btn btn-error preset-tonal-error">
