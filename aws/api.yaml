@@ -4,7 +4,7 @@ info:
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
 servers:
-  - url: https://1htmq17oj9.execute-api.us-west-2.amazonaws.com/prod
+  - url: https://2kzy6vjjm1.execute-api.us-west-2.amazonaws.com/-dev-5a740aa
 tags:
   - name: user
     description: Operations related to users

@@ -188,7 +188,14 @@ export const handler = async (e) => {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
             // Parent id will be in the query if present
-            const parentId = e.queryStringParameters.parentId ? e.queryStringParameters.parentId : e.body.parentId ? e.body.parentId : worldId; 
+            let parentId;
+            if (e.queryStringParameters && e.queryStringParameters.parentId) {
+                parentId = e.queryStringParameters.parentId;
+            } else if (e.body && e.body.parentId) {
+                parentId = e.body.parentId;
+            } else {
+                parentId = worldId; // Default to worldId if no parentId is provided
+            }
             if (!e.body) {
                 e.body = {};
             }

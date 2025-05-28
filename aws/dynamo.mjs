@@ -264,8 +264,9 @@ async function dynamo_list(model, sk = '') {
                 body: JSON.stringify([])
             };
         }
-        // rename sk to name
-        data = dynamo_to_item(data.Items, model);
+        // Convert each item in the list using dynamo_to_item
+        const items = data.Items.map(item => dynamo_to_item(item, model));
+        data = items;
 
         return {
             statusCode: 200,
