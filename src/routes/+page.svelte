@@ -4,11 +4,16 @@
     import { getWorlds } from "$lib/scripts/world";
     import { onMount } from "svelte"; // Import the onMount lifecycle function
     import { World } from "$lib/types/world"; // Import the Worlds type
+    import { token } from "$lib/state/userState.svelte"
+    import { goto } from "$app/navigation";
 
     let worldList: World[] = [];
     let error: Error | null = null;
 
     onMount(async () => {
+        if (token){
+            goto('/dashboard'); // Redirect to dashboard if user is logged in
+        }
         try {
             worldList = await getWorlds();
         } catch (err) {

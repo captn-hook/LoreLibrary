@@ -10,6 +10,7 @@ import { PUBLIC_API_URL } from '$env/static/public';
 import { routerItems } from "$lib/state/routerState.svelte";
 import {RouterItem} from "$lib/types/routerItem";
 import {token} from "$lib/state/userState.svelte";
+import { goto } from "$app/navigation";
 
 function getWorldId() {
   if (!browser) {
@@ -42,6 +43,38 @@ export function getWorld(worldId: string) {
         .catch((error) => {
             console.error("Error fetching world:", error); // Log any errors
         });
+}
+
+export function createWorld(name: string, tags: string[], description: string, imageUrl: string, type: string){
+    return fetch(`${PUBLIC_API_URL}/worlds`, {
+        method: 'PUT',
+        headers: {
+            'accept': 'application/json', // Specify the expected response format
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*',  // Ensure you have a valid token
+        },
+        body: JSON.stringify({
+            name:name,
+            tags:tags,
+            description:description,
+            image: imageUrl,
+            content: [],
+        }),
+    })
+    .then((response) => {
+        if (!response.ok) {
+            console.log(response.json());
+            console.warn('Network response was not ok,.', response);
+            return null; // Return null to handle in the next step
+        }
+        if (response.ok) {
+            goto(`/${name}`); // Navigate to the new world page after creation
+        }
+    })
+    .catch((error) => {
+        console.error("Error creating world:", error); // Log any errors
+    });
 }
 
 export function updateWorld() {
@@ -121,7 +154,7 @@ export function updateCollection(id : string){
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': `${get(token)}` // Add the token to the headers
+            'Authorization': `${get(token)}` // Add the token to the headers
         },
         body: JSON.stringify({content: collection.content })
     })
@@ -176,7 +209,7 @@ export async function updateEntry() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': `${get(token)}` // Add the token to the headers
+            'Authorization': `${get(token)}` // Add the token to the headers
         },
         body: JSON.stringify({content: entry.content })
     })
