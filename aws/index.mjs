@@ -166,8 +166,10 @@ export const handler = async (e) => {
             if (operation === 'PUT') {
                 // Creating a collection
                 if (!username) { return badRequest('Invalid authentication'); }
-                e.body.parentId = worldId;
+                e.body.worldId = worldId;
                 e.body.ownerId = username? username : null;
+                e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
+
                 var res = await crud(operation, Collection, e.body, username);
                 if (res) {
                     return res;
@@ -185,6 +187,15 @@ export const handler = async (e) => {
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
+            // Parent id will be in the query if present
+            let parentId;
+            if (e.queryStringParameters && e.queryStringParameters.parentId) {
+                parentId = e.queryStringParameters.parentId;
+            } else if (e.body && e.body.parentId) {
+                parentId = e.body.parentId;
+            } else {
+                parentId = worldId; // Default to worldId if no parentId is provided
+            }
             if (!e.body) {
                 e.body = {};
             }
@@ -193,14 +204,15 @@ export const handler = async (e) => {
                 // Creating an entry
                 if (!username) { return badRequest('Invalid authentication'); }
                 e.body.parentId = collectionId;
-                e.body.ownerId = username? username : null;
+                e.body.ownerId = username;
                 var res = await crud(operation, Entry, e.body, username);
                 if (res) {
                     return res;
                 }
             } else {
                 e.body.name = collectionId;
-                e.body.worldId = worldId;
+                // parentid will be in query, or use worldId as parentId
+                e.body.parentId = parentId; 
                 var res = await crud(operation, Collection, e.body, username);
                 if (res) {
                     return res;

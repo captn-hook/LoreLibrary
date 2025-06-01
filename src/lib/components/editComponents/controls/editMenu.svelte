@@ -17,6 +17,7 @@
     import type { World } from "$lib/types/world";
     import type { Collection } from "$lib/types/collection";
     import type { Entry } from "$lib/types/entry";
+    import { updateWorld, updateCollection, updateEntry } from "$lib/scripts/world";
     
     // State
     let open = $state(false);
@@ -70,14 +71,12 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             const { id, ...rest } = item; // Remove the id property from the top-level item
             return rest;
         }
-
         return item; // Return the updated item
     });
 }
     function handleSave() { //needs to make post to api
         editContent.set(false);
         cleanContents();
-        console.log("Saving contents:", $editComponentContents);
         let path = window.location.pathname.split("/");
         switch (path.length) {
             case 2: 
@@ -86,27 +85,27 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             if (updatedWorld) {
                 updatedWorld.content = $editComponentContents;
                 world.set(updatedWorld);
-                // updateWorld();
+                console.log("Updated world:", updatedWorld);
+                updateWorld();
             }
             case 3: 
             //collection
             const collectionId = decodeURIComponent(path[path.length - 1]);
-            const updatedCollection = $collections?.find(c => c.id === collectionId);
+            const updatedCollection = $collections?.find(c => c.name === collectionId);
             if (updatedCollection) {
                 const updatedCollections = $collections?.map(c =>
-                    c.id === collectionId ? { ...c, content: $editComponentContents } : c
+                    c.name === collectionId ? { ...c, content: $editComponentContents } : c
                 );
                 collections.set(updatedCollections || []);
-                // updateCollection(collectionId);
+                updateCollection(collectionId);
             }
             case 4: 
             //entry
-            const entryId = decodeURIComponent(path[path.length - 1]);
             const updatedEntry = $entry;
             if (updatedEntry) {
                 updatedEntry.content = $editComponentContents;
                 entry.set(updatedEntry);
-                // updateEntry();
+                updateEntry();
             }
         }
         editComponentContents.set([]);

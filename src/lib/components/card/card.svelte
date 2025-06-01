@@ -6,7 +6,7 @@
 <div
     class="card preset-filled-surface-100-900 border-[1px] border-surface-200-800 card-hover divide-surface-200-800 block max-w-md divide-y overflow-hidden"
 >
-    <a href="/{card.worldid}">
+    <a href="/{card.worldName}">
         <header>
             <img
                 src={card.imgSrc}
@@ -19,7 +19,7 @@
                 <h2 class="h6">{#each card.category as category}
                     <span class="badge badge-primary">{category}</span>
                 {/each}</h2>
-                <h3 class="h3">{card.title}</h3>
+                <h3 class="h3">{card.worldName}</h3>
             </div>
             <p class="opacity-60">
                 {card.description}
