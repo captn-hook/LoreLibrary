@@ -8,7 +8,7 @@
 
     function syncToStore() {
         editComponentContents.update((contents) => {
-            contents[index] = { key: "text", value: content };
+            contents[index] = { text: content };
             return contents;
         });
     }

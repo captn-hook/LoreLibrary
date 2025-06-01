@@ -1,11 +1,11 @@
 <script lang="ts">
     import BulletItem from './bulletItem.svelte';
 
-    export let item: { id: string; text: string; subBullets?: any[] };
+    export let item: { id: string; text: string; subItems?: any[] };
     export let addSubBullet: (parent: any) => void;
     export let removeSubBullet: (parent: any, subId: string) => void;
     export let removeItem: (item: { id: string }) => void;
-    export let updateItem: (updatedItem: { id: string; text: string; subBullets?: any[] }) => void;
+    export let updateItem: (updatedItem: { id: string; text: string; subItems?: any[] }) => void;
 
     const handleRemoveItem = () => {
         removeItem(item);
@@ -34,9 +34,9 @@
         </button>
     </div>
 
-    {#if item.subBullets?.length}
+    {#if item.subItems?.length}
         <ul class="list-disc pl-6 border-l border-muted ml-2">
-            {#each item.subBullets as subBullet (subBullet.id)}
+            {#each item.subItems as subBullet (subBullet.id)}
                 <BulletItem
                     item={subBullet}
                     {addSubBullet}
@@ -44,7 +44,7 @@
                     removeItem={() => removeSubBullet(item, subBullet.id)}
                     updateItem={(updatedSub) => {
                         subBullet.text = updatedSub.text;
-                        updateItem({ ...item, subBullets: [...(item.subBullets || [])] });
+                        updateItem({ ...item, subItems: [...(item.subItems || [])] });
                     }}
                 />
             {/each}

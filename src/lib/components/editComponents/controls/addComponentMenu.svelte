@@ -16,34 +16,32 @@
     }
 
     function addComponent(option: string) {
-        console.log(option);
         let component = {};
         if (index !== undefined) {
             switch (option) {
                 case 'Header':
-                    component = { key: "title", value: "" };
+                    component = { title: "" };
                     break;
                 case 'Paragraph':
-                    component = { key: "text", value: "" };
+                    component = { text: "" };
                     break;
                 case 'Markdown':
-                    component = { key: "md", value: "" };
+                    component = { md: "" };
                     break;
                 case 'HTML':
-                    component = { key: "html", value: "" };
+                    component = { html: "" };
                     break;
                 case 'Number List':
-                    component = { key: "numberedList", value: [{ text: 'HI', id: 0, subItems: [] }] };
+                    component = { numberedList: [{ text: '', id: 0, subItems: [] }] };
                     break;
                 case 'Bullet List':
-                    component = { key: "bulletList", value: [{ text: '', id: 0, subBullets: [] }] };
+                    component = { bulletList: [{ text: '', id: 0, subItems: [] }] };
                     break;
             }
             editComponentContents.update((contents) => {
                 contents.splice(index, 0, component);
                 return contents;
             });
-            console.log('Component added:', component);
             closeMenu(); // Close the menu after adding a component
         }
     }

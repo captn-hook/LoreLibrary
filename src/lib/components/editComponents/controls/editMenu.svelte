@@ -71,14 +71,12 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             const { id, ...rest } = item; // Remove the id property from the top-level item
             return rest;
         }
-
         return item; // Return the updated item
     });
 }
     function handleSave() { //needs to make post to api
         editContent.set(false);
         cleanContents();
-        console.log("Saving contents:", $editComponentContents);
         let path = window.location.pathname.split("/");
         switch (path.length) {
             case 2: 
@@ -87,7 +85,8 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             if (updatedWorld) {
                 updatedWorld.content = $editComponentContents;
                 world.set(updatedWorld);
-                // updateWorld();
+                console.log("Updated world:", updatedWorld);
+                updateWorld();
             }
             case 3: 
             //collection

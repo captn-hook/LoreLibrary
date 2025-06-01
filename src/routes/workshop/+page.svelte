@@ -9,15 +9,15 @@
     var bulletList = {
 		key: "bullet",
 		value: [
-			{ text: "Item 1", subBullets: [{ text: "Sub Item 1" }] },
-			{ text: "Item 2", subBullets: [{ text: "Sub Item 1" }] },
-			{ text: "Item 3", subBullets: [{ text: "Sub Item 1" }] }
+			{ text: "Item 1", subItems: [{ text: "Sub Item 1" }] },
+			{ text: "Item 2", subItems: [{ text: "Sub Item 1" }] },
+			{ text: "Item 3", subItems: [{ text: "Sub Item 1" }] }
 		]	
 	}
 	type EditableBullet = {
 		text: string;
 		id: number;
-		subBullets?: EditableBullet[];
+		subItems?: EditableBullet[];
 	};
 	var numberList = {
 		key: "number",
@@ -41,14 +41,14 @@
 		value: "<h1>Welcome to the HTML Reader</h1>\n<p>This is a <strong>HTML</strong> example to test your component.</p>\n<ul>\n<li><strong>Bold text</strong>: <strong>Bold</strong>\n</li>\n</ul>"
 	}
 
-    function convertToEditableBulletList(bulletList: { text: string; subBullets?: any[] }[]): EditableBullet[] {
+    function convertToEditableBulletList(bulletList: { text: string; subItems?: any[] }[]): EditableBullet[] {
         let idCounter = 0;
 
-        function createEditableBullet(item: { text: string; subBullets?: any[] }): EditableBullet {
+        function createEditableBullet(item: { text: string; subItems?: any[] }): EditableBullet {
             const editableBullet: EditableBullet = {
                 text: item.text,
                 id: idCounter++,
-                subBullets: item.subBullets ? item.subBullets.map(createEditableBullet) : undefined
+                subItems: item.subItems ? item.subItems.map(createEditableBullet) : undefined
             };
             return editableBullet;
         }

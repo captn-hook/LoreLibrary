@@ -7,7 +7,7 @@
     let menuPosition = { x: 0, y: 0 };
 
     function openMenu(event: MouseEvent) {
-        menuPosition = { x: event.clientX, y: event.clientY };
+        menuPosition = { x: event.pageX, y: event.pageY };
         menuVisible = true;
         console.log('Menu opened at:', menuPosition);
 

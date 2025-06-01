@@ -35,7 +35,8 @@ export function getWorld(worldId: string) {
             }
             console.log("World data:", data); // Log the world data for debugging
             let w = World.fromJson(data); // Convert the JSON data to a World object
-            routerItems.set([new RouterItem(w.id, `/${w.id}`)]); // Set the router items with the new world
+            console.log("World object:", w); // Log the world object for debugging
+            routerItems.set([new RouterItem(w.name, `/${w.name}`)]); // Set the router items with the new world
             worldContext.set(w); // Update the world context store with the new world
         })
         .catch((error) => {
@@ -45,17 +46,18 @@ export function getWorld(worldId: string) {
 
 export function updateWorld() {
     const world = get(worldContext);
+    console.log(world);
     if (!world) {
         return;
     }
-    return fetch(`${PUBLIC_API_URL}/${world.id}`, {
+    return fetch(`${PUBLIC_API_URL}/${world.name}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': `Bearer ${get(token)}`, // Add the token to the headers
+            'Authorization': `${get(token)}`, // Add the token to the headers
             'access-control-allow-origin': '*', // Allow CORS for all origins
         },
-        body: JSON.stringify({ id: world.id, content: world.content, parentId: world.ownerId })
+        body: JSON.stringify({content: world.content})
     })
     .then((response) => {
         console.log(response);

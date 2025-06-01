@@ -1,20 +1,23 @@
 import type { CardType } from '$lib/components/card/card'; 
+import type { Content } from '$lib/types/content';
 
 export class World {
-    id: string;
+    name: string;
     collections: string[];
+    entries: string[];
     tags: string[];
     description: string;
     date: string;
-    content: { key: string; value: any }[];
+    content: Content;
     img_url: string;
     ownerId: string;
     styling: { name: string; styling: string[]};
 
 
-    constructor(id: string, collections: string[], tags: string[], description: string, date: string, content: { key: string; value: any }[], img_url: string, ownerId: string, styling: { name: string; styling: string[]}) {
-        this.id = id;
+    constructor(name: string, collections: string[], entries: string[], tags: string[], description: string, date: string, content: Content, img_url: string, ownerId: string, styling: { name: string; styling: string[]}) {
+        this.name = name;
         this.collections = collections;
+        this.entries = entries
         this.tags = tags;
         this.description = description;
         this.date = date;
@@ -27,9 +30,8 @@ export class World {
     toCardType(): CardType {
         return {
             imgSrc: this.img_url,
-            worldid: this.id,
+            worldName: this.name,
             category: this.tags, // Join keys into a single string
-            title: this.id,
             description: this.description,
             author: this.ownerId, // Assuming ownerId is the id
             date: this.date,
@@ -38,19 +40,18 @@ export class World {
 
     static fromJson(json: any): World {
         return new World(
-            json.content[2].name || 'No ID', //needs updated later
+            json.name || 'unknown', // Include the id argument
             json.collections || [],
+            json.entries || [],
             json.tags || [],
-            json.description|| 'No Description',
+            json.description || 'No Description',
             json.date || 'unknown',
-            json.content.map((item: any) => {
-                const key = Object.keys(item)[0];
-                const value = item[key];
-                return { key, value };
-            }),
-            json.content[1].image_url || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg', //needs updated later
+            json.content || [],
+            json.image || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg',
             json.parentId || 'unknown',
-            {name: "custom", styling: json.styling || []} 
+            json.styling && json.styling.name !== "custom"
+                ? { name: json.styling.name, styling: [] }
+                : { name: 'custom', styling: (json.styling?.styling || []) }
 
         );
     }

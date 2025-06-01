@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let content: Array<{ key: string; value: any }>;
+    import type {Content} from "$lib/types/content";
     import {onMount} from "svelte";
     import {editComponentContents} from "$lib/state/editState.svelte";
     import BulletListEditor from "$lib/components/editComponents/textComponents/bulletListEditor.svelte";
@@ -9,6 +9,9 @@
     import ParagraphEditor from "./textComponents/paragraphEditor.svelte";
     import AddComponentButton from "$lib/components/editComponents/controls/addComponentButton.svelte";
     import HeaderEditor from "$lib/components/editComponents/textComponents/headerEditor.svelte";
+
+    export let content: Content;
+
     type EditableBullet = {
 		text: string;
 		id: string;
@@ -20,7 +23,7 @@
 		subItems?: EditableNumber[];
 	};
 
-    function convertToEditableBulletList(bulletList: {key: string, value: { text: string; subBullets?: any[] }[]}): EditableBullet[] {
+    function convertToEditableBulletList(bulletList: { text: string; subBullets?: any[] }[]): EditableBullet[] {
         let idCounter = 0;
 
         function createEditableBullet(item: { text: string; subItems?: any[] }): EditableBullet {
@@ -32,10 +35,10 @@
             return editableBullet;
         }
 
-        return bulletList.value.map(createEditableBullet);
+        return bulletList.map(createEditableBullet);
     }
 
-	function convertToEditableNumberList(numberList: {key: string, value: {text: string; subItems?: any[] }[]}): EditableNumber[] {
+	function convertToEditableNumberList(numberList: {text: string; subItems?: any[]}[]): EditableNumber[] {
 		let idCounter = 0;
 
 		function createEditableNumber(item: { text: string; subItems?: any[] }): EditableNumber {
@@ -46,26 +49,20 @@
 			};
 			return editableNumber;
 		}
-        console.log(numberList);
-		return numberList.value.map(createEditableNumber);
+		return numberList.map(createEditableNumber);
 	}
 
-    function convertContentToEditableContent(content: Array<{key: string; value: any }>){
-        let editableContent = content.map((item: any, index: number) => {
-            if (item.key === 'bulletList') {
-                return {key: item.key, value: convertToEditableBulletList(item)};
-            } else if (item.key === 'numberedList') {
-                return {key: item.key, value: convertToEditableNumberList(item)};
-            } else if (item.key === 'md') {
-                return { key: 'md', value: item.value };
-            } else if (item.key === 'html') {
-                return { key: 'html', value: item.value };
-            }else if (item.key === "text"){
-                return {key: item.key, value: item.value};
-            }else {
-                return {key: item.key, value: item.value};
+    function convertContentToEditableContent(content: Content): Content[] {
+        let editableContent = content.map((item: any) => {
+            if (item.bulletList) {
+                return { bulletList: convertToEditableBulletList(item.bulletList) };
+            } else if (item.numberedList) {
+                return { numberedList: convertToEditableNumberList(item.numberedList) };
+            } else {
+                return item;
             }
         }).filter(Boolean);
+        console.log(editableContent);
         return editableContent;
     }
 
@@ -79,24 +76,24 @@
 <div class="w-[50%] flex flex-col mx-0">
 <AddComponentButton index={0} />
 {#each $editComponentContents as item, index}
-	{#if item.key == "bulletList"} 
-		<BulletListEditor items={item.value} index={index} />
-	{:else if item.key == "numberedList"}
-		<NumberListEditor items={item.value} index={index} />
-	{:else if item.key == "md"}
-		<MarkdownEditor content={item.value} index={index} />
-	{:else if item.key == "html"}
-		<HtmlEditor content={item.value} index={index} />
-    {:else if item.key == "text"}   
-        <ParagraphEditor content={item.value} index={index} />
-	{:else if item.key == "image"}
+	{#if item.bulletList != undefined} 
+		<BulletListEditor items={item.bulletList} index={index} />
+	{:else if item.numberedList != undefined}
+		<NumberListEditor items={item.numberedList} index={index} />
+	{:else if item.md !== undefined}
+		<MarkdownEditor content={item.md} index={index} />
+	{:else if item.html !== undefined}
+		<HtmlEditor content={item.html} index={index} />
+    {:else if item.text !== undefined}   
+        <ParagraphEditor content={item.text} index={index} />
+	{:else if item.image !== undefined}
         <!-- Handle image component here if needed -->
         <p>Image component not implemented yet.</p>
-    {:else if item.key == "title"}
-        <HeaderEditor content={item.value} index={index} />
+    {:else if item.title !== undefined}
+        <HeaderEditor content={item.title} index={index} />
     {:else}
         <!-- Handle other types of components here if needed -->
-        <p>Unknown component type: {item.key}</p>
+        <p>Unknown component type: {Object.keys(item)}</p>
     {/if}
     <AddComponentButton index={index + 1} />
 

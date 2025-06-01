@@ -27,8 +27,8 @@ export class Entry {
     }
 }
             // [
-//                 { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subBullets: [] }, { text: "top level bullet", subBullets: [{ text: "lower level bullet", subBullets: [{ text: "another level down", subBullets: [] }] }] }, { text: "this is a bullet list", subBullets: [] }, { text: "bye", subBullets: [] }] },
-//                 { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subBullets: [] }] }] }, { text: "bye", subItems: [] }] },
+//                 { key: "bulletList", value: [{ text: "hi, im a recusive bullet list", subItems: [] }, { text: "top level bullet", subItems: [{ text: "lower level bullet", subItems: [{ text: "another level down", subItems: [] }] }] }, { text: "this is a bullet list", subItems: [] }, { text: "bye", subItems: [] }] },
+//                 { key: "numberedList", value: [{ text: "hi, im a recursive numbered list", subItems: [] }, { text: "this is an item", subItems: [{ text: "a lower level", subItems: [{ text: "another level down", subItems: [] }] }] }, { text: "bye", subItems: [] }] },
 //                 { 
 //                     key: "md", 
 //                     value: `
