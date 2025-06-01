@@ -28,7 +28,7 @@ export class Collection {
             json.collections,
             json.entries,
             json.content,
-            json.image || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg',
+            json.image || '#',
             json.tags,
             json.styling && json.styling.name !== "custom"
                 ? { name: json.styling.name, styling: [] }
