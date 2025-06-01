@@ -39,12 +39,18 @@
 
 <div>
     <Navbar navItems={getNavItems(collection)} />
-    <div class="ml-3">
-        <Router/>
-        {#if $editContent == false}
-        <Content content={collection?.content ?? []}/>
-        {:else}
-        <EditableContent content={collection?.content ?? []}/>
-        {/if}
+    <Router/>
+    <div class="flex flex-row">
+        <div class="flex-1 ml-3">
+            <h1 class="text-4xl font-bold text-primary mb-4">{collection?.name}</h1>
+            {#if $editContent == false}
+            <Content content={collection?.content ?? []}/>
+            {:else}
+            <EditableContent content={collection?.content ?? []}/>
+            {/if}
+        </div>
+        <div class="flex-none">
+            <img class="relative m-4" src={collection?.image} alt=""/>
+        </div>
     </div>
 </div>

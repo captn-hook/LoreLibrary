@@ -36,14 +36,20 @@
     })
 </script>
 <div>
-    <Navbar navItems={getNavItems($worldContext?.collections)} />
-    <div class="ml-3">
-        <Router/>
-        {#if $editContent == false}
-        <Content content={$worldContext?.content ?? []}/>
-        {:else}
-        <EditableContent content={$worldContext?.content ?? []}/>
-        {/if}
+<Navbar navItems={getNavItems($worldContext?.collections)} />
+<Router/>
+    <div class="flex flex-row">
+        <div class="flex-1 ml-3">
+            <h1 class="text-4xl font-bold text-primary mb-4">{$worldContext?.name}</h1>
+            {#if $editContent == false}
+            <Content content={$worldContext?.content ?? []}/>
+            {:else}
+            <EditableContent content={$worldContext?.content ?? []}/>
+            {/if}
+        </div>
+        <div class="flex-none">
+            <img class="relative m-4" src={$worldContext?.img_url} alt=""/>
+        </div>
     </div>
 </div>
     
