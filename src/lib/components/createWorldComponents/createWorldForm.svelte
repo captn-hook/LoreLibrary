@@ -12,13 +12,13 @@
     let type = 'Region';
 
     const handleSubmit = () => {
-        createWorld({
+        createWorld(
             name,
             tags,
             description,
             imageUrl,
             type
-        });
+        );
         closeMenu();
     };
 </script>
@@ -67,8 +67,8 @@
             </label>
             <select id="type" bind:value={type} required class="select select-bordered">
                 <option value="Region">Region</option>
-                <option value="Wiki">Wiki</option>
-                <option value="Network">Network</option>
+                <option disabled value="Wiki">Wiki</option>
+                <option disabled value="Network">Network</option>
             </select>
         </div>
         <div class="form-actions flex justify-end space-x-2">
