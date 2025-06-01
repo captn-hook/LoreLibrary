@@ -136,7 +136,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
         <button
             bind:this={floating.elements.reference}
             {...interactions.getReferenceProps()}
-            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md"
+            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 rounded-md"
         >
             Edit Options
         </button>
