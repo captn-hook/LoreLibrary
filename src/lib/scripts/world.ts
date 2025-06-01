@@ -113,7 +113,7 @@ export function updateCollection(id : string){
     if (!collections) {
         return;
     }
-    const collection = collections.find((collection: Collection) => collection.id === id);
+    const collection = collections.find((collection: Collection) => collection.name === id);
     if (!collection) {
         return;
     }
@@ -121,9 +121,9 @@ export function updateCollection(id : string){
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': `Bearer ${get(token)}` // Add the token to the headers
+            'authorization': `${get(token)}` // Add the token to the headers
         },
-        body: JSON.stringify({worldId: collection.parentId, id: collection.id, content: collection.content })
+        body: JSON.stringify({content: collection.content })
     })
     .then((response) => {
         console.log(response);

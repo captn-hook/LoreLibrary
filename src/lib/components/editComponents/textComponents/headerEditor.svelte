@@ -20,7 +20,7 @@
     on:input={() => syncToStore()}
     placeholder="Enter your text here..."
     rows="10"
-    class="textarea bg-surface-500 max-w-[100%] max-h-10 border-2 border-primary-200 text-surface "
+    class="textarea bg-surface-500 max-w-[100%] max-h-13 border-2 border-primary-200 text-surface "
 ></textarea>
 <div class="absolute top-2 right-2">
     <DeleteComponentButton {index} />

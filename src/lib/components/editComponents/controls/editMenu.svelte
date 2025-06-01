@@ -91,13 +91,13 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             case 3: 
             //collection
             const collectionId = decodeURIComponent(path[path.length - 1]);
-            const updatedCollection = $collections?.find(c => c.id === collectionId);
+            const updatedCollection = $collections?.find(c => c.name === collectionId);
             if (updatedCollection) {
                 const updatedCollections = $collections?.map(c =>
-                    c.id === collectionId ? { ...c, content: $editComponentContents } : c
+                    c.name === collectionId ? { ...c, content: $editComponentContents } : c
                 );
                 collections.set(updatedCollections || []);
-                // updateCollection(collectionId);
+                updateCollection(collectionId);
             }
             case 4: 
             //entry

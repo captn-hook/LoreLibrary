@@ -9,24 +9,29 @@
     import {editContent} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
+    import {get} from "svelte/store";
 
 
     let collection: Collection;
     onMount(async () => {
-    if (!$collections?.some(collection => collection.id === data.collectionid)) {
-        await getCollection(data.worldid, data.collectionid);
-    }
-    collections.subscribe(value => {
-        collection = value?.find(collection => collection.id === data.collectionid) ?? {} as Collection;
+        console.log("hi");
+        console.log(get(collections));
+        if (!$collections?.some(collection => collection.name === data.collectionid)) {
+            console.log("getting collection");
+            await getCollection(data.worldid, data.collectionid);
+        }
+        collections.subscribe(value => {
+        collection = value?.find(collection => collection.name === data.collectionid) ?? {} as Collection;
+        console.log(`Updated Collection: ${collection.content}`);
     });
-});
+    });
     function getNavItems(collection: Collection): {name: string, href: string}[] {
         let navItems : {name: string, href: string}[] = [];
         collection?.collections.forEach(c => {
             navItems.push({name: c, href: `/${data.worldid}/${c}`});
         });
         collection?.entries.forEach(e => {
-            navItems.push({name: e, href: `/${data.worldid}/${collection.id}/${e}`});
+            navItems.push({name: e, href: `/${data.worldid}/${data.collectionid}/${e}`});
         });
         return navItems;
     }
