@@ -101,12 +101,11 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             }
             case 4: 
             //entry
-            const entryId = decodeURIComponent(path[path.length - 1]);
             const updatedEntry = $entry;
             if (updatedEntry) {
                 updatedEntry.content = $editComponentContents;
                 entry.set(updatedEntry);
-                // updateEntry();
+                updateEntry();
             }
         }
         editComponentContents.set([]);

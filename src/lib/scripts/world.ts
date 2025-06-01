@@ -147,12 +147,13 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
         }
         console.log(data);
         let e = Entry.fromJson(data); // Convert the JSON data to a World object
+        console.log("Entry object:", e); // Log the entry object for debugging
         if (get(routerItems).length > 0) {
 
-            if (!get(routerItems).some(item => item.id === e.id)) {
+            if (!get(routerItems).some(item => item.id === e.name)) {
                 const parentItem = get(routerItems).find((item: RouterItem) => item.id === e.parentId);
                 if (parentItem) {
-                    routerItems.update(items => [...items, new RouterItem(e.id, `/${worldId}/${collectionId}/${entryId}`)]); // Add the entry to the router items
+                    routerItems.update(items => [...items, new RouterItem(e.name, `/${worldId}/${collectionId}/${entryId}`)]); // Add the entry to the router items
                 }
             }
         }
@@ -171,13 +172,11 @@ export async function updateEntry() {
     if (!entry){
         return
     }
-    let currentUrl = window.location.pathname.split('/');
-    const worldId = currentUrl[1];
-    return fetch(`${PUBLIC_API_URL}/${worldId}/${entry.parentId}/${entry.id}`, {
+    return fetch(`${PUBLIC_API_URL}/${entry.worldId}/${entry.parentId}/${entry.name}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'authorization': `Bearer ${get(token)}` // Add the token to the headers
+            'authorization': `${get(token)}` // Add the token to the headers
         },
         body: JSON.stringify({content: entry.content })
     })
