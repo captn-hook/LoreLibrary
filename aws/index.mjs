@@ -2,7 +2,7 @@ import { badRequest, notImplemented } from './utilities.mjs';
 
 import { User, Entry, Collection, World } from './classes.mjs';
 
-import { dynamo_get, dynamo_create, dynamo_list, crud } from './dynamo.mjs';
+import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_map, crud } from './dynamo.mjs';
 
 import { create_user, login_user } from './cognito.mjs';
 
@@ -171,6 +171,14 @@ export const handler = async (e) => {
                 e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
 
                 var res = await crud(operation, Collection, e.body, username);
+                if (res) {
+                    return res;
+                }
+
+            // check for query parameters
+            } else if (operation === 'GET' && e.queryStringParameters && e.queryStringParameters.map == true) {
+                // Get world as a map
+                var res = await dynamo_get_map(worldId);
                 if (res) {
                     return res;
                 }

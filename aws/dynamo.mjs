@@ -197,6 +197,50 @@ async function update(data, instance, table = dataTable) {
     }
 }
 
+async function get_sub_items(worldId, collectionName) {
+    console.log('get_sub_items', worldId, collectionName);
+    // Get all sub items of a collection
+    let thisCollection = await dynamo_get(new Collection(collectionName, null, worldId)); // Await the asynchronous call
+    let res = {};
+    if (thisCollection.entries) {
+        res['entries'] = thisCollection.entries;
+    }
+    if (thisCollection.collections) {
+        for (const subCollectionName of thisCollection.collections) {
+            res[subCollectionName] = await get_sub_items(worldId, subCollectionName); // Await the recursive call
+        }
+    }
+    return res;
+}
+
+async function dynamo_get_map(worldId) {
+    // Returns the full structure of documents in a world
+    let world = await dynamo_get(new World(worldId)); // Await the asynchronous call
+    let map = {};
+    map['entries'] = world.entries || [];
+    for (const collectionName of world.collections) {
+        map[collectionName] = await get_sub_items(worldId, collectionName); // Await the asynchronous call
+    }
+    return map;
+}
+
+async function get_style(parentId, worldId) {
+    console.log('get_style', parentId, worldId);
+    // Get the style data for a world or collection 
+    try {
+        const parent = await dynamo_get(new Collection(parentId, null, worldId));
+        if (parent && parent.style) {
+            return parent.style;
+        } else {
+            // If no style is found, return a default style or an empty object
+            return get_style(parent.parentId, worldId);
+        }
+    } catch (err) {
+        console.error("Error getting style:", err);
+        return ''; // Return an empty string or a default style if an error occurs
+    }
+}
+
 async function dynamo_get(data, table = dataTable) {
 
     const params = {
@@ -222,7 +266,12 @@ async function dynamo_get(data, table = dataTable) {
                 data[key] = res.Item[key];
             }
         }
-        console.log('Item found:', data);
+
+        // if the style data is undefined, get its parent to fill it in
+        if (!data.style) {
+            data.style = await get_style(data.parentId, data.worldId);
+        }
+
         return {
             statusCode: 200,
             body: JSON.stringify(data)
@@ -706,5 +755,6 @@ export {
     dynamo_create,
     dynamo_update,
     dynamo_delete,
-    dynamo_user_create
+    dynamo_user_create,
+    dynamo_get_map,
 };
