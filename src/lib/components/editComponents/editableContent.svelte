@@ -9,6 +9,7 @@
     import ParagraphEditor from "./textComponents/paragraphEditor.svelte";
     import AddComponentButton from "$lib/components/editComponents/controls/addComponentButton.svelte";
     import HeaderEditor from "$lib/components/editComponents/textComponents/headerEditor.svelte";
+    import DeleteComponentButton from "$lib/components/editComponents/controls/deleteComponentButton.svelte";
 
     export let content: Content;
 
@@ -93,7 +94,12 @@
         <HeaderEditor content={item.title} index={index} />
     {:else}
         <!-- Handle other types of components here if needed -->
+         <div class="relative min-h-13">
         <p>Unknown component type: {Object.keys(item)}</p>
+        <div class="absolute top-2 right-2">
+            <DeleteComponentButton {index} />
+        </div>
+        </div>
     {/if}
     <AddComponentButton index={index + 1} />
 
