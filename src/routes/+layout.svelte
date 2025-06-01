@@ -31,9 +31,7 @@
 	<div class="flex-grow" style="width: calc(100% - var(--style-editor-width));">
 		<Header/>
 		{#if $page?.url?.pathname !== '/' && $page?.url?.pathname !== '/dashboard' && $page?.url?.pathname !== '/workshop'}
-			<nav class="flex justify-end mx-3 mb-1">
 				<EditMenu/>
-			</nav>
 		{/if}
 		{@render children()}
 	</div>
