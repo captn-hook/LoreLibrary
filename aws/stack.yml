@@ -15,12 +15,22 @@ Parameters:
   JWTSecretParameter:
     Type: String
     Description: The secret key for JWT authentication
+  Env:
+    Type: String
+    Default: ""
+    AllowedValues:
+      - -dev
+      - ""
+    Description: The environment for the deployment (-dev or none)
+  Ver:
+    Type: String
+    Description: The version of the deployment (github commit hash or similar)
 
 Resources:
   ResourcesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: lorelibrary-resources
+      BucketName: !Sub lorelibrary-resources${Env}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
@@ -48,7 +58,7 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: lorelibrary-user-pool
+      UserPoolName: !Sub lorelibrary-user-pool${Env}
       LambdaConfig:
         PreSignUp: !GetAtt PreSignUpLambda.Arn
       AutoVerifiedAttributes:
@@ -68,7 +78,7 @@ Resources:
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: lorelibrary-user-pool-client
+      ClientName: !Sub lorelibrary-client${Env}
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       AllowedOAuthFlows:
@@ -90,7 +100,7 @@ Resources:
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
-      IdentityPoolName: lorelibrary-identity-pool
+      IdentityPoolName: !Sub lorelibrary-identity-pool${Env}
       AllowUnauthenticatedIdentities: false
       CognitoIdentityProviders:
         - ClientId: !Ref CognitoUserPoolClient
@@ -112,7 +122,7 @@ Resources:
               "ForAnyValue:StringLike":
                 cognito-identity.amazonaws.com:amr: authenticated
       Policies:
-        - PolicyName: CognitoAuthorizedPolicy
+        - PolicyName: !Sub lorelibrary-authenticated-policy${Env}
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -125,7 +135,7 @@ Resources:
   DataTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: lorelibrary-data
+      TableName: !Sub lorelibrary-data${Env}
       AttributeDefinitions:
         - AttributeName: PK # Combines entity type and ID (e.g., WORLD#, or COLLECTION#worldId)
           AttributeType: S
@@ -156,7 +166,7 @@ Resources:
   UserTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: lorelibrary-users
+      TableName: !Sub lorelibrary-users${Env}
       AttributeDefinitions:
         - AttributeName: PK # User ID
           AttributeType: S
@@ -174,7 +184,7 @@ Resources:
   LoreLibraryLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: lorelibrary-function
+      FunctionName: !Sub lorelibrary-function${Env}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
@@ -188,12 +198,13 @@ Resources:
           BUCKET_NAME: !Ref ResourcesBucket
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+          VER: !Ref Ver
       Timeout: 7 # seconds
 
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: lorelibrary-authorizer
+      FunctionName: !Sub lorelibrary-authorizer${Env}
       Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
@@ -211,7 +222,7 @@ Resources:
   PreSignUpLambda:
       Type: "AWS::Lambda::Function"
       Properties:
-        FunctionName: pre-signup-trigger
+        FunctionName: !Sub lorelibrary-pre-signup${Env}
         Runtime: nodejs22.x
         Handler: index.handler
         Code:
@@ -233,7 +244,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: lorelibrary-lambda-role 
+      RoleName: !Sub lorelibrary-lambda-role${Env}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -244,7 +255,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: LoreLibraryLambdaPolicy
+        - PolicyName: !Sub lorelibrary-lambda-policy${Env}
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -309,7 +320,7 @@ Resources:
       AuthorizerType: JWT
       IdentitySource:
         - "$request.header.Authorization"
-      Name: CognitoAuthorizer
+      Name: !Sub lorelibrary-cognito-authorizer${Env}
       JwtConfiguration:
         Audience:
           - !Ref CognitoUserPoolClient
@@ -325,6 +336,12 @@ Resources:
         - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
       PayloadFormatVersion: "2.0"
 
+  AccessLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      LogGroupName: !Sub lorelibrary-access-logs${Env}
+      RetentionInDays: 1
+
   ApiGatewayDeployment:
     Type: "AWS::ApiGatewayV2::Deployment"
     Properties:
@@ -336,8 +353,13 @@ Resources:
     Properties:
       ApiId: !Ref LoreLibraryApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
-      StageName: prod
-   
+      StageName: !Sub "${Env}-${Ver}"
+      AccessLogSettings:
+        DestinationArn: !GetAtt AccessLogGroup.Arn
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength"}'
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+
 Outputs:
   WebsiteURL:
     Description: URL for the website hosted on the S3 bucket

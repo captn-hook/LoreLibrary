@@ -44,6 +44,7 @@
     const dismiss = useDismiss(floating.context);
     const interactions = useInteractions([role, click, dismiss]);
 
+    
 function cleanContents() { //bullet and number lists are assigned ids while editing, this removes them to save some space in db
     $editComponentContents = $editComponentContents.map(item => {
         function removeIds(content: any[]): any[] {
@@ -77,6 +78,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
     function handleSave() { //needs to make post to api
         editContent.set(false);
         cleanContents();
+        console.log("Saving contents:", $editComponentContents);
         let path = window.location.pathname.split("/");
         switch (path.length) {
             case 2: 
@@ -85,7 +87,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             if (updatedWorld) {
                 updatedWorld.content = $editComponentContents;
                 world.set(updatedWorld);
-                updateWorld();
+                // updateWorld();
             }
             case 3: 
             //collection
@@ -96,7 +98,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                     c.id === collectionId ? { ...c, content: $editComponentContents } : c
                 );
                 collections.set(updatedCollections || []);
-                updateCollection(collectionId);
+                // updateCollection(collectionId);
             }
             case 4: 
             //entry
@@ -105,7 +107,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             if (updatedEntry) {
                 updatedEntry.content = $editComponentContents;
                 entry.set(updatedEntry);
-                updateEntry();
+                // updateEntry();
             }
         }
         editComponentContents.set([]);

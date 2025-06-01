@@ -4,7 +4,7 @@ info:
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
 servers:
-  - url: https://440cybvvr6.execute-api.us-west-2.amazonaws.com/prod
+  - url: https://2kzy6vjjm1.execute-api.us-west-2.amazonaws.com/-dev-5a740aa
 tags:
   - name: user
     description: Operations related to users
@@ -40,7 +40,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: limit
@@ -78,7 +78,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       security:
       - lorelibrary-gateway-authorizer: []
@@ -110,7 +110,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -137,7 +137,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -174,7 +174,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -212,7 +212,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -238,7 +238,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -251,6 +251,12 @@ paths:
           in: path
           required: true
           description: ID of the collection to retrieve
+          schema:
+            type: string
+        - name: ParentId
+          in: query
+          required: false
+          description: ID of the parent collection (if any)
           schema:
             type: string
       responses:
@@ -271,7 +277,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -314,7 +320,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -358,7 +364,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -390,7 +396,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -429,7 +435,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -478,7 +484,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -516,7 +522,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       requestBody:
         required: true
@@ -525,12 +531,12 @@ paths:
             schema:
               $ref: '#/components/schemas/SignUp'
       responses:
-        '201':
-          description: User created successfully
+        '200':
+          description: User signed up successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Token'
+                $ref: '#/components/schemas/Message'
         '400':
           description: Bad request
         '500':
@@ -543,7 +549,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       requestBody:
         required: true
@@ -570,7 +576,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: limit
@@ -611,7 +617,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: username
@@ -633,14 +639,14 @@ paths:
           description: User not found
         '500':
           description: Internal server error
-    post:
+    put:
       tags:
         - user
       summary: Update a user (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: username
@@ -677,7 +683,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: username
@@ -705,7 +711,7 @@ components:
       x-amazon-apigateway-authorizer:
         type: request
         identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer${Env}/invocations
         authorizerPayloadFormatVersion: '2.0'
         enableSimpleResponses: true
   schemas:
@@ -722,75 +728,43 @@ components:
           type: array
           items:
             type: string
-    World:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-        parentId:
-          type: string
-        ownerId:
-          type: string
-        collections:
-          type: array
-          items:
-            type: string
-    Collection:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-        parentId:
-          type: string
-        ownerId:
-          type: string
-        collections:
-          type: array
-          items:
-            type: string
-        entries:
-          type: array
-          items:
-            type: string
     Entry:
       type: object
       properties:
         name:
           type: string
-        id:
-          type: string
         content:
           type: array
           items:
             type: string
+        description:
+          type: string
+        image:
+          type: string
+        style:
+          type: string
         tags:
           type: array
           items:
             type: string
         parentId:
           type: string
-        ownerId:
-          type: string
+    Collection:
+      allOf:
+        - $ref: '#/components/schemas/Entry'
+        - type: object
+          properties:
+            entries:
+              type: array
+              items:
+                type: string
+            collections:
+              type: array
+              items:
+                type: string
+    World:
+      allOf:
+        - $ref: '#/components/schemas/Collection'
     Resource:
       type: object
       properties:
@@ -814,9 +788,9 @@ components:
       properties:
         username:
           type: string
-        password:
-          type: string
         email:
+          type: string
+        password:
           type: string
     Token:
       type: object
@@ -824,4 +798,9 @@ components:
         token:
           type: string
         username:
+          type: string
+    Message:
+      type: object
+      properties:
+        message:
           type: string
