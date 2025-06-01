@@ -85,10 +85,6 @@
 		} 
 		return contents;
 	});
-
-	editComponentContents.subscribe((value) => {
-		console.log("editComponentContents", value);
-	});
 </script>
 
 <h1>Workshop</h1>
