@@ -29,7 +29,7 @@
             }));
 
     onMount(async () => {
-        if ($worldContext?.id !== data.worldid) {
+        if ($worldContext?.name !== data.worldid) {
             await getWorld(data.worldid);
         }
         routerItems.set([new RouterItem(data.worldid, `/${data.worldid}`)]);

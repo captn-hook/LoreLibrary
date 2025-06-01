@@ -9,6 +9,7 @@ import { browser } from '$app/environment';
 import { PUBLIC_API_URL } from '$env/static/public';
 import { routerItems } from "$lib/state/routerState.svelte";
 import {RouterItem} from "$lib/types/routerItem";
+import {token} from "$lib/state/userState.svelte";
 
 function getWorldId() {
   if (!browser) {
@@ -34,7 +35,8 @@ export function getWorld(worldId: string) {
             }
             console.log("World data:", data); // Log the world data for debugging
             let w = World.fromJson(data); // Convert the JSON data to a World object
-            routerItems.set([new RouterItem(w.id, `/${w.id}`)]); // Set the router items with the new world
+            console.log("World object:", w); // Log the world object for debugging
+            routerItems.set([new RouterItem(w.name, `/${w.name}`)]); // Set the router items with the new world
             worldContext.set(w); // Update the world context store with the new world
         })
         .catch((error) => {
@@ -42,9 +44,31 @@ export function getWorld(worldId: string) {
         });
 }
 
+export function updateWorld() {
+    const world = get(worldContext);
+    console.log(world);
+    if (!world) {
+        return;
+    }
+    return fetch(`${PUBLIC_API_URL}/${world.name}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*', // Allow CORS for all origins
+        },
+        body: JSON.stringify({content: world.content})
+    })
+    .then((response) => {
+        console.log(response);
+    });
+}
+
 export function getWorlds() {
     return fetch(`${PUBLIC_API_URL}/worlds`)
-        .then((response) => response.json())
+        .then((response) => {
+            console.log(response);
+            return response.json()})
         .then((data) => {
             console.log(data);
             let worlds = data.map((world: any) => {
@@ -84,6 +108,29 @@ export function getCollection(worldId: string, collectionId: string) {
         });
 }
 
+export function updateCollection(id : string){
+    const collections = get(collectionsContext);
+    if (!collections) {
+        return;
+    }
+    const collection = collections.find((collection: Collection) => collection.name === id);
+    if (!collection) {
+        return;
+    }
+    return fetch(`${PUBLIC_API_URL}/${collection.parentId}/${id}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `${get(token)}` // Add the token to the headers
+        },
+        body: JSON.stringify({content: collection.content })
+    })
+    .then((response) => {
+        console.log(response);
+    });
+
+}
+
 export async function getEntry(worldId: string, collectionId: string, entryId: string) {
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`)
     .then((response) => {
@@ -100,12 +147,13 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
         }
         console.log(data);
         let e = Entry.fromJson(data); // Convert the JSON data to a World object
+        console.log("Entry object:", e); // Log the entry object for debugging
         if (get(routerItems).length > 0) {
 
-            if (!get(routerItems).some(item => item.id === e.id)) {
+            if (!get(routerItems).some(item => item.id === e.name)) {
                 const parentItem = get(routerItems).find((item: RouterItem) => item.id === e.parentId);
                 if (parentItem) {
-                    routerItems.update(items => [...items, new RouterItem(e.id, `/${worldId}/${collectionId}/${entryId}`)]); // Add the entry to the router items
+                    routerItems.update(items => [...items, new RouterItem(e.name, `/${worldId}/${collectionId}/${entryId}`)]); // Add the entry to the router items
                 }
             }
         }
@@ -118,4 +166,24 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
     });
 
 }  
+
+export async function updateEntry() {
+    const entry = get(entryContext);
+    if (!entry){
+        return
+    }
+    return fetch(`${PUBLIC_API_URL}/${entry.worldId}/${entry.parentId}/${entry.name}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': `${get(token)}` // Add the token to the headers
+        },
+        body: JSON.stringify({content: entry.content })
+    })
+    .then((response) => {
+        console.log(response);
+    });
+
+
+}
         
