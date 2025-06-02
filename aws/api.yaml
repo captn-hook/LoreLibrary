@@ -119,6 +119,12 @@ paths:
           description: ID of the world to retrieve
           schema:
             type: string
+        - name: mapping
+          in: query
+          required: false
+          description: Whether to include mapping information, false by default
+          schema:
+            type: boolean
       responses:
         '200':
           description: World retrieved successfully

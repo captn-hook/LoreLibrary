@@ -2,7 +2,7 @@ import { badRequest, notImplemented } from './utilities.mjs';
 
 import { User, Entry, Collection, World } from './classes.mjs';
 
-import { dynamo_get, dynamo_create, dynamo_list, crud } from './dynamo.mjs';
+import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_map, crud } from './dynamo.mjs';
 
 import { create_user, login_user } from './cognito.mjs';
 
@@ -17,7 +17,6 @@ export const handler = async (e) => {
     // headers: typical headers,
     // requestContext: amazon stuff,
     // isBase64Encoded: false,
-    console.log('Event: ', e);
     try {
         const [operation, path] = e.routeKey.split(' ');
 
@@ -32,12 +31,11 @@ export const handler = async (e) => {
             if (e.requestContext.authorizer && e.requestContext.authorizer.lambda) {
                 username = e.requestContext.authorizer.lambda.username;
             } else {
-                console.log('No auth from authorizer');
+                console.error('No auth from authorizer');
             }
         } catch (error) {
             throw new Error('Authorizer error: ' + error.message);
         }
-        console.log('Username: ', username, ' Operation: ', operation, ' Path: ', path, ' Body: ', e.body);
         try {
             pathParameters = e.pathParameters;
 
@@ -49,7 +47,7 @@ export const handler = async (e) => {
             }
 
         } catch (error) {
-            console.log('Error getting path parameters:', error);
+            console.error('Error getting path parameters:', error);
         }
 
         // /worlds: GET, PUT
@@ -71,7 +69,6 @@ export const handler = async (e) => {
 
             if (data === null) { return badRequest('Invalid world data'); }
 
-            console.log('Creating world: ', data );
 
             var res = await dynamo_create(data);
             // Return world
@@ -88,7 +85,6 @@ export const handler = async (e) => {
             try {
                 const userExists = await dynamo_get(data, process.env.USER_TABLE); // Users are in a different table than default
                 if (userExists.statusCode === 404) {
-                    console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
                     const token = await create_user(e.body);
                     return token;
                 } else if (userExists.statusCode === 200) {
@@ -133,15 +129,11 @@ export const handler = async (e) => {
                     return res;
                 }
             }
-            console.log('Path: ', path, ' ', pathsplit);
             const user = pathParameters.username;
-            console.log('User: ', user);
-            console.log('e.body: ', e.body);
             if (!e.body) {
                 e.body = {};
             }
             e.body.username = user;
-            console.log('User crud: ', operation, ' ', pathsplit[2] , ' ', e.body);
             var res = await crud(operation, User, e.body, username);
             if (res) {
                 return res;
@@ -171,6 +163,14 @@ export const handler = async (e) => {
                 e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
 
                 var res = await crud(operation, Collection, e.body, username);
+                if (res) {
+                    return res;
+                }
+
+            // check for query parameters
+            } else if (operation === 'GET' && e.queryStringParameters && e.queryStringParameters.map && e.queryStringParameters.map === 'true') {
+                // Get world as a map
+                var res = await dynamo_get_map(worldId);
                 if (res) {
                     return res;
                 }
