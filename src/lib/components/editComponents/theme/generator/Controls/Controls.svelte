@@ -16,6 +16,10 @@
 	import IconOpen from '@lucide/svelte/icons/chevron-up';
 	import IconClosed from '@lucide/svelte/icons/chevron-down';
 
+	import { settingsBackgrounds } from '$lib/state/generator.svelte';
+
+	console.log('settingsBackgrounds:', settingsBackgrounds);
+
 
 	// Local
 	const accordionItemProps = {
@@ -24,11 +28,6 @@
 		controlHover: 'hover:preset-tonal',
 		panelPadding: 'p-5'
 	};
-
-	function handleSaveTheme() {
-		document.documentElement.setAttribute('data-theme', 'generated');
-		
-	}
 	let settings: string[] = $state([]);
 </script>
 
@@ -74,10 +73,5 @@
 			</Accordion.Item>
 			<hr class="hr" />
 		</Accordion>
-	</div>
-	<div class="flex justify-center space-x-3 p-3 preset-primary">
-		<button onclick={handleSaveTheme} class="btn btn-primary preset-filled">Save</button>
-		<button onclick={() => { /* Add your cancel logic here */ }} class="btn btn-secondary preset-filled">Cancel</button>
-
 	</div>
 </section>

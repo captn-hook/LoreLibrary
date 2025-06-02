@@ -220,3 +220,42 @@ export async function updateEntry() {
 
 }
         
+
+export async function updateTheme(theme: string) {
+    let currentPath = window.location.pathname.split('/');
+    let postUrl;
+    console.log(currentPath.length);
+    if (currentPath.length == 2){
+        const worldId = currentPath[1];
+        postUrl = `${PUBLIC_API_URL}/${worldId}`;
+
+    }else if (currentPath.length == 3){
+        const worldId = currentPath[1];
+        const collectionId = currentPath[2];
+        postUrl = `${PUBLIC_API_URL}/${worldId}/${collectionId}`;
+
+    }
+    else if (currentPath.length == 4){
+        const worldId = currentPath[1];
+        const collectionId = currentPath[2];
+        const entryId = currentPath[3];
+        postUrl = `${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`;
+    }
+    console.log(theme);
+    fetch(`${postUrl}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*', // Allow CORS for all origins
+        },
+        body: JSON.stringify({style: theme})
+    })
+    .then((response) => {
+        console.log(response); // Log the response for debugging
+    })
+    .catch((error) => {
+        console.error("Error updating theme:", error); // Log any errors
+    });
+    
+}

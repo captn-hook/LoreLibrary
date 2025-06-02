@@ -11,6 +11,7 @@
     import { world as worldContext} from "$lib/state/worldState.svelte";
     import { routerItems } from "$lib/state/routerState.svelte.js";
     import { RouterItem } from "$lib/types/routerItem";
+  import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
 
 
     let editContentValue;
@@ -31,6 +32,18 @@
     onMount(async () => {
         if ($worldContext?.name !== data.worldid) {
             await getWorld(data.worldid);
+        }
+        if ($worldContext?.styling) {
+            if ($worldContext.styling.length > 20) { // generated
+                const styleTag = document.createElement('style');
+			    styleTag.textContent = $worldContext.styling;
+			    document.head.appendChild(styleTag);
+                document.documentElement.setAttribute('data-theme', 'generated');
+
+            }else {
+            document.documentElement.setAttribute('data-theme', $worldContext.styling);
+            }
+            updateSettingsFromCurrentStyles();
         }
         routerItems.set([new RouterItem(data.worldid, `/${data.worldid}`)]);
     })

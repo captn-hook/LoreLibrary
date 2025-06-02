@@ -14,15 +14,11 @@
 
     let collection: Collection;
     onMount(async () => {
-        console.log("hi");
-        console.log(get(collections));
         if (!$collections?.some(collection => collection.name === data.collectionid)) {
-            console.log("getting collection");
             await getCollection(data.worldid, data.collectionid);
         }
         collections.subscribe(value => {
         collection = value?.find(collection => collection.name === data.collectionid) ?? {} as Collection;
-        console.log(`Updated Collection: ${collection.content}`);
     });
     });
     function getNavItems(collection: Collection): {name: string, href: string}[] {

@@ -2,12 +2,15 @@
 import {Tabs} from '@skeletonlabs/skeleton-svelte';
 import { onMount } from 'svelte';
 import Controls from '$lib/components/editComponents/theme/generator/Controls/Controls.svelte';
-import { updateSettingsFromCurrentStyles } from '$lib/scripts/generator/generate-css.js';
+import { generatePreviewCss, updateSettingsFromCurrentStyles } from '$lib/scripts/generator/generate-css.js';
 import SelectTheme from '$lib/components/editComponents/theme/selectTheme.svelte';
 import { showStyleControls } from "$lib/state/editState.svelte";
+import { updateTheme } from '$lib/scripts/world';
 
 	let group = 'premade';
 	let isResizing = false;
+	let initialTheme = document.documentElement.getAttribute('data-theme') || 'generated';
+	console.log('Initial theme:', initialTheme);
 
 	const MIN_WIDTH = 200;
 	const MAX_WIDTH = 800;
@@ -15,10 +18,6 @@ import { showStyleControls } from "$lib/state/editState.svelte";
 
 	onMount(() => {
 		updateSettingsFromCurrentStyles();
-		console.log('Style editor mounted');
-
-		document.documentElement.setAttribute('data-theme', 'generated');
-
 		window.addEventListener('mouseup', () => {
 			isResizing = false;
 		});
@@ -30,8 +29,41 @@ import { showStyleControls } from "$lib/state/editState.svelte";
 		});
 	});
 
-	function closeEditor() {
+	function cancelEditTheme() {
+		document.documentElement.setAttribute('data-theme', initialTheme);
 		showStyleControls.set(false);
+	}
+
+	function handleSaveTheme() {
+		let currentTheme = document.documentElement.getAttribute('data-theme')
+		if (currentTheme == 'generated'){
+			if (confirm('Are you sure you want to save the current theme? You are using a generated theme.')) {
+				updateSettingsFromCurrentStyles();
+				let previewcss = generatePreviewCss();
+				updateTheme(previewcss);
+			}
+		}else {//premade theme
+			if (confirm('Are you sure you want to save the current theme? You are using a premade theme.')) {
+				updateSettingsFromCurrentStyles();
+				if (currentTheme){
+				updateTheme(currentTheme);
+				}
+			}
+
+
+		}
+		
+	}
+
+	function handleTabChange(value: string) {
+		let currentTheme = document.documentElement.getAttribute('data-theme') || 'generated';
+		group = value;
+		if (value === 'premade') {
+			document.documentElement.setAttribute('data-theme', currentTheme);
+		} else if (value === 'custom') {
+			updateSettingsFromCurrentStyles();
+			document.documentElement.setAttribute('data-theme', 'generated');
+		}
 	}
 </script>
 
@@ -61,14 +93,21 @@ import { showStyleControls } from "$lib/state/editState.svelte";
 			<!-- Resize handle -->
 	<div
 		class="absolute top-0 left-0 h-full w-1.5 cursor-ew-resize z-10"
-			on:mousedown={() => (isResizing = true)}
+			onmousedown={() => (isResizing = true)}
 		></div>
 
 	<!-- Editor Content -->
 	<div class="style-editor p-1">
-		<Tabs value={group} onValueChange={(event) => {group = event.value;}} fluid>
+		<Tabs 
+			value={group} 
+			onValueChange={(event) => {
+				group = event.value;
+				handleTabChange(event.value);
+			}} 
+			fluid
+		>
 			{#snippet list()}
-			<button on:click={closeEditor} class="close-tab" aria-label="Close style editor">
+			<button onclick={cancelEditTheme} class="close-tab" aria-label="Close style editor">
 				<Tabs.Control value="close">X</Tabs.Control>
 			</button>
 			<Tabs.Control value="premade">Pre-made Theme</Tabs.Control>
@@ -86,5 +125,11 @@ import { showStyleControls } from "$lib/state/editState.svelte";
 			</Tabs.Panel>
 			{/snippet}
 		</Tabs>
+		<div class="flex justify-center space-x-3 p-3 preset-primary">
+			<button onclick={handleSaveTheme} class="btn btn-primary preset-filled">Save</button>
+			<button onclick={cancelEditTheme} class="btn btn-secondary preset-filled">Cancel</button>
+	
+		</div>
 	</div>
+	
 </div>

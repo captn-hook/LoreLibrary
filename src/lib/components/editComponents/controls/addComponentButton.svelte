@@ -9,7 +9,6 @@
     function openMenu(event: MouseEvent) {
         menuPosition = { x: event.pageX, y: event.pageY };
         menuVisible = true;
-        console.log('Menu opened at:', menuPosition);
 
         // Add a click listener to detect clicks outside the menu
         document.addEventListener('click', handleOutsideClick);
@@ -17,7 +16,6 @@
 
     function closeMenu() {
         menuVisible = false;
-        console.log('Menu closed');
 
         // Remove the click listener when the menu is closed
         document.removeEventListener('click', handleOutsideClick);
@@ -28,7 +26,6 @@
         if (menuElement && !menuElement.contains(event.target as Node)) {
             closeMenu();
         }
-        console.log('Clicked outside the menu, closing it');
     }
 </script>
 

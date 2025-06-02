@@ -85,7 +85,6 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             if (updatedWorld) {
                 updatedWorld.content = $editComponentContents;
                 world.set(updatedWorld);
-                console.log("Updated world:", updatedWorld);
                 updateWorld();
             }
             case 3: 
