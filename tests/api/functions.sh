@@ -4,7 +4,6 @@
 url=""
 source "$(dirname "$0")/env.sh"
 load_env_url
-echo "Using URL: $url"
 
 token=""
 username=""
@@ -30,21 +29,28 @@ signup() {
     local body=$(echo "$response" | sed '$d')
     local status_code=$(echo "$response" | tail -n1)
 
-    # Debugging output
-    echo "Signup response body: $body"
-    echo "Signup HTTP status code: $status_code"
-
     # Check if signup was successful
     if [[ "$status_code" == "200" ]]; then
-        echo "Signup successful"
-        login "$user" "$password"
+    # Extract token and username from the response
+        token=$(echo "$response" | jq -r '.token')
+        username=$(echo "$response" | jq -r '.username')
+        # Check if token and username are not empty
+        if [[ -z "$token" || -z "$username" ]]; then
+            echo -e "\nFailed to extract token or username from login response"
+            exit 1
+        fi
+        # Store token and username in environment variables
+        export TOKEN="$token"
+        export USERNAME="$username"
+        
+        echo -n '.'
         return
+        
     elif [[ $(echo "$body" | jq -r '.message') == "User already exists" ]]; then
-        echo "User already exists, logging in"
         login "$user" "$password"
         return
     else
-        echo "Signup failed: $body"
+        echo -e "\nSignup failed: $body"
         exit 1
     fi
 }
@@ -54,18 +60,17 @@ login() {
     local password=$2
     
     # Perform login
-    local response=$(curl -X 'POST' \
+    local response=$(curl -s -X 'POST' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         -d "{\"username\":\"$user\", \"password\":\"$password\"}" \
         "$url/login")
 
     # Check if login was successful
-    echo "Login response: $response"
     if [[ $(echo "$response" | jq -r '.token') != "null" ]]; then
-        echo "Login successful"
+        echo -n '.'
     else
-        echo "Login failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nLogin failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
     # Extract token and username from the response
@@ -73,7 +78,7 @@ login() {
     username=$(echo "$response" | jq -r '.username')
     # Check if token and username are not empty
     if [[ -z "$token" || -z "$username" ]]; then
-        echo "Failed to extract token or username from login response"
+        echo -e "\nFailed to extract token or username from login response"
         exit 1
     fi
     # Store token and username in environment variables
@@ -85,7 +90,7 @@ get_user() {
     local user=$1
 
     # Perform GET request with token
-    local response=$(curl -X 'GET' \
+    local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -93,9 +98,9 @@ get_user() {
 
     # Check if GET request was successful
     if [[ $(echo "$response" | jq -r '.username') == "$user" ]]; then
-        echo "GET request successful"
+        echo -n '.'
     else
-        echo "GET request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nGET /users/username request failed: $(echo "$response" | jq -r '.username')"
         exit 1
     fi
 }
@@ -105,7 +110,7 @@ update_user() {
     local content=$2
 
     # Perform POST request with token
-    local response=$(curl -X 'POST' \
+    local response=$(curl -s -X 'POST' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -114,9 +119,9 @@ update_user() {
         
     # Check if POST request was successful
     if [[ $(echo "$response" | jq -r '.username') == "$user" ]]; then
-        echo "POST request successful"
+        echo -n '.'
     else
-        echo "POST request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nPOST /users/username request failed: $(echo "$response" | jq -r '.username')"
         exit 1
     fi
 }
@@ -125,7 +130,7 @@ delete_user() {
     local user=$1
 
     # Perform DELETE request with token
-    local response=$(curl -X 'DELETE' \
+    local response=$(curl -s -X 'DELETE' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -133,14 +138,49 @@ delete_user() {
 
     # Check if DELETE request was successful
     if [[ $(echo "$response" | jq -r '.message') == "User deleted successfully" ]]; then
-        echo "DELETE request successful"
+        echo -n '.'
     else
-        echo "DELETE request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nDELETE /users/username request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
     # Clear token and username after deletion
     token=""
     username=""
+}
+
+# Get all /worlds
+get_worlds() {
+    # Perform GET request
+    local response=$(curl -s -X 'GET' \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json' \
+        "$url/worlds")
+
+    # Check if GET request was successful (it should return a JSON array)
+    if [[ $(echo "$response" | jq -r 'type') == "array" ]]; then
+        echo -n '.'
+    else
+        echo -e "\nGET /worlds request failed: $(echo "$response")"
+        exit 1
+    fi
+}
+
+# Get all /users (requires authentication)
+get_users() {
+    # Perform GET request with token
+    local response=$(curl -s -X 'GET' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        "$url/users")
+
+    # Check if GET request was successful
+    if [[ $(echo "$response" | jq -r 'type') == "array" ]]; then
+        echo -n '.'
+    else
+        echo -e "\nGET /users request failed: $(echo "$response" | jq -r '.message')"
+        exit 1
+    fi
 }
 
 
@@ -157,13 +197,8 @@ put_world() {
     local world_ownerId=''
     local world_collections=[]
 
-    echo "World name: $world_name"
-    echo "World content: $world_content"
-    echo "World tags: $world_tags"
-    echo "Token: $token"
-
     # Perform PUT request
-    local response=$(curl -X 'PUT' \
+    local response=$(curl -s -X 'PUT' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -171,11 +206,10 @@ put_world() {
         "$url/worlds")
 
     # Check if PUT request was successful
-    echo "World response: $response"
     if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
-        echo "PUT request successful"
+        echo -n '.'
     else
-        echo "PUT request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nPUT /worlds request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -184,16 +218,32 @@ get_world() {
     local world=$(echo "$1" | jq -sRr @uri)
 
     # Perform GET request
-    local response=$(curl -X 'GET' \
+    local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         "$url/$world")
     # Check if GET request was successful
-    echo "World response: $response"
     if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
-        echo "GET request successful"
+        echo -n '.'
     else
-        echo "GET request failed: $(echo "$response" | jq -r '.name')"
+        echo -e "\nGET /worldId request failed: $(echo "$response" | jq -r '.name')"
+        exit 1
+    fi
+}
+
+get_world_map() {
+    local world=$(echo "$1" | jq -sRr @uri)
+
+    # Perform GET request
+    local response=$(curl -s -X 'GET' \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json' \
+        "$url/$world?map=true")
+    # Check if GET request was successful
+    if [[ $(echo "$response" | jq -r 'type') == "object" ]]; then
+        echo -n '.'
+    else
+        echo -e "\nGET /worldId?map=true request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -203,7 +253,7 @@ post_world() {
     local world_content=$2
     
     # Perform POST request
-    local response=$(curl -X 'POST' \
+    local response=$(curl -s -X 'POST' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -211,11 +261,10 @@ post_world() {
         "$url/$world_name")
 
     # Check if POST request was successful
-    echo "World response: $response"
     if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
-        echo "POST request successful"
+        echo -n '.'
     else
-        echo "POST request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nPOST /worldId request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -224,18 +273,17 @@ delete_world() {
     local world=$(echo "$1" | jq -sRr @uri)
 
     # Perform DELETE request
-    local response=$(curl -X 'DELETE' \
+    local response=$(curl -s -X 'DELETE' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
         "$url/$world")
 
     # Check if DELETE request was successful
-    echo "World response: $response"
     if [[ $(echo "$response" | jq -r '.message') == "World deleted successfully" ]]; then
-        echo "DELETE request successful"
+        echo -n '.'
     else
-        echo "DELETE request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nDELETE /worldId request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -252,19 +300,18 @@ put_collection() {
     local world=$(echo "$4" | jq -sRr @uri)
     
     # Perform PUT request
-    local response=$(curl -X 'PUT' \
+    local response=$(curl -s -X 'PUT' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
         -d "{\"name\":\"$collection_name\", \"content\":$collection_content, \"tags\":$collection_tags, \"parentId\":\"$collection_parentId\", \"ownerId\":\"$collection_ownerId\", \"collections\":$collection_collections, \"entries\":$collection_entries}" \
         "$url/$world")
 
-    echo "Collection response: $response"
     # Check if PUT request was successful
     if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
-        echo "PUT request successful"
+        echo -n '.'
     else
-        echo "PUT request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nPUT /worldId request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -274,16 +321,15 @@ get_collection() {
     local world=$(echo "$2" | jq -sRr @uri)
 
     # Perform GET request
-    local response=$(curl -X 'GET' \
+    local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         "$url/$world/$collection")
     # Check if GET request was successful
-    echo "Collection response: $response"
     if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
-        echo "GET request successful"
+        echo -n '.'
     else
-        echo "GET request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nGET /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -294,19 +340,18 @@ post_collection() {
     local world=$(echo "$3" | jq -sRr @uri)
 
     # Perform POST request
-    local response=$(curl -X 'POST' \
+    local response=$(curl -s -X 'POST' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
         -d "{\"name\":\"$collection_name\", \"content\":$collection_content}" \
         "$url/$world")
 
-    echo "Collection response: $response"
     # Check if POST request was successful
     if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
-        echo "POST request successful"
+        echo -n '.'
     else
-        echo "POST request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nPOST /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -316,18 +361,17 @@ delete_collection() {
     local world=$(echo "$2" | jq -sRr @uri)
 
     # Perform DELETE request
-    local response=$(curl -X 'DELETE' \
+    local response=$(curl -s -X 'DELETE' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
         "$url/$world/$collection")
 
-    echo "Collection response: $response"
     # Check if DELETE request was successful
     if [[ $(echo "$response" | jq -r '.message') == "Collection deleted successfully" ]]; then
-        echo "DELETE request successful"
+        echo -n '.'
     else
-        echo "DELETE request failed: $(echo "$response" | jq -r '.message')"
+        echo -e "\nDELETE /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
         exit 1
     fi
 }
@@ -341,11 +385,9 @@ put_entry() {
     local entry_ownerId=''
     local collection=$(echo "$4" | jq -sRr @uri)
     local world=$(echo "$5" | jq -sRr @uri)
-
-    echo "url: $url"
     
     # Perform PUT request
-    local response=$(curl -X 'PUT' \
+    local response=$(curl -s -X 'PUT' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -353,9 +395,9 @@ put_entry() {
         "$url/$world/$collection")
     # Check if PUT request was successful
     if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
-        echo "PUT request successful"
+        echo -n '.'
     else
-        echo "PUT request failed: $(echo "$response" | jq -r '.name')"
+        echo -e "\nPUT /worldId/collectionId request failed: $(echo "$response" | jq -r '.name')"
         exit 1
     fi
 }
@@ -366,15 +408,15 @@ get_entry() {
     local world=$(echo "$3" | jq -sRr @uri)
 
     # Perform GET request
-    local response=$(curl -X 'GET' \
+    local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         "$url/$world/$collection/$entry")
     # Check if GET request was successful
     if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
-        echo "GET request successful"
+        echo -n "."
     else
-        echo "GET request failed: $(echo "$response")"
+        echo -e "\nGET /worldId/collectionId/entryId request failed: $(echo "$response")"
         exit 1
     fi
 }
@@ -386,18 +428,18 @@ post_entry() {
     local world=$(echo "$4" | jq -sRr @uri)
 
     # Perform POST request
-    local response=$(curl -X 'POST' \
+    local response=$(curl -s -X 'POST' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
         -d "{\"name\":\"$entry_name\", \"content\":$entry_content}" \
-        "$url/$world/$collection")
+        "$url/$world/$collection/$entry_name")
 
     # Check if POST request was successful
     if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
-        echo "POST request successful"
+        echo -n '.'
     else
-        echo "POST request failed: $(echo "$response")"
+        echo -e "\nPOST /worldId/collectionId/entryId request failed: $(echo "$response")"
         exit 1
     fi
 }
@@ -408,7 +450,7 @@ delete_entry() {
     local world=$(echo "$3" | jq -sRr @uri)
 
     # Perform DELETE request
-    local response=$(curl -X 'DELETE' \
+    local response=$(curl -s -X 'DELETE' \
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
@@ -416,9 +458,58 @@ delete_entry() {
 
     # Check if DELETE request was successful
     if [[ $(echo "$response" | jq -r '.message') == "Entry deleted successfully" ]]; then
-        echo "DELETE request successful"
+        echo -n '.'
     else
-        echo "DELETE request failed: $(echo "$response")"
+        echo -e "\nDELETE /worldId/collectionId/entryId request failed: $(echo "$response")"
         exit 1
     fi
+}
+
+reset() {
+    # Reset the database
+    local adminUserName=$1
+    local adminPassword=$2
+    
+    local adminToken=''
+
+    # Login as admin to get the token
+    local response=$(curl -s -X 'POST' \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json' \
+        -d "{\"username\":\"$adminUserName\", \"password\":\"$adminPassword\"}" \
+        "$url/login")
+
+    # Check if login was successful
+    if [[ $(echo "$response" | jq -r '.token') != "null" ]]; then
+        adminToken=$(echo "$response" | jq -r '.token')
+    else
+        echo -e "\nLogin failed: $(echo "$response" | jq -r '.message')"
+        exit 1
+    fi
+
+    # Get /users
+    local response=$(curl -s -X 'GET' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        "$url/users")
+
+    # Delete each user, the database should remove any worlds that belong to the user
+    local users=$(echo "$response" | jq -r '.[].username')
+
+    for user in $users; do
+        if [[ "$user" != "$adminUserName" ]]; then
+            local deleteResponse=$(curl -s -X 'DELETE' \
+                -H 'accept: application/json' \
+                -H "Authorization: $adminToken" \
+                -H 'Content-Type: application/json' \
+                "$url/users/$user")
+            
+            if [[ $(echo "$deleteResponse" | jq -r '.message') != "User deleted successfully" ]]; then
+                echo -e "\nDELETE /users/username request failed: $(echo "$deleteResponse")"
+                exit 1
+            fi
+        fi
+    done
+    echo "Users Cleared"
 }

@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Define variables
-url=""
-source "$(dirname "$0")/env.sh"
-load_env_url
-echo "Using URL: $url"
-
 source "$(dirname "$0")/functions.sh"
 
 token=""
@@ -83,14 +77,10 @@ login zombiemaster iHateBrains123!
 # Get user information
 get_user zombiemaster
 
-echo " >>>>>>>>>>>>>>>>>>> got token: $token"
-
 # Create world
 put_world "$world_name" "$world_content" "$world_tags"
 
 get_world "$world_name"
-
-echo " >>>>>>>>>>>>>>>>>>> world successfully created"
 
 # Create collections
 put_collection "$collection1_name" "$collection1_content" "$collection1_tags" "$world_name"
@@ -102,8 +92,6 @@ get_collection "$collection1_name" "$world_name"
 get_collection "$collection2_name" "$world_name"
 get_collection "$collection3_name" "$world_name"
 get_collection "$collection4_name" "$world_name"
-
-echo " >>>>>>>>>>>>>>>>>>> collections successfully created"
 
 # Create entries
 put_entry "$entry1_name" "$entry1_content" "$entry1_tags" "$collection1_name" "$world_name"
@@ -119,5 +107,3 @@ get_entry "$entry3_name" "$collection4_name" "$world_name"
 get_entry "$entry4_name" "$collection3_name" "$world_name"
 get_entry "$entry5_name" "$collection1_name" "$world_name"
 get_entry "$entry6_name" "$collection4_name" "$world_name"
-
-echo " >>>>>>>>>>>>>>>>>>> entries successfully created"
