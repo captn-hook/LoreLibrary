@@ -197,6 +197,12 @@ put_world() {
     local world_ownerId=''
     local world_collections=[]
 
+    local succeed=$4
+    # if succeed is not provided, default to true
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
+
     # Perform PUT request
     local response=$(curl -s -X 'PUT' \
         -H 'accept: application/json' \
@@ -205,29 +211,54 @@ put_world() {
         -d "{\"name\":\"$world_name\", \"content\":$world_content, \"description\":\"$world_description\", \"image\":\"$world_image\", \"style\":\"$wolrd_style\", \"id\":\"$world_id\", \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
         "$url/worlds")
 
-    # Check if PUT request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
-        echo -n '.'
+    if [[ "$succeed" == false ]]; then
+        # Check if PUT request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPUT /worlds request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
     else
-        echo -e "\nPUT /worlds request failed: $(echo "$response" | jq -r '.message')"
-        exit 1
+        # Check if PUT request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
+            echo -e "\nPUT /worlds request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 
 get_world() {
     local world=$(echo "$1" | jq -sRr @uri)
+    local succeed=$2
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
 
     # Perform GET request
     local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         "$url/$world")
-    # Check if GET request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
-        echo -n '.'
+    
+    if [[ "$succeed" == true ]]; then
+        # Check if GET request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nGET /worldId request failed: $(echo "$response" | jq -r '.name')"
+            exit 1
+        fi
     else
-        echo -e "\nGET /worldId request failed: $(echo "$response" | jq -r '.name')"
-        exit 1
+        # Check if GET request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -e "\nGET /worldId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 
@@ -251,6 +282,10 @@ get_world_map() {
 post_world() {
     local world_name=$1
     local world_content=$2
+    local succeed=$3
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
     
     # Perform POST request
     local response=$(curl -s -X 'POST' \
@@ -260,12 +295,22 @@ post_world() {
         -d "{\"name\":\"$world_name\", \"content\":$world_content}" \
         "$url/$world_name")
 
-    # Check if POST request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
-        echo -n '.'
+    if [[ "$succeed" == true ]]; then
+        # Check if POST request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPOST /worldId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
     else
-        echo -e "\nPOST /worldId request failed: $(echo "$response" | jq -r '.message')"
-        exit 1
+        # Check if POST request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
+            echo -e "\nPOST /worldId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 
@@ -298,6 +343,10 @@ put_collection() {
     local collection_collections=[]
     local collection_entries=[]
     local world=$(echo "$4" | jq -sRr @uri)
+    local succeed=$5
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
     
     # Perform PUT request
     local response=$(curl -s -X 'PUT' \
@@ -307,18 +356,33 @@ put_collection() {
         -d "{\"name\":\"$collection_name\", \"content\":$collection_content, \"tags\":$collection_tags, \"parentId\":\"$collection_parentId\", \"ownerId\":\"$collection_ownerId\", \"collections\":$collection_collections, \"entries\":$collection_entries}" \
         "$url/$world")
 
-    # Check if PUT request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
-        echo -n '.'
+    if [[ "$succeed" == true ]]; then
+        # Check if PUT request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPUT /worldId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
     else
-        echo -e "\nPUT /worldId request failed: $(echo "$response" | jq -r '.message')"
-        exit 1
+        # Check if PUT request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -e "\nPUT /worldId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 
 get_collection() {
     local collection=$(echo "$1" | jq -sRr @uri)
     local world=$(echo "$2" | jq -sRr @uri)
+    local succeed=$3
+
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
 
     # Perform GET request
     local response=$(curl -s -X 'GET' \
@@ -326,11 +390,21 @@ get_collection() {
         -H 'Content-Type: application/json' \
         "$url/$world/$collection")
     # Check if GET request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
-        echo -n '.'
+    if [[ "$succeed" == true ]]; then
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nGET /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
     else
-        echo -e "\nGET /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
-        exit 1
+        # Check if GET request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -e "\nGET /worldId/collectionId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 
@@ -338,6 +412,7 @@ post_collection() {
     local collection_name=$1
     local collection_content=$2
     local world=$(echo "$3" | jq -sRr @uri)
+    local succeed=$4
 
     # Perform POST request
     local response=$(curl -s -X 'POST' \
@@ -347,12 +422,22 @@ post_collection() {
         -d "{\"name\":\"$collection_name\", \"content\":$collection_content}" \
         "$url/$world")
 
-    # Check if POST request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
-        echo -n '.'
+    if [[ -z "$succeed" ]]; then
+        # Check if POST request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPOST /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
     else
-        echo -e "\nPOST /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
-        exit 1
+        # Check if POST request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -e "\nPOST /worldId/collectionId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 
@@ -385,6 +470,10 @@ put_entry() {
     local entry_ownerId=''
     local collection=$(echo "$4" | jq -sRr @uri)
     local world=$(echo "$5" | jq -sRr @uri)
+    local succeed=$6
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
     
     # Perform PUT request
     local response=$(curl -s -X 'PUT' \
@@ -393,31 +482,184 @@ put_entry() {
         -H 'Content-Type: application/json' \
         -d "{\"name\":\"$entry_name\", \"content\":$entry_content, \"tags\":$entry_tags, \"parentId\":\"$entry_parentId\", \"ownerId\":\"$entry_ownerId\"}" \
         "$url/$world/$collection")
-    # Check if PUT request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+
+    if [[ "$succeed" == true ]]; then
+        # Check if PUT request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPUT /worldId/collectionId request failed: $(echo "$response" | jq -r '.name')"
+            exit 1
+        fi
+    else
+        # Check if PUT request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -e "\nPUT /worldId/collectionId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+put_entry_world() {
+    local entry_name=$1
+    local entry_content=$2
+    local entry_id=''
+    local entry_tags=$3
+    local entry_parentId=$4
+    local entry_ownerId=''
+    local world=$(echo "$4" | jq -sRr @uri)
+    local succeed=$5
+
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
+
+    # Perform PUT request
+    local response=$(curl -s -X 'PUT' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        -d "{\"name\":\"$entry_name\", \"content\":$entry_content, \"tags\":$entry_tags, \"parentId\":\"$entry_parentId\", \"ownerId\":\"$entry_ownerId\"}" \
+        "$url/$world")
+    if [[ "$succeed" == true ]]; then
+        # Check if PUT request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPUT /worldId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
+    else
+        # Check if PUT request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -e "\nPUT /worldId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+post_entry_word() {
+    local entry_name=$1
+    local entry_content=$2
+    local world=$(echo "$3" | jq -sRr @uri)
+    local succeed=$4
+
+    # Perform POST request
+    local response=$(curl -s -X 'POST' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        -d "{\"name\":\"$entry_name\", \"content\":$entry_content}" \
+        "$url/$world")
+
+    if [[ "$succeed" == true ]]; then
+        # Check if POST request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPOST /worldId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
+    else
+        # Check if POST request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -e "\nPOST /worldId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+get_entry_world() {
+    local entry=$(echo "$1" | jq -sRr @uri)
+    local world=$(echo "$2" | jq -sRr @uri)
+    local succeed=$3
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
+
+    # Perform GET request
+    local response=$(curl -s -X 'GET' \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json' \
+        "$url/$world/$entry")
+    
+    if [[ "$succeed" == true ]]; then
+        # Check if GET request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nGET /worldId/entryId request failed: $(echo "$response")"
+            exit 1
+        fi
+    else
+        # Check if GET request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -e "\nGET /worldId/entryId request succeeded, but it should have failed: $(echo "$response")"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+delete_entry_world() {
+    local entry=$(echo "$1" | jq -sRr @uri)
+    local world=$(echo "$2" | jq -sRr @uri)
+
+    # Perform DELETE request
+    local response=$(curl -s -X 'DELETE' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        "$url/$world/$entry")
+
+    # Check if DELETE request was successful
+    if [[ $(echo "$response" | jq -r '.message') == "Entry deleted successfully" ]]; then
         echo -n '.'
     else
-        echo -e "\nPUT /worldId/collectionId request failed: $(echo "$response" | jq -r '.name')"
+        echo -e "\nDELETE /worldId/entryId request failed: $(echo "$response")"
         exit 1
     fi
 }
+
 
 get_entry() {
     local entry=$(echo "$1" | jq -sRr @uri)
     local collection=$(echo "$2" | jq -sRr @uri)
     local world=$(echo "$3" | jq -sRr @uri)
+    local succeed=$4
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
 
     # Perform GET request
     local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
         -H 'Content-Type: application/json' \
         "$url/$world/$collection/$entry")
-    # Check if GET request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
-        echo -n "."
+    
+    if [[ "$succeed" == true ]]; then
+        # Check if GET request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -n "."
+        else
+            echo -e "\nGET /worldId/collectionId/entryId request failed: $(echo "$response")"
+            exit 1
+        fi
     else
-        echo -e "\nGET /worldId/collectionId/entryId request failed: $(echo "$response")"
-        exit 1
+        # Check if GET request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -e "\nGET /worldId/collectionId/entryId request succeeded, but it should have failed: $(echo "$response")"
+            exit 1
+        else
+            echo -n "."
+        fi
     fi
 }
 
@@ -426,6 +668,10 @@ post_entry() {
     local entry_content=$2
     local collection=$(echo "$3" | jq -sRr @uri)
     local world=$(echo "$4" | jq -sRr @uri)
+    local succeed=$5
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
 
     # Perform POST request
     local response=$(curl -s -X 'POST' \
@@ -434,13 +680,23 @@ post_entry() {
         -H 'Content-Type: application/json' \
         -d "{\"name\":\"$entry_name\", \"content\":$entry_content}" \
         "$url/$world/$collection/$entry_name")
-
-    # Check if POST request was successful
-    if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
-        echo -n '.'
-    else
-        echo -e "\nPOST /worldId/collectionId/entryId request failed: $(echo "$response")"
-        exit 1
+    
+    if [[ "$succeed" == true ]]; then
+        # Check if POST request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPOST /worldId/collectionId/entryId request failed: $(echo "$response")"
+            exit 1
+        fi
+    else 
+        # Check if POST request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
+            echo -e "\nPOST /worldId/collectionId/entryId request succeeded, but it should have failed: $(echo "$response")"
+            exit 1
+        else
+            echo -n '.'
+        fi
     fi
 }
 

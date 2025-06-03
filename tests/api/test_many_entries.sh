@@ -87,3 +87,6 @@ get_entry "$entry1_name" "$collection2_name" "$world_name"
 get_entry "$entry2_name" "$collection2_name" "$world_name"
 get_entry "$entry3_name" "$collection1_name" "$world_name"
 get_entry "$entry4_name" "$collection3_name" "$world_name"
+
+# try to post an entry to the world
+put_entry_world "$entry1_name dos" "$entry1_content" "$entry1_tags" "$world_name"

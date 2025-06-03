@@ -115,3 +115,18 @@ get_entry "$entry3_name" "$collection3_name" "$world_name"
 get_entry "$entry4_name" "$collection4_name" "$world_name"
 get_entry "$entry5_name" "$collection5_name" "$world_name"
 get_entry "$entry6_name" "$collection5_name" "$world_name"
+
+# try deleting entrie
+delete_entry "$entry1_name" "$collection1_name" "$world_name"
+# try getting deleted entry, should fail
+get_entry "$entry1_name" "$collection1_name" "$world_name" "false"
+
+# try deleting collections
+delete_collection "$collection1_name" "$world_name"
+# try getting deleted collection, should fail
+get_collection "$collection1_name" "$world_name" "false"
+
+# try deleting world
+delete_world "$world_name"
+# try getting deleted world, should fail
+get_world "$world_name" "false"

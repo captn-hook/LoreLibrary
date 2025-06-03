@@ -115,3 +115,10 @@ get_entry "$entry3_name" "$collection3_name" "$world_name"
 get_entry "$entry4_name" "$collection4_name" "$world_name"
 get_entry "$entry5_name" "$collection5_name" "$world_name"
 get_entry "$entry6_name" "$collection5_name" "$world_name"
+
+# try to post a world named world
+put_world "Electronopolis3" "$world_content" "$world_tags" "false"
+# try to post a collection named collection
+put_collection "The Circuit Districts3" "$collection1_content" "$collection1_tags" "$world_name" "false"
+# try to post an entry named entry
+put_entry "Electron Worker3" "$entry1_content" "$entry1_tags" "$collection1_name" "$world_name" "false"

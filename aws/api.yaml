@@ -176,7 +176,8 @@ paths:
     put:
       tags:
         - collection
-      summary: Create a new collection (requires a user)
+        - entry
+      summary: Create a new collection or entry (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -186,7 +187,7 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to create the collection in
+          description: ID of the world to create the object in
           schema:
             type: string
       security:
@@ -196,17 +197,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Collection'
+              oneOf:
+                - $ref: '#/components/schemas/Collection'
+                - $ref: '#/components/schemas/Entry'
       responses:
         '200':
-          description: Collection created successfully
+          description: Object created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  collection:
-                    $ref: '#/components/schemas/Collection'
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
         '400':
           description: Bad request
         '500':
@@ -236,11 +238,12 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-  /{WorldId}/{CollectionId}:
+  /{WorldId}/{Id}:
     get:
       tags:
         - collection
-      summary: Get a collection by WorldId and CollectionId
+        - entry
+      summary: Get a collection or entry by WorldId and object ID
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -250,13 +253,13 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to retrieve the collection from
+          description: ID of the world to retrieve the object from
           schema:
             type: string
-        - name: CollectionId
+        - name: Id
           in: path
           required: true
-          description: ID of the collection to retrieve
+          description: ID of the object to retrieve
           schema:
             type: string
         - name: ParentId
@@ -267,19 +270,22 @@ paths:
             type: string
       responses:
         '200':
-          description: Collection retrieved successfully
+          description: Object retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Collection'
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
         '404':
-          description: Collection not found
+          description: Object not found
         '500':
           description: Internal server error
     post:
       tags:
         - collection
-      summary: Update a collection (requires a user)
+        - entry
+      summary: Update a object (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -289,13 +295,13 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to update the collection in
+          description: ID of the world to update the object in
           schema:
             type: string
-        - name: CollectionId
+        - name: Id
           in: path
           required: true
-          description: ID of the collection to update
+          description: ID of the object to update
           schema:
             type: string
       security:
@@ -305,18 +311,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Collection'
+              oneOf:
+                - $ref: '#/components/schemas/Collection'
+                - $ref: '#/components/schemas/Entry'
       responses:
         '200':
-          description: Collection updated successfully
+          description: Object updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Collection'
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
         '400':
           description: Bad request
         '404':
-          description: Collection not found
+          description: Object not found
         '500':
           description: Internal server error
     put:
@@ -366,7 +376,8 @@ paths:
     delete:
       tags:
         - collection
-      summary: Delete a collection (requires a user)
+        - entry
+      summary: Delete an object (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -376,22 +387,22 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to delete the collection from
+          description: ID of the world to delete the object from
           schema:
             type: string
-        - name: CollectionId
+        - name: Id
           in: path
           required: true
-          description: ID of the collection to delete
+          description: ID of the object to delete
           schema:
             type: string
       security:
       - lorelibrary-gateway-authorizer: []
       responses:
         '200':
-          description: Collection deleted successfully
+          description: Object deleted successfully
         '404':
-          description: Collection not found
+          description: Object not found
         '500':
           description: Internal server error
   /{WorldId}/{CollectionId}/{EntryId}:

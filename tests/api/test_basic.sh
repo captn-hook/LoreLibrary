@@ -134,3 +134,4 @@ entry1_content=$(jq -n --arg text "Updated text for Grub entry." \
     '[{"text": $text}]')
 post_entry "$entry1_name" "$entry1_content" "$collection2_name" "$world_name"
 
+get_world_map "$world_name"

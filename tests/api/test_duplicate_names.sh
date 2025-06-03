@@ -107,3 +107,10 @@ get_entry "$entry3_name" "$collection4_name" "$world_name"
 get_entry "$entry4_name" "$collection3_name" "$world_name"
 get_entry "$entry5_name" "$collection1_name" "$world_name"
 get_entry "$entry6_name" "$collection4_name" "$world_name"
+
+# try to post the same entry again
+put_entry "$entry1_name" "$entry1_content" "$entry1_tags" "$collection1_name" "$world_name" "false"
+# try to post the same collection again
+put_collection "$collection1_name" "$collection1_content" "$collection1_tags" "$world_name" "false"
+# try to post the same world again
+put_world "$world_name" "$world_content" "$world_tags" "false"

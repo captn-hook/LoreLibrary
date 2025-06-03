@@ -156,15 +156,32 @@ export const handler = async (e) => {
             }
             e.body.worldId = worldId;
             if (operation === 'PUT') {
-                // Creating a collection
                 if (!username) { return badRequest('Invalid authentication'); }
-                e.body.worldId = worldId;
-                e.body.ownerId = username? username : null;
-                e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
 
-                var res = await crud(operation, Collection, e.body, username);
-                if (res) {
-                    return res;
+                // Try to get the type of the put object
+                // if the body contains a collections field, then it is a collection
+                if (e.body.collections && Array.isArray(e.body.collections)) {
+
+                    // Creating a collection
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username? username : null;
+                    e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
+
+                    var res = await crud(operation, Collection, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+                } else { 
+                    // Creating an entry
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username? username : null;
+                    e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
+
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+
                 }
 
             // check for query parameters
@@ -183,10 +200,10 @@ export const handler = async (e) => {
                 }
             }
         }
-        // /{WorldId}/{CollectionId}: GET, POST, PUT DELETE
+        // /{WorldId}/{Id}: GET, POST, PUT DELETE
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
-            const collectionId = pathParameters.CollectionId;
+            const Id = pathParameters.CollectionId;
             // Parent id will be in the query if present
             let parentId;
             if (e.queryStringParameters && e.queryStringParameters.parentId) {
@@ -200,20 +217,41 @@ export const handler = async (e) => {
                 e.body = {};
             }
             e.body.worldId = worldId;
-            if (operation === 'PUT') {
-                // Creating an entry
-                if (!username) { return badRequest('Invalid authentication'); }
-                e.body.parentId = collectionId;
-                e.body.ownerId = username;
-                var res = await crud(operation, Entry, e.body, username);
-                if (res) {
-                    return res;
+
+            // Determine if it's a collection or an entry based on the fields present in the body
+            if (e.body.collections && Array.isArray(e.body.collections)) {
+                // Crud collection
+                const collectionId = Id;
+
+                if (operation === 'PUT') {
+                    // Creating an entry
+                    if (!username) { return badRequest('Invalid authentication'); }
+                    e.body.parentId = collectionId;
+                    e.body.ownerId = username;
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+                } else {
+                    e.body.name = collectionId;
+                    // parentid will be in query, or use worldId as parentId
+                    e.body.parentId = parentId; 
+                    var res = await crud(operation, Collection, e.body, username);
+                    if (res) {
+                        return res;
+                    }
                 }
             } else {
-                e.body.name = collectionId;
-                // parentid will be in query, or use worldId as parentId
+                // cannot PUT an entry, 
+                if (operation === 'PUT') {
+                    return badRequest(Id + ' is an entry');
+                }
+                const entryId = Id;
+
+                // Crud entry
+                e.body.name = entryId;
                 e.body.parentId = parentId; 
-                var res = await crud(operation, Collection, e.body, username);
+                var res = await crud(operation, Entry, e.body, username);
                 if (res) {
                     return res;
                 }
