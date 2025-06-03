@@ -111,7 +111,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
     }
 </script>
     
-<nav class="flex justify-between items-center mx-3 mb-1 mt-2 w-full">
+<nav class="flex justify-between items-center mx-3 mb-1 mt-2 ">
     <!-- Left: Save/Cancel -->
     <div class="flex gap-2">
         {#if $editContent}

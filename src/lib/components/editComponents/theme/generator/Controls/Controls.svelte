@@ -17,8 +17,42 @@
 	import IconClosed from '@lucide/svelte/icons/chevron-down';
 
 	import { settingsBackgrounds } from '$lib/state/generator.svelte';
+	import { settingsColors } from '$lib/state/generator.svelte';
+	import { settingsTypography } from '$lib/state/generator.svelte';
+	import { settingsEdges } from '$lib/state/generator.svelte';
+	import { settingsSpacing } from '$lib/state/generator.svelte';
+  import { onMount } from 'svelte';
 
 	console.log('settingsBackgrounds:', settingsBackgrounds);
+	const initialSettingsColors = JSON.parse(JSON.stringify(settingsColors));
+	const initialSettingsBackgrounds = JSON.parse(JSON.stringify(settingsBackgrounds));
+	const initialSettingsTypography = JSON.parse(JSON.stringify(settingsTypography));
+	const initialSettingsEdges = JSON.parse(JSON.stringify(settingsEdges));
+	const initialSettingsSpacing = JSON.parse(JSON.stringify(settingsSpacing));
+
+	function resetSettings() {
+		Object.keys(settingsColors).forEach((key) => {
+        settingsColors[key as keyof typeof settingsColors] = initialSettingsColors[key];
+    });
+		Object.keys(settingsBackgrounds).forEach((key) => {
+								settingsBackgrounds[key as keyof typeof settingsBackgrounds] = initialSettingsBackgrounds[key];
+	});			
+		Object.keys(settingsTypography).forEach((key) => {
+								settingsTypography[key as keyof typeof settingsTypography] = initialSettingsTypography[key];
+	});
+		Object.keys(settingsEdges).forEach((key) => {
+								settingsEdges[key as keyof typeof settingsEdges] = initialSettingsEdges[key];
+	});
+		Object.keys(settingsSpacing).forEach((key) => {
+								settingsSpacing[key as keyof typeof settingsSpacing] = initialSettingsSpacing[key];	
+	});
+		console.log('Settings reset to initial values.');
+	}
+
+	onMount(() => {
+		// Reset settings to initial values on mount
+		resetSettings();
+	});
 
 
 	// Local
