@@ -1,6 +1,7 @@
 <script lang="ts">
     'use client';
     import Card from "$lib/components/card/card.svelte"; // Import the Svelte component
+    import CreateWorldButton from "$lib/components/createWorldComponents/createWorldButton.svelte";
     import { getWorlds } from "$lib/scripts/world";
     import { onMount } from "svelte"; // Import the onMount lifecycle function
     import { World } from "$lib/types/world"; // Import the Worlds type
@@ -17,7 +18,9 @@
     });
 
   </script>
-
+<div style="display: flex; justify-content: flex-end; margin: 1rem;">
+    <CreateWorldButton />
+</div>
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin: 1rem;">
     {#if error}
         <p>Error loading worlds: {error.message}</p>

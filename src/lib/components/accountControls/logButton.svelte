@@ -12,10 +12,8 @@
   function handleButtonClick() {
     if (localToken !== null && localToken.trim() !== "") {
       // User is logged in, perform logout action
-      console.log("Logging out...");
       logout();
     } else {
-      console.log("Opening login modal...");
       openLogin();
     }
   }

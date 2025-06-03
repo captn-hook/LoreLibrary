@@ -1,29 +1,31 @@
 <script lang="ts">
-    export let content: Array<{ key: string; value: any }>;
+    import type { Content } from "$lib/types/content";
     import NumberList from '$lib/components/textComponents/numberList.svelte';
     import BullletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
     import HtmlReader from './textComponents/htmlReader.svelte';
-</script>
 
-    <div>
-        {#each content ?? [] as component}
-                {#if component.key === 'text'}
-                    <p>{component.value}</p>
-                {:else if component.key === 'title'}
-                    <h1 class="text-4xl font-bold text-primary">{component.value}</h1>
-                {:else if component.key == 'image_url'}
-                    <img src={component.value} alt={component.value} />
-                {:else if component.key === 'numberedList'}
-                    <NumberList items={component.value} />
-                {:else if component.key === 'bulletList'}
-                    <BullletList items={component.value} />
-                {:else if component.key === 'image'}
-                    <img src={component.value} alt={component.value} />'
-                {:else if component.key === 'md'}
-                    <MarkdownReader md={component.value} />
-                {:else if component.key === 'html'}
-                    <HtmlReader html={component.value} />
-                {/if}
-            {/each}
-    </div>
+    export let content: Content;
+
+</script>
+<div>
+    {#each content ?? [] as component}
+    {#if component.text}
+        <p>{component.text}</p>
+    {:else if component.name}
+        <h1 class="text-4xl font-bold text-primary">{component.name}</h1>
+    {:else if component.image_url}
+        <img src={component.image_url} alt ='#'/>
+    {:else if component.numberedList}
+        <NumberList items={component.numberedList} />
+    {:else if component.bulletList}
+        <BullletList items={component.bulletList} />
+    {:else if component.md}
+        <MarkdownReader md={component.md} />
+    {:else if component.html}
+        <HtmlReader html={component.html} />
+    {:else if component.title}
+        <h2 class="text-2xl font-semibold">{component.title}</h2>
+    {/if}
+{/each}
+</div>

@@ -11,6 +11,7 @@
     import { world as worldContext} from "$lib/state/worldState.svelte";
     import { routerItems } from "$lib/state/routerState.svelte.js";
     import { RouterItem } from "$lib/types/routerItem";
+  import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
 
 
     let editContentValue;
@@ -29,21 +30,39 @@
             }));
 
     onMount(async () => {
-        if ($worldContext?.id !== data.worldid) {
+        if ($worldContext?.name !== data.worldid) {
             await getWorld(data.worldid);
+        }
+        if ($worldContext?.styling) {
+            if ($worldContext.styling.length > 20) { // generated
+                const styleTag = document.createElement('style');
+			    styleTag.textContent = $worldContext.styling;
+			    document.head.appendChild(styleTag);
+                document.documentElement.setAttribute('data-theme', 'generated');
+
+            }else {
+            document.documentElement.setAttribute('data-theme', $worldContext.styling);
+            }
+            updateSettingsFromCurrentStyles();
         }
         routerItems.set([new RouterItem(data.worldid, `/${data.worldid}`)]);
     })
 </script>
 <div>
-    <Navbar navItems={getNavItems($worldContext?.collections)} />
-    <div class="ml-3">
-        <Router/>
-        {#if $editContent == false}
-        <Content content={$worldContext?.content ?? []}/>
-        {:else}
-        <EditableContent content={$worldContext?.content ?? []}/>
-        {/if}
+<Navbar navItems={getNavItems($worldContext?.collections)} />
+<Router/>
+    <div class="flex flex-row">
+        <div class="flex-1 ml-3">
+            <h1 class="text-4xl font-bold text-primary mb-4">{$worldContext?.name}</h1>
+            {#if $editContent == false}
+            <Content content={$worldContext?.content ?? []}/>
+            {:else}
+            <EditableContent content={$worldContext?.content ?? []}/>
+            {/if}
+        </div>
+        <div class="flex-none">
+            <img class="relative m-4" src={$worldContext?.img_url} alt=""/>
+        </div>
     </div>
 </div>
     

@@ -31,10 +31,8 @@ export async function login(username: string, password: string) {
       console.error('Failed to log in');
       throw new Error('Failed to log in');
     }
-    console.log('Login response:', response);
 
     const data = await response.json();
-    console.log('Login data:', data);
 
     if (data.statusCode && data.statusCode !== 200) {
       console.error('Login failed:', data.message);
@@ -43,7 +41,6 @@ export async function login(username: string, password: string) {
 
     if (browser) {
       token.set(data.token);
-      console.log('Token set:', data.token);
       localStorage.setItem('token', data.token);
       goto('/dashboard');
     }
@@ -98,7 +95,6 @@ export async function signup(username: string, email: string, password: string) 
 
 // Logout function
 export function logout() {
-  console.log('Logging out');
   if (browser) {
     token.set('');
     localStorage.removeItem('token');

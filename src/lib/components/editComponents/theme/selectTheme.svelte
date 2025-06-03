@@ -33,8 +33,8 @@
 
 	function setTheme(theme: string) {
 		document.documentElement.setAttribute('data-theme', theme);
+        document.getElementById('theme-style')?.remove();
         updateSettingsFromCurrentStyles();
-        document.documentElement.setAttribute('data-theme', 'generated');
 	}
     let selectedTheme = '';
 </script>

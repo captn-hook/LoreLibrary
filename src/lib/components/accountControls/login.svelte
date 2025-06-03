@@ -18,7 +18,6 @@
     }
 
     function handleSignUp() {
-        console.log('Sign up clicked');
         onClose();
         openSignUp();
     }
