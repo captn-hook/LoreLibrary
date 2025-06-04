@@ -90,3 +90,18 @@ get_entry "$entry4_name" "$collection3_name" "$world_name"
 
 # try to post an entry to the world
 put_entry_world "$entry1_name dos" "$entry1_content" "$entry1_tags" "$world_name"
+put_entry_world "$entry1_name tres" "$entry1_content" "$entry1_tags" "$world_name"
+
+# post a collection to a collection
+put_subcollection "$collection1_name dos" "$collection1_content" "$collection1_tags" "$collection2_name" "$world_name"
+
+# post entries to the above collection
+put_entry "$entry2_name dos" "$entry2_content" "$entry2_tags" "$collection1_name dos" "$world_name"
+put_entry "$entry2_name tres" "$entry2_content" "$entry2_tags" "$collection1_name dos" "$world_name"
+
+# put a sub subcollection
+put_subcollection "$collection1_name tres" "$collection1_content" "$collection1_tags" "$collection1_name dos" "$world_name"
+
+# post entries to the above collection
+put_entry "$entry3_name dos" "$entry3_content" "$entry3_tags" "$collection1_name tres" "$world_name"
+put_entry "$entry3_name tres" "$entry3_content" "$entry3_tags" "$collection1_name tres" "$world_name"

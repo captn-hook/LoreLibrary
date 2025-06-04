@@ -211,7 +211,7 @@ put_world() {
         -d "{\"name\":\"$world_name\", \"content\":$world_content, \"description\":\"$world_description\", \"image\":\"$world_image\", \"style\":\"$wolrd_style\", \"id\":\"$world_id\", \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
         "$url/worlds")
 
-    if [[ "$succeed" == false ]]; then
+    if [[ "$succeed" == true ]]; then
         # Check if PUT request was successful
         if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
             echo -n '.'
@@ -413,6 +413,9 @@ post_collection() {
     local collection_content=$2
     local world=$(echo "$3" | jq -sRr @uri)
     local succeed=$4
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
 
     # Perform POST request
     local response=$(curl -s -X 'POST' \
@@ -422,7 +425,7 @@ post_collection() {
         -d "{\"name\":\"$collection_name\", \"content\":$collection_content}" \
         "$url/$world")
 
-    if [[ -z "$succeed" ]]; then
+    if [[ "$succeed" == true ]]; then
         # Check if POST request was successful
         if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
             echo -n '.'
@@ -461,6 +464,138 @@ delete_collection() {
     fi
 }
 
+put_subcollection() {
+    local collection_name=$1
+    local collection_content=$2
+    local collection_id=''
+    local collection_tags=$3
+    local collection_parentId=$4
+    local collection_ownerId=''
+    local parent_collection=$(echo "$4" | jq -sRr @uri)
+    local world=$(echo "$5" | jq -sRr @uri)
+    local succeed=$6
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
+    # Perform PUT request
+    local response=$(curl -s -X 'PUT' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        -d "{\"name\":\"$collection_name\", \"content\":$collection_content, \"tags\":$collection_tags, \"parentId\":\"$collection_parentId\", \"ownerId\":\"$collection_ownerId\", \"collections\":$collection_collections, \"entries\":$collection_entries}" \
+        "$url/$world/$parent_collection")
+
+    if [[ "$succeed" == true ]]; then
+        # Check if PUT request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPUT /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        fi
+    else
+        # Check if PUT request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -e "\nPUT /worldId/collectionId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+get_subcollection() {
+    local collection=$(echo "$1" | jq -sRr @uri)
+    local parent_collection=$(echo "$2" | jq -sRr @uri)
+    local world=$(echo "$3" | jq -sRr @uri)
+    local succeed=$4
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
+
+    # Perform GET request
+    local response=$(curl -s -X 'GET' \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/json' \
+        "$url/$world/$parent_collection/$collection")
+    
+    if [[ "$succeed" == true ]]; then
+        # Check if GET request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nGET /worldId/collectionId request failed: $(echo "$response")"
+            exit 1
+        fi
+    else
+        # Check if GET request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$1" ]]; then
+            echo -e "\nGET /worldId/collectionId request succeeded, but it should have failed: $(echo "$response")"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+post_subcollection() {
+    local collection_name=$1
+    local collection_content=$2
+    local parent_collection=$(echo "$3" | jq -sRr @uri)
+    local world=$(echo "$4" | jq -sRr @uri)
+    local succeed=$5
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
+
+    # Perform POST request
+    local response=$(curl -s -X 'POST' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        -d "{\"name\":\"$collection_name\", \"content\":$collection_content}" \
+        "$url/$world/$parent_collection")
+
+    if [[ "$succeed" == true ]]; then
+        # Check if POST request was successful
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -n '.'
+        else
+            echo -e "\nPOST /worldId/collectionId request failed: $(echo "$response")"
+            exit 1
+        fi
+    else
+        # Check if POST request was a failure
+        if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
+            echo -e "\nPOST /worldId/collectionId request succeeded, but it should have failed: $(echo "$response")"
+            exit 1
+        else
+            echo -n '.'
+        fi
+    fi
+}
+
+delete_subcollection() {
+    local collection=$(echo "$1" | jq -sRr @uri)
+    local parent_collection=$(echo "$2" | jq -sRr @uri)
+    local world=$(echo "$3" | jq -sRr @uri)
+
+    # Perform DELETE request
+    local response=$(curl -s -X 'DELETE' \
+        -H 'accept: application/json' \
+        -H "Authorization: $token" \
+        -H 'Content-Type: application/json' \
+        "$url/$world/$parent_collection/$collection")
+
+    # Check if DELETE request was successful
+    if [[ $(echo "$response" | jq -r '.message') == "Collection deleted successfully" ]]; then
+        echo -n '.'
+    else
+        echo -e "\nDELETE /worldId/collectionId request failed: $(echo "$response")"
+        exit 1
+    fi
+}
+        
 put_entry() {
     local entry_name=$1
     local entry_content=$2
@@ -483,6 +618,7 @@ put_entry() {
         -d "{\"name\":\"$entry_name\", \"content\":$entry_content, \"tags\":$entry_tags, \"parentId\":\"$entry_parentId\", \"ownerId\":\"$entry_ownerId\"}" \
         "$url/$world/$collection")
 
+    
     if [[ "$succeed" == true ]]; then
         # Check if PUT request was successful
         if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
@@ -547,6 +683,9 @@ post_entry_word() {
     local entry_content=$2
     local world=$(echo "$3" | jq -sRr @uri)
     local succeed=$4
+    if [[ -z "$succeed" ]]; then
+        succeed=true
+    fi
 
     # Perform POST request
     local response=$(curl -s -X 'POST' \

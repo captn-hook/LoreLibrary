@@ -2,7 +2,7 @@ import { badRequest, notImplemented } from './utilities.mjs';
 
 import { User, Entry, Collection, World } from './classes.mjs';
 
-import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_map, crud } from './dynamo.mjs';
+import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_map, crud, dynamo_find_collection } from './dynamo.mjs';
 
 import { create_user, login_user } from './cognito.mjs';
 
@@ -148,6 +148,8 @@ export const handler = async (e) => {
             }
         }
 
+        console.log('matching to path length: ' + pathsplit.length + ' with operation: ' + operation);
+
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathParameters.WorldId;
@@ -165,7 +167,7 @@ export const handler = async (e) => {
                     // Creating a collection
                     e.body.worldId = worldId;
                     e.body.ownerId = username? username : null;
-                    e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
+                    e.body.parentId = worldId; // worlds are their own parent
 
                     var res = await crud(operation, Collection, e.body, username);
                     if (res) {
@@ -175,7 +177,7 @@ export const handler = async (e) => {
                     // Creating an entry
                     e.body.worldId = worldId;
                     e.body.ownerId = username? username : null;
-                    e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
+                    e.body.parentId = worldId; // worlds are their own parent
 
                     var res = await crud(operation, Entry, e.body, username);
                     if (res) {
@@ -217,22 +219,37 @@ export const handler = async (e) => {
                 e.body = {};
             }
             e.body.worldId = worldId;
-
-            // Determine if it's a collection or an entry based on the fields present in the body
-            if (e.body.collections && Array.isArray(e.body.collections)) {
-                // Crud collection
-                const collectionId = Id;
-
-                if (operation === 'PUT') {
-                    // Creating an entry
-                    if (!username) { return badRequest('Invalid authentication'); }
-                    e.body.parentId = collectionId;
+            
+            if (operation === 'PUT') {
+                // Creating an entry or collection
+                if (!username) { return badRequest('Invalid authentication'); }
+                if (e.body.collections && Array.isArray(e.body.collections)) {
+                    // Creating a collection
+                    e.body.worldId = worldId;
                     e.body.ownerId = username;
-                    var res = await crud(operation, Entry, e.body, username);
+                    e.body.parentId = Id;
+                    console.log('Creating collection /' + worldId + '/' + Id + '/' + e.body.name );
+
+                    var res = await crud(operation, Collection, e.body, username);
                     if (res) {
                         return res;
                     }
                 } else {
+                    // Creating an entry
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username;
+                    e.body.parentId = Id; // Use Id as parentId
+                    console.log('Creating entry /' + worldId + '/' + Id + '/' + e.body.name );
+
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+                }
+            } else {
+                if (await dynamo_find_collection(worldId, Id)) {
+                    console.log('Found collection with id: ' + Id);
+                    const collectionId = Id;
                     e.body.name = collectionId;
                     // parentid will be in query, or use worldId as parentId
                     e.body.parentId = parentId; 
@@ -240,25 +257,21 @@ export const handler = async (e) => {
                     if (res) {
                         return res;
                     }
-                }
-            } else {
-                // cannot PUT an entry, 
-                if (operation === 'PUT') {
-                    return badRequest(Id + ' is an entry');
-                }
-                const entryId = Id;
-
-                // Crud entry
-                e.body.name = entryId;
-                e.body.parentId = parentId; 
-                var res = await crud(operation, Entry, e.body, username);
-                if (res) {
-                    return res;
+                } else {
+                    console.log('No collection found with id: ' + Id + ', treating as entry');
+                    const entryId = Id;
+                    e.body.name = entryId;
+                    e.body.parentId = parentId; // Use parentId from query or body, or default to worldId
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
                 }
             }
         }
         // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
         else if (pathsplit.length === 4) {
+            console.log('Matched pathsplit length 4: ' + pathsplit.join('/'));
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
             const entryId = pathParameters.EntryId;
@@ -271,10 +284,14 @@ export const handler = async (e) => {
             e.body.name = entryId;
             e.body.parentId = collectionId;
             var res = await crud(operation, Entry, e.body, username);
+            console.log('crud operation result:', res);
             if (res) {
                 return res;
             }
         }
+        console.error('No route found for: ' + operation + ' ' + path + ' with body: ' + JSON.stringify(e.body));
+        console.error('Path parameters:', pathParameters, 'pathsplit length:', pathsplit.length);
+        console.error('pathsplit is 4???', pathsplit.length === 4);
         return {
             statusCode: 404,
             body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
