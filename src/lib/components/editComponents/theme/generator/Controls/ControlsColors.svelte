@@ -58,6 +58,9 @@
 			genRandomSeed(colorName);
 		}
 	}
+
+	console.log(settingsColors['--color-surface-contrast-dark']);
+	console.log(settingsColors['--color-surface-contrast-light']);
 </script>
 
 <div class="space-y-4">

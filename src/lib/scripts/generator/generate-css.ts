@@ -54,10 +54,19 @@ export function updateSettingsFromCurrentStyles() {
         const typedKey = key as keyof typeof settingsColors;
         let value = rootStyles.getPropertyValue(key).trim();
         if (value) {
-            if (value.startsWith('oklch(')) {
+            if (value.startsWith('oklch(')) { // if value not in hex
                 value = oklchToHex(value);
             }
-            settingsColors[typedKey] = value;
+            if (typedKey.includes("-contrast")) { // if key is a contrast variable
+                // find the matching variable in the settings colors
+                // the contrast varaible do not hold their own hex value, they reference another variable
+                let color = Object.entries(settingsColors).find(([key, hex]) => hex === value)?.[0];
+                if (color){
+                    settingsColors[typedKey] = `var(${color})`;
+                }
+            }else {
+                settingsColors[typedKey] = value;
+            }
         }
     });
 
@@ -65,11 +74,16 @@ export function updateSettingsFromCurrentStyles() {
     Object.keys(settingsBackgrounds).forEach((key) => {
         const typedKey = key as keyof typeof settingsBackgrounds;
         let value = rootStyles.getPropertyValue(key).trim();
+        console.log(value);
         if (value) {
             if (value.startsWith('oklch(')) {
                 value = oklchToHex(value);
             }
-            settingsBackgrounds[typedKey] = value;
+            // Find the matching color key in settingsColors
+        }
+        let color = Object.entries(settingsColors).find(([key, hex]) => hex === value)?.[0];
+        if (color){
+            settingsBackgrounds[typedKey] = `var(${color})`;
         }
     });
 

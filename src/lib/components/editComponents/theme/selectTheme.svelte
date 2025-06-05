@@ -26,11 +26,6 @@
         'wintry'
     ];
 
-	function getRandomTheme() {
-		const randomIndex = Math.floor(Math.random() * themes.length);
-		return themes[randomIndex];
-	}
-
 	function setTheme(theme: string) {
 		document.documentElement.setAttribute('data-theme', theme);
         document.getElementById('theme-style')?.remove();

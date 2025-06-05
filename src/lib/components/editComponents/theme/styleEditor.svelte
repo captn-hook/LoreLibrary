@@ -60,7 +60,7 @@ import { updateTheme } from '$lib/scripts/world';
 		group = value;
 		if (value === 'premade') {
 			document.documentElement.setAttribute('data-theme', currentTheme);
-		} else if (value === 'custom') {
+		} else if (value === 'generated') {
 			updateSettingsFromCurrentStyles();
 			document.documentElement.setAttribute('data-theme', 'generated');
 		}
