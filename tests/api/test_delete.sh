@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Define variables
-url=""
-source "$(dirname "$0")/env.sh"
-load_env_url
-echo "Using URL: $url"
-
 source "$(dirname "$0")/functions.sh"
 
 token=""
@@ -15,29 +9,29 @@ emalil2="hooktristanshs@gmail.com"
 email3="tristanskyhook@gmail.com"
 
 # World Information
-world_name="Electronopolis"
-world_content=$(jq -n --arg text "Electronopolis" --arg image_url "https://www.hallmarknameplate.com/wp-content/uploads/2016/07/circuit-board-1.jpeg" --arg name "Electronopolis" \
+world_name="Electronopolis2"
+world_content=$(jq -n --arg text "Electronopolis2" --arg image_url "https://www.hallmarknameplate.com/wp-content/uploads/2016/07/circuit-board-1.jpeg" --arg name "Electronopolis2" \
     '[{"text": $text}, {"image_url": $image_url}, {"name": $name}]')
 world_tags='["electrons", "computer", "city", "circuits", "technology"]'
 
 # Collections
 collection1_name="The Circuit Districts"
-collection1_content=$(jq -n --arg text "The Circuit Districts are the bustling neighborhoods of Electronopolis. Each district is responsible for a specific function, such as processing, memory, or power distribution." \
+collection1_content=$(jq -n --arg text "The Circuit Districts are the bustling neighborhoods of Electronopolis2. Each district is responsible for a specific function, such as processing, memory, or power distribution." \
     '[{"text": $text}]')
 collection1_tags='["circuits", "districts", "city"]'
 
 collection2_name="The Processor Palace"
-collection2_content=$(jq -n --arg text "The Processor Palace is the heart of Electronopolis, where the most important decisions are made. Electrons here work tirelessly to execute instructions and keep the city running." \
+collection2_content=$(jq -n --arg text "The Processor Palace is the heart of Electronopolis2, where the most important decisions are made. Electrons here work tirelessly to execute instructions and keep the city running." \
     '[{"text": $text}]')
 collection2_tags='["processor", "palace", "city"]'
 
 collection3_name="The Memory Vaults"
-collection3_content=$(jq -n --arg text "The Memory Vaults are vast storage areas where electrons carefully organize and retrieve data. They are the libraries of Electronopolis, preserving its history and knowledge." \
+collection3_content=$(jq -n --arg text "The Memory Vaults are vast storage areas where electrons carefully organize and retrieve data. They are the libraries of Electronopolis2, preserving its history and knowledge." \
     '[{"text": $text}]')
 collection3_tags='["memory", "vaults", "data"]'
 
 collection4_name="The Power Grid"
-collection4_content=$(jq -n --arg text "The Power Grid is the lifeline of Electronopolis, delivering energy to every corner of the city. Electrons here are responsible for maintaining the flow of electricity." \
+collection4_content=$(jq -n --arg text "The Power Grid is the lifeline of Electronopolis2, delivering energy to every corner of the city. Electrons here are responsible for maintaining the flow of electricity." \
     '[{"text": $text}]')
 collection4_tags='["power", "grid", "energy"]'
 
@@ -48,17 +42,17 @@ collection5_tags='["debugging", "errors", "danger"]'
 
 # Entries with images
 entry1_name="Electron Worker"
-entry1_content=$(jq -n --arg text "Electron Workers are the backbone of Electronopolis. They tirelessly move through the circuits, carrying out their tasks to keep the city alive." --arg image_url "https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/esupport/esupport-pages/desktop-connected-to-monitor.png" \
+entry1_content=$(jq -n --arg text "Electron Workers are the backbone of Electronopolis2. They tirelessly move through the circuits, carrying out their tasks to keep the city alive." --arg image_url "https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/esupport/esupport-pages/desktop-connected-to-monitor.png" \
     '[{"text": $text}, {"image_url": $image_url}]')
 entry1_tags='["electron", "worker", "city"]'
 
 entry2_name="The Clock Tower"
-entry2_content=$(jq -n --arg text "The Clock Tower is the central timekeeper of Electronopolis. It ensures that all electrons move in perfect synchronization, maintaining order in the city." --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/ENIAC-changing_a_tube_%28cropped%29.jpg/960px-ENIAC-changing_a_tube_%28cropped%29.jpg" \
+entry2_content=$(jq -n --arg text "The Clock Tower is the central timekeeper of Electronopolis2. It ensures that all electrons move in perfect synchronization, maintaining order in the city." --arg image_url "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/ENIAC-changing_a_tube_%28cropped%29.jpg/960px-ENIAC-changing_a_tube_%28cropped%29.jpg" \
     '[{"text": $text}, {"image_url": $image_url}]')
 entry2_tags='["clock", "synchronization", "city"]'
 
 entry3_name="The Data Couriers"
-entry3_content=$(jq -n --arg text "The Data Couriers are electrons tasked with delivering information across the city. They are the messengers of Electronopolis, ensuring that every instruction reaches its destination." --arg image_url "https://i5.walmartimages.com/seo/Texas-Instruments-TI-30XA-Student-Scientific-Calculator-Type-10-digit-lcd-Black-high-school-and-middle-school-classes_cac85341-0766-4f29-90cb-236ddb2c7e1e.8b700caf75e6f187372826c793425445.jpeg?odnHeight=640&odnWidth=640&odnBg=FFFFFF" \
+entry3_content=$(jq -n --arg text "The Data Couriers are electrons tasked with delivering information across the city. They are the messengers of Electronopolis2, ensuring that every instruction reaches its destination." --arg image_url "https://i5.walmartimages.com/seo/Texas-Instruments-TI-30XA-Student-Scientific-Calculator-Type-10-digit-lcd-Black-high-school-and-middle-school-classes_cac85341-0766-4f29-90cb-236ddb2c7e1e.8b700caf75e6f187372826c793425445.jpeg?odnHeight=640&odnWidth=640&odnBg=FFFFFF" \
     '[{"text": $text}, {"image_url": $image_url}]')
 entry3_tags='["data", "couriers", "city"]'
 
@@ -68,7 +62,7 @@ entry4_content=$(jq -n --arg text "The Overclock Festival is a rare event where 
 entry4_tags='["festival", "overclock", "celebration"]'
 
 entry5_name="The Blue Screen Catastrophe"
-entry5_content=$(jq -n --arg text "The Blue Screen Catastrophe is a legendary event in Electronopolis, where the entire city came to a halt due to an unknown error. It is a cautionary tale told to young electrons." \
+entry5_content=$(jq -n --arg text "The Blue Screen Catastrophe is a legendary event in Electronopolis2, where the entire city came to a halt due to an unknown error. It is a cautionary tale told to young electrons." \
     '[{"text": $text}]')
 entry5_tags='["error", "catastrophe", "city"]'
 
@@ -88,14 +82,11 @@ login zombiemaster iHateBrains123!
 # Get user information
 get_user zombiemaster
 
-echo " >>>>>>>>>>>>>>>>>>> got token: $token"
-
 # Create world
 put_world "$world_name" "$world_content" "$world_tags"
 
 get_world "$world_name"
 
-echo " >>>>>>>>>>>>>>>>>>> world successfully created"
 
 # Create collections
 put_collection "$collection1_name" "$collection1_content" "$collection1_tags" "$world_name"
@@ -109,8 +100,6 @@ get_collection "$collection2_name" "$world_name"
 get_collection "$collection3_name" "$world_name"
 get_collection "$collection4_name" "$world_name"
 get_collection "$collection5_name" "$world_name"
-
-echo " >>>>>>>>>>>>>>>>>>> collections successfully created"
 
 # Create entries
 put_entry "$entry1_name" "$entry1_content" "$entry1_tags" "$collection1_name" "$world_name"
@@ -127,4 +116,17 @@ get_entry "$entry4_name" "$collection4_name" "$world_name"
 get_entry "$entry5_name" "$collection5_name" "$world_name"
 get_entry "$entry6_name" "$collection5_name" "$world_name"
 
-echo " >>>>>>>>>>>>>>>>>>> entries successfully created"
+# try deleting entrie
+delete_entry "$entry1_name" "$collection1_name" "$world_name"
+# try getting deleted entry, should fail
+get_entry "$entry1_name" "$collection1_name" "$world_name" "false"
+
+# try deleting collections
+delete_collection "$collection1_name" "$world_name"
+# try getting deleted collection, should fail
+get_collection "$collection1_name" "$world_name" "false"
+
+# try deleting world
+delete_world "$world_name"
+# try getting deleted world, should fail
+get_world "$world_name" "false"

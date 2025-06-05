@@ -1,3 +1,5 @@
+#!/bin/bash
+
 load_env_url() {
     local env_file="$(dirname "$0")/../../.env"
     if [[ -f "$env_file" ]]; then
@@ -7,7 +9,7 @@ load_env_url() {
             echo "Error: 'url' not found in $env_file" >&2
             exit 1
         fi
-        echo "$url" # Return the URL
+        echo "$url"
     else
         echo "Error: .env file not found at $env_file" >&2
         exit 1
