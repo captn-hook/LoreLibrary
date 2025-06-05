@@ -4,8 +4,6 @@
 	// State
 	import { settingsBackgrounds } from '$lib/state/generator.svelte';
 
-	console.log('light mode background:', settingsBackgrounds['--body-background-color']);
-	console.log('dark mode background:', settingsBackgrounds['--body-background-color-dark']);
 </script>
 
 <div class="space-y-4">
@@ -15,7 +13,6 @@
 		<span class="label-text">Light Mode Background</span>
 		<div class="w-full h-8 border border-surface-200-800 rounded-base" style:background="var(--body-background-color)"></div>
 		<select class="select" name="--body-background-color" bind:value={settingsBackgrounds['--body-background-color']}>
-			{console.log(settingsBackgrounds['--body-background-color'])}
 			<option value="#ffffff">White</option>
 			{#each constants.colorNames as colorName}
 				<optgroup label={colorName}>
@@ -33,10 +30,8 @@
 		<select class="select" name="--body-background-color-dark" bind:value={settingsBackgrounds['--body-background-color-dark' as keyof typeof settingsBackgrounds]}>
 			<option value="#1e1e2e">Black</option>
 			{#each constants.colorNames as colorName}
-			{console.log(settingsBackgrounds['--body-background-color-dark'])}
 				<optgroup label={colorName}>
 					{#each constants.colorShades as colorShade}
-					{console.log(settingsBackgrounds['--body-background-color-dark'] == `var(--color-${colorName}-${colorShade})`)}
 						<option value={`var(--color-${colorName}-${colorShade})`}>{`${colorName}-${colorShade}`}</option>
 					{/each}
 				</optgroup>

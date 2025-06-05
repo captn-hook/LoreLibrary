@@ -12,9 +12,9 @@
     {#each content ?? [] as component} 
     <div style="margin-bottom: calc(3*var(--spacing));">
         {#if component.text}
-            <p class="text-base">{component.text}</p>
+            <p class="p">{component.text}</p>
         {:else if component.name}
-            <h1 class="text-4xl font-bold text-primary">{component.name}</h1>
+            <h1 class="h1">{component.name}</h1>
         {:else if component.image_url}
             <img src={component.image_url} alt ='#'/>
         {:else if component.numberedList}
@@ -30,5 +30,4 @@
         {/if}
     </div>
 {/each}
-<button type="button" class="btn btn-preset-filled-primary-500 border border-surface-200-800">I'm a button</button>
 </div>

@@ -34,11 +34,11 @@
             await getWorld(data.worldid);
         }
         if ($worldContext?.styling) {
-            if ($worldContext.styling.length > 20) { // generated
+            if ($worldContext.styling.length > 20) { // custom
                 const styleTag = document.createElement('style');
 			    styleTag.textContent = $worldContext.styling;
 			    document.head.appendChild(styleTag);
-                document.documentElement.setAttribute('data-theme', 'generated');
+                document.documentElement.setAttribute('data-theme', 'custom');
 
             }else {
             document.documentElement.setAttribute('data-theme', $worldContext.styling);

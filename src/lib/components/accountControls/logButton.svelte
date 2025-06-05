@@ -1,6 +1,6 @@
 <script lang='ts'>
   import {token} from "$lib/state/userState.svelte";
-  import {logout} from "$lib/scripts/user"
+  import {logout} from "$lib/scripts/user";
 
   let localToken: string | null = null;
   token.subscribe((value) => {
