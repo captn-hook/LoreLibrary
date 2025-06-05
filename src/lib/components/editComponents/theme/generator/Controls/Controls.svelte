@@ -60,12 +60,12 @@
 			</Accordion.Item>
 			<hr class="hr" />
 			<!-- Controls: Edges -->
-			<Accordion.Item value="edges" {...accordionItemProps}>
+			<!-- <Accordion.Item value="edges" {...accordionItemProps}>
 				{#snippet lead()}<span class="btn-icon preset-tonal"><IconEdges size={20} /></span>{/snippet}
 				{#snippet control()}<span class="h4">Edges</span>{/snippet}
 				{#snippet panel()}<ControlsEdges />{/snippet}
 			</Accordion.Item>
-			<hr class="hr" />
+			<hr class="hr" /> -->
 			<!-- Controls: Typography -->
 			<Accordion.Item value="typography" {...accordionItemProps}>
 				{#snippet lead()}<span class="btn-icon preset-tonal"><IconTypography size={20} /></span>{/snippet}
