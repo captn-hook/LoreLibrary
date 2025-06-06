@@ -6,18 +6,17 @@ import { generatePreviewCss, updateSettingsFromCurrentStyles } from '$lib/script
 import SelectTheme from '$lib/components/editComponents/theme/selectTheme.svelte';
 import { showStyleControls } from "$lib/state/editState.svelte";
 import { updateTheme } from '$lib/scripts/world';
+import { world, collections, entry} from '$lib/state/worldState.svelte.js';
 
 	let group = 'premade';
 	let isResizing = false;
 	let initialTheme = document.documentElement.getAttribute('data-theme') || 'generated';
-	console.log('Initial theme:', initialTheme);
 
 	const MIN_WIDTH = 200;
 	const MAX_WIDTH = 800;
 
 
 	onMount(() => {
-		updateSettingsFromCurrentStyles();
 		window.addEventListener('mouseup', () => {
 			isResizing = false;
 		});
@@ -39,7 +38,8 @@ import { updateTheme } from '$lib/scripts/world';
 		if (currentTheme == 'generated'){
 			if (confirm('Are you sure you want to save the current theme? You are using a generated theme.')) {
 				updateSettingsFromCurrentStyles();
-				let previewcss = generatePreviewCss();
+				let previewcss = generatePreviewCss(true);
+				previewcss.replace("generated", "custom");
 				updateTheme(previewcss);
 			}
 		}else {//premade theme
@@ -60,7 +60,7 @@ import { updateTheme } from '$lib/scripts/world';
 		group = value;
 		if (value === 'premade') {
 			document.documentElement.setAttribute('data-theme', currentTheme);
-		} else if (value === 'custom') {
+		} else if (value === 'generated') {
 			updateSettingsFromCurrentStyles();
 			document.documentElement.setAttribute('data-theme', 'generated');
 		}
@@ -111,14 +111,14 @@ import { updateTheme } from '$lib/scripts/world';
 				<Tabs.Control value="close">X</Tabs.Control>
 			</button>
 			<Tabs.Control value="premade">Pre-made Theme</Tabs.Control>
-			<Tabs.Control value="custom">Custom Theme</Tabs.Control>
+			<Tabs.Control value="generated">Custom Theme</Tabs.Control>
 			{/snippet}
 			{#snippet content()}
 			<Tabs.Panel value="premade">
 				<SelectTheme/>
 			</Tabs.Panel>
 
-			<Tabs.Panel value="custom">
+			<Tabs.Panel value="generated">
 				<div class="flex flex-col">
 					<Controls/>
 				</div>

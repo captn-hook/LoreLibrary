@@ -3,6 +3,7 @@
 	import * as constants from '$lib/constants/generator';
 	// State
 	import { settingsBackgrounds } from '$lib/state/generator.svelte';
+
 </script>
 
 <div class="space-y-4">
@@ -12,7 +13,6 @@
 		<span class="label-text">Light Mode Background</span>
 		<div class="w-full h-8 border border-surface-200-800 rounded-base" style:background="var(--body-background-color)"></div>
 		<select class="select" name="--body-background-color" bind:value={settingsBackgrounds['--body-background-color']}>
-			{console.log(settingsBackgrounds['--body-background-color'])}
 			<option value="#ffffff">White</option>
 			{#each constants.colorNames as colorName}
 				<optgroup label={colorName}>

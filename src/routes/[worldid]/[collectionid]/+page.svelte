@@ -9,7 +9,7 @@
     import {editContent} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
-    import {get} from "svelte/store";
+    import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
 
 
     let collection: Collection;
@@ -19,6 +19,19 @@
         }
         collections.subscribe(value => {
         collection = value?.find(collection => collection.name === data.collectionid) ?? {} as Collection;
+        console.log(collection);
+        if (collection?.styling && collection.styling != '') {
+            if (collection.styling.length > 20) { // custom
+                const styleTag = document.createElement('style');
+			    styleTag.textContent = collection.styling;
+			    document.head.appendChild(styleTag);
+                document.documentElement.setAttribute('data-theme', 'custom');
+
+            }else {
+            document.documentElement.setAttribute('data-theme', collection.styling);
+            }
+            updateSettingsFromCurrentStyles();
+        }
     });
     });
     function getNavItems(collection: Collection): {name: string, href: string}[] {

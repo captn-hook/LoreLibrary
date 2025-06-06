@@ -35,7 +35,7 @@
         {#if typeof window !== 'undefined' && $routerItems.length > 0}
             {#each $routerItems as item, index (item.id)}
                 <a href={$editContent ? undefined : item.href}
-                class="p-1 text-primary-500 hover:bg-primary-50 rounded align-middle"
+                class="p-1 text-primary-500 hover:bg-primary-50 rounded align-middle text-base"
                 onclick={() => onNavigate(index)}>
                     {item.id}
                 </a>

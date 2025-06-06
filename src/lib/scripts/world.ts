@@ -241,7 +241,6 @@ export async function updateTheme(theme: string) {
         const entryId = currentPath[3];
         postUrl = `${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`;
     }
-    console.log(theme);
     fetch(`${postUrl}`, {
         method: 'POST',
         headers: {
