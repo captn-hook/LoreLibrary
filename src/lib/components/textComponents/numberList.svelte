@@ -5,7 +5,7 @@
 
 <ol class="list-decimal pl-6">
     {#each items as item}
-        <li class="my-2">
+        <li class="my-2 text-base">
             {item.text}
 
             {#if item.subItems?.length}
