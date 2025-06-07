@@ -9,20 +9,29 @@
     import {editContent} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
-    import {get} from "svelte/store";
+    import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
 
 
     let collection: Collection;
     onMount(async () => {
-        console.log("hi");
-        console.log(get(collections));
         if (!$collections?.some(collection => collection.name === data.collectionid)) {
-            console.log("getting collection");
             await getCollection(data.worldid, data.collectionid);
         }
         collections.subscribe(value => {
         collection = value?.find(collection => collection.name === data.collectionid) ?? {} as Collection;
-        console.log(`Updated Collection: ${collection.content}`);
+        console.log(collection);
+        if (collection?.styling && collection.styling != '') {
+            if (collection.styling.length > 20) { // custom
+                const styleTag = document.createElement('style');
+			    styleTag.textContent = collection.styling;
+			    document.head.appendChild(styleTag);
+                document.documentElement.setAttribute('data-theme', 'custom');
+
+            }else {
+            document.documentElement.setAttribute('data-theme', collection.styling);
+            }
+            updateSettingsFromCurrentStyles();
+        }
     });
     });
     function getNavItems(collection: Collection): {name: string, href: string}[] {

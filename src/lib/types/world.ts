@@ -11,10 +11,10 @@ export class World {
     content: Content;
     img_url: string;
     ownerId: string;
-    styling: { name: string; styling: string[]};
+    styling: string;
 
 
-    constructor(name: string, collections: string[], entries: string[], tags: string[], description: string, date: string, content: Content, img_url: string, ownerId: string, styling: { name: string; styling: string[]}) {
+    constructor(name: string, collections: string[], entries: string[], tags: string[], description: string, date: string, content: Content, img_url: string, ownerId: string, styling: string) {
         this.name = name;
         this.collections = collections;
         this.entries = entries
@@ -49,9 +49,7 @@ export class World {
             json.content || [],
             json.image || 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg/500px-The_Great_Globe%2C_Guyot_Hall%2C_Princeton_University.jpg',
             json.parentId || 'unknown',
-            json.styling && json.styling.name !== "custom"
-                ? { name: json.styling.name, styling: [] }
-                : { name: 'custom', styling: (json.styling?.styling || []) }
+            json.style
 
         );
     }

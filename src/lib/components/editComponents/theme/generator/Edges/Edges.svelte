@@ -20,6 +20,7 @@
 
 	function setValue(v: string) {
 		value = v;
+		document.documentElement.style.setProperty(`--${name}`, v);
 	}
 </script>
 
