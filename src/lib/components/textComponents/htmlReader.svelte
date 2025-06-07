@@ -4,14 +4,12 @@
     // Sanitize the HTML input
     const tmp = document.createElement('div');
     tmp.innerHTML = DOMPurify.sanitize(html);
-    console.log('tmp', tmp.innerHTML);
 
     // remove any script tags
     tmp.querySelectorAll('script').forEach(script => script.remove());
     
     //styling 
     tmp.querySelectorAll('h1').forEach(h1 => {
-        console.log('h1', h1);
         h1.classList.add('text-5xl', 'font-bold', 'mb-4');
     });
     tmp.querySelectorAll('h2').forEach(h2 => {
