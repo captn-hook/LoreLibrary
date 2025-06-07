@@ -8,6 +8,8 @@ import { create_user, login_user } from './cognito.mjs';
 
 import { s3_crud } from './s3.mjs';
 
+const reserved_names = ['world', 'worlds', 'users', 'user', 'resource', 'resources', 'search', 'signup', 'login', 'logout', 'auth', 'authenticate', 'collections', 'collection', 'entries', 'entry'];
+
 export const handler = async (e) => {
     // The event object contains:
     // version: '2.0',
@@ -21,6 +23,7 @@ export const handler = async (e) => {
         const [operation, path] = e.routeKey.split(' ');
 
         if (e.body) {
+            console.log('Event body:', e.body);
             e.body = JSON.parse(e.body);
         }
 
@@ -61,6 +64,11 @@ export const handler = async (e) => {
         else if (operation === 'PUT' && path === '/worlds') {
             // Create a new world
             if (!username) { return badRequest('Invalid authentication'); }
+
+            // reserved names
+            if (reserved_names.includes(e.body.name)) {
+                return badRequest('Invalid world name: ' + e.body.name + '. Reserved names cannot be used.');
+            }
 
             e.body.parentId = username;
             e.body.ownerId = username;
@@ -153,12 +161,21 @@ export const handler = async (e) => {
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathParameters.WorldId;
+            // reserved names
+            if (reserved_names.includes(worldId)) {
+                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+            }
+
             if (!e.body) {
                 e.body = {};
             }
             e.body.worldId = worldId;
             if (operation === 'PUT') {
                 if (!username) { return badRequest('Invalid authentication'); }
+
+                if (reserved_names.includes(e.body.name)) {
+                    return badRequest('Invalid world name: ' + e.body.name + '. Reserved names cannot be used.');
+                }
 
                 // Try to get the type of the put object
                 // if the body contains a collections field, then it is a collection
@@ -206,6 +223,15 @@ export const handler = async (e) => {
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
             const Id = pathParameters.CollectionId;
+
+            // reserved names
+            if (reserved_names.includes(Id)) {
+                return badRequest('Invalid collection or entry name: ' + Id + '. Reserved names cannot be used.');
+            }
+            if (reserved_names.includes(worldId)) {
+                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+            }
+
             // Parent id will be in the query if present
             let parentId;
             if (e.queryStringParameters && e.queryStringParameters.parentId) {
@@ -228,7 +254,10 @@ export const handler = async (e) => {
                     e.body.worldId = worldId;
                     e.body.ownerId = username;
                     e.body.parentId = Id;
-                    console.log('Creating collection /' + worldId + '/' + Id + '/' + e.body.name );
+                    
+                    if (reserved_names.includes(e.body.name)) {
+                        return badRequest('Invalid collection name: ' + e.body.name + '. Reserved names cannot be used.');
+                    }
 
                     var res = await crud(operation, Collection, e.body, username);
                     if (res) {
@@ -240,6 +269,10 @@ export const handler = async (e) => {
                     e.body.ownerId = username;
                     e.body.parentId = Id; // Use Id as parentId
                     console.log('Creating entry /' + worldId + '/' + Id + '/' + e.body.name );
+
+                    if (reserved_names.includes(e.body.name)) {
+                        return badRequest('Invalid entry name: ' + e.body.name + '. Reserved names cannot be used.');
+                    }
 
                     var res = await crud(operation, Entry, e.body, username);
                     if (res) {
@@ -275,12 +308,22 @@ export const handler = async (e) => {
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
             const entryId = pathParameters.EntryId;
+
+            // reserved names
+            if (reserved_names.includes(entryId)) {
+                return badRequest('Invalid entry name: ' + entryId + '. Reserved names cannot be used.');
+            }
+            if (reserved_names.includes(collectionId)) {
+                return badRequest('Invalid collection name: ' + collectionId + '. Reserved names cannot be used.');
+            }
+            if (reserved_names.includes(worldId)) {
+                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+            }
+
             if (!e.body) {
                 e.body = {};
             }
             e.body.worldId = worldId;
-
-
             e.body.name = entryId;
             e.body.parentId = collectionId;
             var res = await crud(operation, Entry, e.body, username);
