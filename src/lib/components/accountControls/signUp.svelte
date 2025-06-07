@@ -18,7 +18,6 @@
     }
 
     function handleLogin() {
-        console.log("Logging in...");   
         onClose();
         openLogin();
     }

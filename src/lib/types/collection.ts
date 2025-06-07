@@ -8,9 +8,9 @@ export class Collection {
     content: Content;
     image: string;
     tags: string[];
-    styling: { name: string; styling: string[]};
+    styling: string;
 
-    constructor(name: string, parentId: string, collections: string[], entries: string[], content: Content,image: string, tags: string[], styling: { name: string; styling: string[]}) {
+    constructor(name: string, parentId: string, collections: string[], entries: string[], content: Content,image: string, tags: string[], styling: string) {
         this.name = name;
         this.parentId = parentId;
         this.collections = collections;
@@ -30,9 +30,7 @@ export class Collection {
             json.content,
             json.image || '#',
             json.tags,
-            json.styling && json.styling.name !== "custom"
-                ? { name: json.styling.name, styling: [] }
-                : { name: 'custom', styling: (json.styling?.styling || []) }
+            json.style
 
         );
     }

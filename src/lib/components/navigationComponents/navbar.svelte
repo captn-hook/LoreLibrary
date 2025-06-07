@@ -20,7 +20,7 @@
     {#snippet lead()}
 
     {#each navItems as nav}
-    <a href={$editContent ? undefined : nav.href} class="skeleton-app-bar-item { $editContent ? 'disabled' : '' }"
+    <a href={$editContent ? undefined : nav.href} class="skeleton-app-bar-item text-base { $editContent ? 'disabled' : '' }"
     onclick={() => addToRouter(nav)}>
         {nav.name}
     </a>

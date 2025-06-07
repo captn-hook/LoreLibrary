@@ -85,7 +85,6 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             if (updatedWorld) {
                 updatedWorld.content = $editComponentContents;
                 world.set(updatedWorld);
-                console.log("Updated world:", updatedWorld);
                 updateWorld();
             }
             case 3: 
@@ -112,7 +111,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
     }
 </script>
     
-<nav class="flex justify-between items-center mx-3 mb-1 mt-2 w-full">
+<nav class="flex justify-between items-center mx-3 mb-1 mt-2 ">
     <!-- Left: Save/Cancel -->
     <div class="flex gap-2">
         {#if $editContent}

@@ -9,6 +9,7 @@
 
 	function set(newValue: string) {
 		settingsSpacing['--spacing'] = newValue;
+		document.documentElement.style.setProperty('--spacing', newValue); // Apply the change to the DOM
 	}
 
 	function activeClass(size: string) {
