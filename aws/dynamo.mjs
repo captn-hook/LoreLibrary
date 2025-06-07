@@ -27,14 +27,14 @@ function dynamo_to_item(item, model) {
             item.worldId = item.SK
         } else if (model === Collection) {
             if (!item.worldId) {
-                item.worldId = item.PK.split('#')[1];
+                item.worldId = item.PK.split('#')[0];
             }
             if (!item.parentId) {
                 item.parentId = item.worldId;
             }
         } else if (model === Entry) {
             if (!item.worldId) {
-                item.worldId = item.PK.split('#')[1];
+                item.worldId = item.PK.split('#')[0];
             }
         }
         item.name = item.SK;
@@ -45,6 +45,7 @@ function dynamo_to_item(item, model) {
     if (item === null) {
         throw new Error("Invalid item data");
     } 
+    console.log("Converted item:", item);
     return item;
 }
 
@@ -224,7 +225,11 @@ async function update(data, instance, table = dataTable) {
 async function get_sub_items(worldId, collectionName) {
     // Get all sub items of a collection
     let r = await dynamo_get(new Collection(collectionName, collectionName, worldId), dataTable, false);
-    const thisCollection = Collection.verify(JSON.parse(r.body));
+    let thisCollection = JSON.parse(r.body);
+    if (!thisCollection || !thisCollection['entries'] && !thisCollection['collections']) {
+        console.error("Collection not found or empty:", collectionName);
+        return {};
+    }
     let res = {};
     if (thisCollection['entries']) {
         res['entries'] = thisCollection['entries'];
@@ -241,8 +246,30 @@ async function get_sub_items(worldId, collectionName) {
 async function dynamo_get_map(worldId) {
     // Returns the full structure of documents in a world
     let g = new World(worldId);
-    let world = await JSON.parse((await dynamo_get(g, dataTable, false)).body);
-    world = World.verify(world);
+    const params = {
+        TableName: dataTable,
+        Key: {
+            PK: g.pk(),
+            SK: g.sk()
+        }
+    };
+
+    let world;
+    try {
+        const res = await ddbDocClient.send(new GetCommand(params));
+        if (!res.Item) {
+            throw new Error("World not found");
+        }
+        world = dynamo_to_item(res.Item, World);
+    } catch (err) {
+        console.error("Error getting world:", err);
+        throw new Error("Error getting world");
+    }
+
+    if (!world) {
+        throw new Error("World not found");
+    }
+
     let map = {};
     map['entries'] = world['entries'] || [];
     map['collections'] = world['collections'] || [];
@@ -312,9 +339,12 @@ async function dynamo_get(data, table = dataTable, getStyle = true) {
         if (getStyle && !(data instanceof World) && !(data instanceof User) && data.style === '') {
             data.style = await get_style(data.parentId, data.worldId);
         }
+        // convert the item to the correct model
+        data = dynamo_to_item(res.Item, data.constructor);
+        console.log("Item retrieved successfully:", data);
         return {
             statusCode: 200,
-            body: JSON.stringify(data)
+            body: JSON.stringify(data.getBody())
         };
     }
     catch (err) {
@@ -391,10 +421,10 @@ async function dynamo_create(data, table = dataTable) {
 
     if (existingItem.Item) {
         console.error("Item already exists:", existingItem.Item);
-        // return error code 409 and the item
+        // return error code 409
         return {
             statusCode: 409,
-            body: JSON.stringify(dynamo_to_item(existingItem.Item, data.constructor))
+            body: JSON.stringify({ message: "Item already exists" })
         }
     }
 
@@ -465,29 +495,57 @@ async function dynamo_create(data, table = dataTable) {
             }
         });
     } else if (data instanceof Entry) {
-        // if entry, add it to the collection
-        const collectionParams = {
-            TableName: dataTable,
-            Key: {
-                PK: data.worldId + '#COLLECTION',
-                SK: data.parentId
-            }
-        };
-        const collectionData = await ddbDocClient.send(new GetCommand(collectionParams));
-        if (!collectionData.Item) {
-            throw new Error("Collection not found");
-        }
-        const collection = collectionData.Item;
-        if (!collection['entries']) {
-            collection['entries'] = [];
-        }
-        collection['entries'].push(data.name);
-        transactionItems.push({
-            Put: {
+        try {
+            // if entry, add it to the collection
+            const collectionParams = {
                 TableName: dataTable,
-                Item: collection
+                Key: {
+                    PK: data.worldId + '#COLLECTION',
+                    SK: data.parentId
+                }
+            };
+            const collectionData = await ddbDocClient.send(new GetCommand(collectionParams));
+            if (!collectionData.Item) {
+                throw new Error("Collection not found");
             }
-        });
+            const collection = collectionData.Item;
+            if (!collection['entries']) {
+                collection['entries'] = [];
+            }
+            collection['entries'].push(data.name);
+            transactionItems.push({
+                Put: {
+                    TableName: dataTable,
+                    Item: collection
+                }
+            });
+        } catch (err) {
+            // try to get the parent world instead
+            console.error("Error getting parent collection:", err);
+            console.log("Trying to get parent world instead...: ", data.parentId);
+            const worldParams = {
+                TableName: dataTable,
+                Key: {
+                    PK: 'WORLD#',
+                    SK: data.worldId
+                }
+            };
+            const worldData = await ddbDocClient.send(new GetCommand(worldParams));
+            if (!worldData.Item) {
+                throw new Error("World not found");
+            }
+            const world = worldData.Item;
+            if (!world['entries']) {
+                world['entries'] = [];
+            }
+            world['entries'].push(data.name);
+            transactionItems.push({
+                Put: {
+                    TableName: dataTable,
+                    Item: world
+                }
+            });
+        }
     }
 
     try {
@@ -499,6 +557,7 @@ async function dynamo_create(data, table = dataTable) {
                 data[key] = result.Attributes[key];
             }
         }
+        console.log("Item created successfully:", data);
         return dynamo_get(data, table);
     } catch (err) {
         console.error("Error creating item:", err);
@@ -555,8 +614,36 @@ async function dynamo_delete(data) {
 
     console.log("Deleting item:", data.pk(), data.sk());
     // get the item to delete
-    const item = data.constructor.verify(await JSON.parse((await dynamo_get(data, dataTable, false)).body));
+    const params = {
+        TableName: dataTable,
+        Key: {
+            PK: data.pk(),
+            SK: data.sk()
+        }
+    };
 
+    let item;
+    try {
+        const res = await ddbDocClient.send(new GetCommand(params));
+        if (!res.Item) {
+            console.error("Item not found:", data);
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ message: "Item not found" })
+            };
+        }
+        item = dynamo_to_item(res.Item, data.constructor);
+    } catch (err) {
+        console.error("Error getting item:", err);
+        throw new Error("Error getting item");
+    }
+    if (!item) {
+        console.error("Item not found:", data);
+        return {
+            statusCode: 404,
+            body: JSON.stringify({ message: "Item not found" })
+        };
+    }
 
     // if the item is a user, get all the worlds with their id
     if (item instanceof User) {
@@ -583,7 +670,23 @@ async function delete_user(user) {
     let transactionItems = [];
 
     for (const worldName of user.worlds) {
-        const w = World.verify(await JSON.parse((await dynamo_get(new World(worldName, null, user.username), dataTable, false)).body));
+        const params = {
+            TableName: dataTable,
+            Key: {
+                PK: 'WORLD#',
+                SK: worldName
+            }
+        };
+        const worldData = await ddbDocClient.send(new GetCommand(params));
+        if (!worldData.Item) {
+            console.error("World not found:", worldName);
+            continue; // Skip if world not found
+        }
+        const w = dynamo_to_item(worldData.Item, World);
+        if (!w) {
+            console.error("Invalid world data:", worldData.Item);
+            continue; // Skip if invalid world data
+        }
         const worldTsx = await delete_world(w, false, false);
         transactionItems = transactionItems.concat(worldTsx); // Fix concat issue
     }
@@ -615,7 +718,23 @@ async function delete_world(world, final = true, updateUser = true) {
     let transactionItems = [];
     
     for (const collectionName of world['collections'] || []) {
-        const col = Collection.verify(await JSON.parse((await dynamo_get(new Collection(collectionName, null, world.name), dataTable, false)).body));
+        const params = {
+            TableName: dataTable,
+            Key: {
+                PK: world.pk(),
+                SK: collectionName
+            }
+        };
+        const collectionData = await ddbDocClient.send(new GetCommand(params));
+        if (!collectionData.Item) {
+            console.error("Collection not found:", collectionName);
+            continue; // Skip if collection not found
+        }
+        const col = dynamo_to_item(collectionData.Item, Collection);
+        if (!col) {
+            console.error("Invalid collection data:", collectionData.Item);
+            continue; // Skip if invalid collection data
+        }
         const collectionTsx = await delete_collection(col, false, false);
         transactionItems = transactionItems.concat(collectionTsx); // Fix concat issue
     }
@@ -692,13 +811,45 @@ async function delete_collection(collection, final = true, updateParent = true) 
     console.log("Collection entries:", collection['entries']);
     for (const entryName of collection['entries']) {
         console.log("Deleting entry:", entryName, "from collection:", collection.name);
-        const ent = Entry.verify(await JSON.parse((await dynamo_get(new Entry(entryName, collection.name, collection.worldId), dataTable, false)).body));
+        const params = {
+            TableName: dataTable,
+            Key: {
+                PK: collection.pk(),
+                SK: entryName
+            }
+        };
+        const entryData = await ddbDocClient.send(new GetCommand(params));
+        if (!entryData.Item) {
+            console.error("Entry not found:", entryName);
+            continue; // Skip if entry not found
+        }
+        const ent = dynamo_to_item(entryData.Item, Entry);
+        if (!ent) {
+            console.error("Invalid entry data:", entryData.Item);
+            continue; // Skip if invalid entry data
+        }
         const entryTsx = await delete_entry(ent, false, false);
         transactionItems = transactionItems.concat(entryTsx); // Fix concat issue
     }
 
     for (const collectionName of collection['collections']) {
-        const col = Collection.verify(await JSON.parse((await dynamo_get(new Collection(collectionName, null, collection.worldId), dataTable, false)).body));
+        const params = {
+            TableName: dataTable,
+            Key: {
+                PK: collection.pk(),
+                SK: collectionName
+            }
+        };
+        const collectionData = await ddbDocClient.send(new GetCommand(params));
+        if (!collectionData.Item) {
+            console.error("Sub-collection not found:", collectionName);
+            continue; // Skip if sub-collection not found
+        }
+        const col = dynamo_to_item(collectionData.Item, Collection);
+        if (!col) {
+            console.error("Invalid sub-collection data:", collectionData.Item);
+            continue; // Skip if invalid sub-collection data
+        }
         const collectionTsx = await delete_collection(col, false, false);
         transactionItems = transactionItems.concat(collectionTsx); // Fix concat issue
     }
@@ -715,13 +866,22 @@ async function delete_collection(collection, final = true, updateParent = true) 
 
     if (updateParent) {
         try {
-            console.log("Trying to get parent world:", collection.parentId, collection.worldId);
-            let parent = await JSON.parse((await dynamo_get(new World(collection.parentId, null, collection.worldId), dataTable, false)).body);
-            console.log("Parent world:", parent);
-            parent = World.verify(parent);
-            console.log("Parent world after verification:", parent);
-            if (!parent) {
+            const params = {
+                TableName: dataTable,
+                Key: {
+                    PK: 'WORLD#',
+                    SK: collection.worldId
+                }
+            };
+            let parentData = await ddbDocClient.send(new GetCommand(params));
+            if (!parentData.Item) {
+                console.log("Parent world not found, trying to get parent collection instead...");
                 throw new Error("Parent world not found");
+            }
+            let parent = dynamo_to_item(parentData.Item, World);
+            if (!parent) {
+                console.error("Invalid parent world data:", parentData.Item);
+                throw new Error("Invalid parent world data");
             }
             if (parent['collections']) {
                 parent['collections'] = parent['collections'].filter(c => c !== collection.name);
@@ -741,10 +901,22 @@ async function delete_collection(collection, final = true, updateParent = true) 
         } catch (err) {
             console.log("Error getting parent world:", err);
             console.log("Trying to get parent collection instead...: ", collection.parentId);
-            let parent = await JSON.parse((await dynamo_get(new Collection(collection.parentId, null, collection.worldId), dataTable, false)).body);
-            parent = Collection.verify(parent);
-            if (!parent) {
+            const params = {
+                TableName: dataTable,
+                Key: {
+                    PK: collection.parentId + '#COLLECTION',
+                    SK: collection.worldId
+                }
+            };
+            let parentData = await ddbDocClient.send(new GetCommand(params));
+            if (!parentData.Item) {
+                console.error("Parent collection not found:", collection.parentId);
                 throw new Error("Parent collection not found");
+            }
+            let parent = dynamo_to_item(parentData.Item, Collection);
+            if (!parent) {
+                console.error("Invalid parent collection data:", parentData.Item);
+                throw new Error("Invalid parent collection data");
             }
             if (parent['collections']) {
                 parent['collections'] = parent['collections'].filter(c => c !== collection.name);
@@ -784,6 +956,7 @@ async function delete_collection(collection, final = true, updateParent = true) 
 }
 
 async function delete_entry(entry, final = true, updateParent = true) {
+    console.log("Deleting entry: ", entry);
     console.log("Deleting entry:", entry.pk(), entry.sk());
     if (final) {
         let transactionItems = [];
@@ -793,15 +966,40 @@ async function delete_entry(entry, final = true, updateParent = true) {
                 try {
                     const col = new Collection(entry.parentId, null, entry.worldId);
                     console.log("Deleting entry from collection:", col.pk(), col.sk());
-                    parent = await JSON.parse((await dynamo_get(col, dataTable, false)).body);
-                    parent = Collection.verify(parent);
-                    console.log("Parent collection:", parent);
-                    if (!parent) {
+                    const params = {
+                        TableName: dataTable,
+                        Key: {
+                            PK: col.pk(),
+                            SK: col.sk()
+                        }
+                    };
+                    let parentData = await ddbDocClient.send(new GetCommand(params));
+                    if (!parentData.Item) {
+                        console.error("Parent collection not found:", col);
                         throw new Error("Parent collection not found");
+                    }   
+                    parent = dynamo_to_item(parentData.Item, Collection);
+                    if (!parent) {
+                        console.error("Invalid parent collection data:", parentData.Item);
+                        throw new Error("Invalid parent collection data");
                     }
                 } catch (err) {
-                    parent = await JSON.parse((await dynamo_get(new World(entry.worldId), dataTable, false)).body);
-                    parent = World.verify(parent);
+                    console.error("Error getting parent collection:", err);
+                    console.log("Trying to get parent world instead...: ", entry.parentId);
+                    const params = {
+                        TableName: dataTable,
+                        Key: {
+                            PK: entry.parentId + '#',
+                            SK: entry.worldId
+                        }
+                    };
+                    let parentData = await ddbDocClient.send(new GetCommand(params));
+                    if (!parentData.Item) {
+                        console.error("Parent world not found:", entry.parentId);
+                        throw new Error("Parent world not found");
+                    }
+                    parent = dynamo_to_item(parentData.Item, World);
+                    
                     if (!parent) {
                         throw new Error("Parent world not found");
                     }

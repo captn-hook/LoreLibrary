@@ -190,7 +190,7 @@ put_world() {
     local world_content=$2
     local world_description='a sample description for the world'
     local world_image='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Hercules_beetle_%28larva%29.jpg/330px-Hercules_beetle_%28larva%29.jpg'
-    local wolrd_style=''
+    local world_style=''
     local world_id=''
     local world_tags=$3
     local world_parentId=''
@@ -208,8 +208,9 @@ put_world() {
         -H 'accept: application/json' \
         -H "Authorization: $token" \
         -H 'Content-Type: application/json' \
-        -d "{\"name\":\"$world_name\", \"content\":$world_content, \"description\":\"$world_description\", \"image\":\"$world_image\", \"style\":\"$wolrd_style\", \"id\":\"$world_id\", \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
+        -d "{\"name\":\"$world_name\", \"content\":$world_content, \"description\":\"$world_description\", \"image\":\"$world_image\", \"style\":\"$world_style\", \"id\":\"$world_id\", \"tags\":$world_tags, \"parentId\":\"$world_parentId\", \"ownerId\":\"$world_ownerId\", \"collections\":$world_collections}" \
         "$url/worlds")
+
 
     if [[ "$succeed" == true ]]; then
         # Check if PUT request was successful
@@ -222,7 +223,7 @@ put_world() {
     else
         # Check if PUT request was a failure
         if [[ $(echo "$response" | jq -r '.name') == "$world_name" ]]; then
-            echo -e "\nPUT /worlds request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            echo -e "\nPUT /worlds request succeeded, but it should have failed: $(echo "$response")"
             exit 1
         else
             echo -n '.'
@@ -367,7 +368,7 @@ put_collection() {
     else
         # Check if PUT request was a failure
         if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
-            echo -e "\nPUT /worldId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            echo -e "\nPUT /worldId request succeeded, but it should have failed: $(echo "$response")"
             exit 1
         else
             echo -n '.'
@@ -471,6 +472,8 @@ put_subcollection() {
     local collection_tags=$3
     local collection_parentId=$4
     local collection_ownerId=''
+    local collection_collections=[]
+    local collection_entries=[]
     local parent_collection=$(echo "$4" | jq -sRr @uri)
     local world=$(echo "$5" | jq -sRr @uri)
     local succeed=$6
@@ -490,13 +493,13 @@ put_subcollection() {
         if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
             echo -n '.'
         else
-            echo -e "\nPUT /worldId/collectionId request failed: $(echo "$response" | jq -r '.message')"
+            echo -e "\nPUT /worldId/collectionId subcol request failed: $(echo "$response" | jq -r '.message')"
             exit 1
         fi
     else
         # Check if PUT request was a failure
         if [[ $(echo "$response" | jq -r '.name') == "$collection_name" ]]; then
-            echo -e "\nPUT /worldId/collectionId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            echo -e "\nPUT /worldId/collectionId subcol request succeeded, but it should have failed: $(echo "$response")"
             exit 1
         else
             echo -n '.'
@@ -516,7 +519,7 @@ get_subcollection() {
     # Perform GET request
     local response=$(curl -s -X 'GET' \
         -H 'accept: application/json' \
-        -H 'Content-Type: application/json' \
+        -H 'Content-Type: application/json' \dele
         "$url/$world/$parent_collection/$collection")
     
     if [[ "$succeed" == true ]]; then
@@ -624,13 +627,13 @@ put_entry() {
         if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
             echo -n '.'
         else
-            echo -e "\nPUT /worldId/collectionId request failed: $(echo "$response" | jq -r '.name')"
+            echo -e "\nPUT /worldId/collectionId entry request failed: $(echo "$response" | jq -r '.name')"
             exit 1
         fi
     else
         # Check if PUT request was a failure
         if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
-            echo -e "\nPUT /worldId/collectionId request succeeded, but it should have failed: $(echo "$response" | jq -r '.message')"
+            echo -e "\nPUT /worldId/collectionId entry request succeeded, but it should have failed: $(echo "$response")"
             exit 1
         else
             echo -n '.'
@@ -664,7 +667,7 @@ put_entry_world() {
         if [[ $(echo "$response" | jq -r '.name') == "$entry_name" ]]; then
             echo -n '.'
         else
-            echo -e "\nPUT /worldId request failed: $(echo "$response" | jq -r '.message')"
+            echo -e "\nPUT /worldId entry request failed: $(echo "$response" | jq -r '.message')"
             exit 1
         fi
     else
