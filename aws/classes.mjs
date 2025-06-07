@@ -99,6 +99,14 @@ export class User extends Body {
     id() {
         return this.pk() + this.sk();
     }
+
+    getBody() {
+        return {
+            username: this.username,
+            content: this.content,
+            worlds: this.worlds
+        };
+    }
 }
 
 // Private export class
@@ -112,7 +120,7 @@ export class Permissions extends Body {
     }
 }
 
-export class DataShort extends Body {
+class DataShort extends Body {
     constructor(name, parentId, worldId, description = '', image = '', tags = []) {
         super();
         this.name = name; // string
@@ -131,6 +139,7 @@ export class DataShort extends Body {
         //     ...data.getBody(),
         // };
         return {
+            name: this.name,
             parentId: this.parentId,
             description: this.description,
             image: this.image,
@@ -162,6 +171,7 @@ export class Entry extends DataShort {
     
     getBody() {
         return {
+            name: this.name,
             parentId: this.parentId,
             description: this.description,
             image: this.image,
@@ -186,6 +196,7 @@ export class Collection extends Entry {
 
     getBody() {
         return {
+            name: this.name,
             parentId: this.parentId,
             description: this.description,
             image: this.image,
@@ -206,10 +217,11 @@ export class Collection extends Entry {
 export class World extends Collection {
     constructor(name, parentId, worldId, content = [], description = '', image = '', style = '', tags = [], permissions = {}, collections = [], entries = []) {
         super(name, parentId, worldId, content, description, image, style, tags, permissions, collections, entries);
-    }
+    }   
 
     getBody() {
         return {
+            name: this.name,
             parentId: this.parentId,
             description: this.description,
             image: this.image,
@@ -225,78 +237,4 @@ export class World extends Collection {
     pk() {
         return 'WORLD#'
     }
-}
-
-function test() {
-    // Example usage
-    const user = User.verify({
-        name: 'john_doe',
-        content: ['entry1', 'entry2'],
-        worlds: ['world1', 'world2']
-    });
-    console.log(user);
-    // Output: User { name: 'john_doe', content: [ 'entry1', 'entry2' ], worlds: [ 'world1', 'world2' ] }
-    const entry = Entry.verify({
-        name: 'entry1',
-        parentId: 'collection1',
-        worldId: 'world1',
-        content: ['text1', 'text2'],
-        description: 'An example entry',
-        image: 'image_url',
-        style: 'style_class',
-        tags: ['tag1', 'tag2'],
-        permissions: new Permissions(true, false, true, false)
-    });
-    console.log(entry);
-    // Output: Entry { name: 'entry1', parentId: 'collection1', worldId: 'world1', content: [ 'text1', 'text2' ], description: 'An example entry', image: 'image_url', style: 'style_class', tags: [ 'tag1', 'tag2' ], permissions: Permissions { create: true, read: false, update: true, del: false }, collections: [], entries: [] }
-    const collection = Collection.verify({
-        name: 'collection1',
-        parentId: 'world1',
-        worldId: 'world1',
-        content: ['entry1', 'entry2'],
-        description: 'An example collection',
-        image: 'image_url',
-        style: 'style_class',
-        tags: ['tag1', 'tag2'],
-        permissions: new Permissions(true, false, true, false),
-        collections: ['collection2'],
-        entries: ['entry3']
-    });
-    console.log(collection);
-    // Output: Collection { name: 'collection1', parentId: 'world1', worldId: 'world1', content: [ 'entry1', 'entry2' ], description: 'An example collection', image: 'image_url', style: 'style_class', tags: [ 'tag1', 'tag2' ], permissions: Permissions { create: true, read: false, update: true, del: false }, collections: [ 'collection2' ], entries: [ 'entry3' ] }
-    const world = World.verify({
-        name: 'world1',
-        parentId: 'user1',
-        worldId: 'user1',
-        content: ['entry1', 'entry2'],
-        description: 'An example world',
-        image: 'image_url',
-        style: 'style_class',
-        tags: ['tag1', 'tag2'],
-        permissions: new Permissions(true, false, true, false),
-        collections: ['collection1'],
-        entries: ['entry3']
-    });
-    console.log(world);
-    // Output: World { name: 'world1', parentId: 'user1', worldId: 'user1', content: [ 'entry1', 'entry2' ], description: 'An example world', image: 'image_url', style: 'style_class', tags: [ 'tag1', 'tag2' ], permissions: Permissions { create: true, read: false, update: true, del: false }, collections: [ 'collection1' ], entries: [ 'entry3' ] }
-    const permissions = Permissions.verify({
-        create: true,
-        read: false,
-        update: true,
-        del: false
-    });
-    console.log(permissions);
-    // Output: Permissions { create: true, read: false, update: true, del: false }
-    const short = DataShort.verify({
-        name: 'short1',
-        parentId: null,
-        worldId: 'world1'
-    });
-    console.log(short);
-    // Output: DataShort { name: 'short1', parentId: undefined, worldId: 'world1', description: '', image: '', tags: [] }
-    const shortWorld = World.verify({
-        name: 'short1',
-        parentId: null,
-        worldId: 'world1'
-    });
 }

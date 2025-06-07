@@ -1,13 +1,6 @@
 #!/bin/bash
 
-# Define variables
-url=""
-source "$(dirname "$0")/env.sh"
-load_env_url
-echo "Using URL: $url"
-
 source "$(dirname "$0")/functions.sh"
-
 
 token=""
 username=""
@@ -69,14 +62,11 @@ login grubman2 iLoveworms123!
 # Get user information
 get_user grubman2
 
-echo " >>>>>>>>>>>>>>>>>>> got token: $token"
-
 # Create world
 put_world "$world_name" "$world_content" "$world_tags"
 
 get_world "$world_name"
 
-echo " >>>>>>>>>>>>>>>>>>> world successfully created"
 
 # Create collections
 put_collection "$collection1_name" "$collection1_content" "$collection1_tags" "$world_name"
@@ -86,8 +76,6 @@ put_collection "$collection3_name" "$collection3_content" "$collection3_tags" "$
 get_collection "$collection1_name" "$world_name"
 get_collection "$collection2_name" "$world_name"
 get_collection "$collection3_name" "$world_name"
-
-echo " >>>>>>>>>>>>>>>>>>> collections successfully created"
 
 # Create entries
 put_entry "$entry1_name" "$entry1_content" "$entry1_tags" "$collection2_name" "$world_name"
@@ -100,4 +88,20 @@ get_entry "$entry2_name" "$collection2_name" "$world_name"
 get_entry "$entry3_name" "$collection1_name" "$world_name"
 get_entry "$entry4_name" "$collection3_name" "$world_name"
 
-echo " >>>>>>>>>>>>>>>>>>> entries successfully created"
+# try to post an entry to the world
+put_entry_world "$entry1_name dos" "$entry1_content" "$entry1_tags" "$world_name"
+put_entry_world "$entry1_name tres" "$entry1_content" "$entry1_tags" "$world_name"
+
+# post a collection to a collection
+put_subcollection "$collection1_name dos" "$collection1_content" "$collection1_tags" "$collection2_name" "$world_name"
+
+# post entries to the above collection
+put_entry "$entry2_name dos" "$entry2_content" "$entry2_tags" "$collection1_name dos" "$world_name"
+put_entry "$entry2_name tres" "$entry2_content" "$entry2_tags" "$collection1_name dos" "$world_name"
+
+# put a sub subcollection
+put_subcollection "$collection1_name tres" "$collection1_content" "$collection1_tags" "$collection1_name dos" "$world_name"
+
+# post entries to the above collection
+put_entry "$entry3_name dos" "$entry3_content" "$entry3_tags" "$collection1_name tres" "$world_name"
+put_entry "$entry3_name tres" "$entry3_content" "$entry3_tags" "$collection1_name tres" "$world_name"

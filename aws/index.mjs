@@ -2,11 +2,13 @@ import { badRequest, notImplemented } from './utilities.mjs';
 
 import { User, Entry, Collection, World } from './classes.mjs';
 
-import { dynamo_get, dynamo_create, dynamo_list, crud } from './dynamo.mjs';
+import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_map, crud, dynamo_find_collection } from './dynamo.mjs';
 
 import { create_user, login_user } from './cognito.mjs';
 
 import { s3_crud } from './s3.mjs';
+
+const reserved_names = ['world', 'worlds', 'users', 'user', 'resource', 'resources', 'search', 'signup', 'login', 'logout', 'auth', 'authenticate', 'collections', 'collection', 'entries', 'entry'];
 
 export const handler = async (e) => {
     // The event object contains:
@@ -17,11 +19,11 @@ export const handler = async (e) => {
     // headers: typical headers,
     // requestContext: amazon stuff,
     // isBase64Encoded: false,
-    console.log('Event: ', e);
     try {
         const [operation, path] = e.routeKey.split(' ');
 
         if (e.body) {
+            console.log('Event body:', e.body);
             e.body = JSON.parse(e.body);
         }
 
@@ -32,12 +34,11 @@ export const handler = async (e) => {
             if (e.requestContext.authorizer && e.requestContext.authorizer.lambda) {
                 username = e.requestContext.authorizer.lambda.username;
             } else {
-                console.log('No auth from authorizer');
+                console.error('No auth from authorizer');
             }
         } catch (error) {
             throw new Error('Authorizer error: ' + error.message);
         }
-        console.log('Username: ', username, ' Operation: ', operation, ' Path: ', path, ' Body: ', e.body);
         try {
             pathParameters = e.pathParameters;
 
@@ -49,7 +50,7 @@ export const handler = async (e) => {
             }
 
         } catch (error) {
-            console.log('Error getting path parameters:', error);
+            console.error('Error getting path parameters:', error);
         }
 
         // /worlds: GET, PUT
@@ -64,6 +65,11 @@ export const handler = async (e) => {
             // Create a new world
             if (!username) { return badRequest('Invalid authentication'); }
 
+            // reserved names
+            if (reserved_names.includes(e.body.name)) {
+                return badRequest('Invalid world name: ' + e.body.name + '. Reserved names cannot be used.');
+            }
+
             e.body.parentId = username;
             e.body.ownerId = username;
             e.body.worldId = e.body.name? e.body.name : username;
@@ -71,7 +77,6 @@ export const handler = async (e) => {
 
             if (data === null) { return badRequest('Invalid world data'); }
 
-            console.log('Creating world: ', data );
 
             var res = await dynamo_create(data);
             // Return world
@@ -88,7 +93,6 @@ export const handler = async (e) => {
             try {
                 const userExists = await dynamo_get(data, process.env.USER_TABLE); // Users are in a different table than default
                 if (userExists.statusCode === 404) {
-                    console.log('Creating user: ', e.body.username, ' with email: ', e.body.email);
                     const token = await create_user(e.body);
                     return token;
                 } else if (userExists.statusCode === 200) {
@@ -133,15 +137,11 @@ export const handler = async (e) => {
                     return res;
                 }
             }
-            console.log('Path: ', path, ' ', pathsplit);
             const user = pathParameters.username;
-            console.log('User: ', user);
-            console.log('e.body: ', e.body);
             if (!e.body) {
                 e.body = {};
             }
             e.body.username = user;
-            console.log('User crud: ', operation, ' ', pathsplit[2] , ' ', e.body);
             var res = await crud(operation, User, e.body, username);
             if (res) {
                 return res;
@@ -156,21 +156,57 @@ export const handler = async (e) => {
             }
         }
 
+        console.log('matching to path length: ' + pathsplit.length + ' with operation: ' + operation);
+
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
             const worldId = pathParameters.WorldId;
+            // reserved names
+            if (reserved_names.includes(worldId)) {
+                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+            }
+
             if (!e.body) {
                 e.body = {};
             }
             e.body.worldId = worldId;
             if (operation === 'PUT') {
-                // Creating a collection
                 if (!username) { return badRequest('Invalid authentication'); }
-                e.body.worldId = worldId;
-                e.body.ownerId = username? username : null;
-                e.body.parentId = e.body.parentId ? e.body.parentId : worldId; // If parentId is not provided, use worldId
 
-                var res = await crud(operation, Collection, e.body, username);
+                if (reserved_names.includes(e.body.name)) {
+                    return badRequest('Invalid world name: ' + e.body.name + '. Reserved names cannot be used.');
+                }
+
+                // Try to get the type of the put object
+                // if the body contains a collections field, then it is a collection
+                if (e.body.collections && Array.isArray(e.body.collections)) {
+
+                    // Creating a collection
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username? username : null;
+                    e.body.parentId = worldId; // worlds are their own parent
+
+                    var res = await crud(operation, Collection, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+                } else { 
+                    // Creating an entry
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username? username : null;
+                    e.body.parentId = worldId; // worlds are their own parent
+
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+
+                }
+
+            // check for query parameters
+            } else if (operation === 'GET' && e.queryStringParameters && e.queryStringParameters.map && e.queryStringParameters.map === 'true') {
+                // Get world as a map
+                var res = await dynamo_get_map(worldId);
                 if (res) {
                     return res;
                 }
@@ -183,10 +219,19 @@ export const handler = async (e) => {
                 }
             }
         }
-        // /{WorldId}/{CollectionId}: GET, POST, PUT DELETE
+        // /{WorldId}/{Id}: GET, POST, PUT DELETE
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
-            const collectionId = pathParameters.CollectionId;
+            const Id = pathParameters.CollectionId;
+
+            // reserved names
+            if (reserved_names.includes(Id)) {
+                return badRequest('Invalid collection or entry name: ' + Id + '. Reserved names cannot be used.');
+            }
+            if (reserved_names.includes(worldId)) {
+                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+            }
+
             // Parent id will be in the query if present
             let parentId;
             if (e.queryStringParameters && e.queryStringParameters.parentId) {
@@ -200,43 +245,96 @@ export const handler = async (e) => {
                 e.body = {};
             }
             e.body.worldId = worldId;
+            
             if (operation === 'PUT') {
-                // Creating an entry
+                // Creating an entry or collection
                 if (!username) { return badRequest('Invalid authentication'); }
-                e.body.parentId = collectionId;
-                e.body.ownerId = username;
-                var res = await crud(operation, Entry, e.body, username);
-                if (res) {
-                    return res;
+                if (e.body.collections && Array.isArray(e.body.collections)) {
+                    // Creating a collection
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username;
+                    e.body.parentId = Id;
+                    
+                    if (reserved_names.includes(e.body.name)) {
+                        return badRequest('Invalid collection name: ' + e.body.name + '. Reserved names cannot be used.');
+                    }
+
+                    var res = await crud(operation, Collection, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+                } else {
+                    // Creating an entry
+                    e.body.worldId = worldId;
+                    e.body.ownerId = username;
+                    e.body.parentId = Id; // Use Id as parentId
+                    console.log('Creating entry /' + worldId + '/' + Id + '/' + e.body.name );
+
+                    if (reserved_names.includes(e.body.name)) {
+                        return badRequest('Invalid entry name: ' + e.body.name + '. Reserved names cannot be used.');
+                    }
+
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
                 }
             } else {
-                e.body.name = collectionId;
-                // parentid will be in query, or use worldId as parentId
-                e.body.parentId = parentId; 
-                var res = await crud(operation, Collection, e.body, username);
-                if (res) {
-                    return res;
+                if (await dynamo_find_collection(worldId, Id)) {
+                    console.log('Found collection with id: ' + Id);
+                    const collectionId = Id;
+                    e.body.name = collectionId;
+                    // parentid will be in query, or use worldId as parentId
+                    e.body.parentId = parentId; 
+                    var res = await crud(operation, Collection, e.body, username);
+                    if (res) {
+                        return res;
+                    }
+                } else {
+                    console.log('No collection found with id: ' + Id + ', treating as entry');
+                    const entryId = Id;
+                    e.body.name = entryId;
+                    e.body.parentId = parentId; // Use parentId from query or body, or default to worldId
+                    var res = await crud(operation, Entry, e.body, username);
+                    if (res) {
+                        return res;
+                    }
                 }
             }
         }
         // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
         else if (pathsplit.length === 4) {
+            console.log('Matched pathsplit length 4: ' + pathsplit.join('/'));
             const worldId = pathParameters.WorldId;
             const collectionId = pathParameters.CollectionId;
             const entryId = pathParameters.EntryId;
+
+            // reserved names
+            if (reserved_names.includes(entryId)) {
+                return badRequest('Invalid entry name: ' + entryId + '. Reserved names cannot be used.');
+            }
+            if (reserved_names.includes(collectionId)) {
+                return badRequest('Invalid collection name: ' + collectionId + '. Reserved names cannot be used.');
+            }
+            if (reserved_names.includes(worldId)) {
+                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+            }
+
             if (!e.body) {
                 e.body = {};
             }
             e.body.worldId = worldId;
-
-
             e.body.name = entryId;
             e.body.parentId = collectionId;
             var res = await crud(operation, Entry, e.body, username);
+            console.log('crud operation result:', res);
             if (res) {
                 return res;
             }
         }
+        console.error('No route found for: ' + operation + ' ' + path + ' with body: ' + JSON.stringify(e.body));
+        console.error('Path parameters:', pathParameters, 'pathsplit length:', pathsplit.length);
+        console.error('pathsplit is 4???', pathsplit.length === 4);
         return {
             statusCode: 404,
             body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
