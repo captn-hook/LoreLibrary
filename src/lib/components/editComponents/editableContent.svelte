@@ -63,7 +63,6 @@
                 return item;
             }
         }).filter(Boolean);
-        console.log(editableContent);
         return editableContent;
     }
 
