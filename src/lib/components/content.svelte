@@ -12,9 +12,9 @@
     {#each content ?? [] as component} 
     <div style="margin-bottom: calc(3*var(--spacing));">
         {#if component.text}
-            <p class="p">{component.text}</p>
+            <p class="p text-base">{component.text}</p>
         {:else if component.name}
-            <h1 class="h1">{component.name}</h1>
+            <h1 class="h1 text-5xl mb-4">{component.name}</h1>
         {:else if component.image_url}
             <img src={component.image_url} alt ='#'/>
         {:else if component.numberedList}
