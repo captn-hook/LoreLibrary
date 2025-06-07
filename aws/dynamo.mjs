@@ -235,7 +235,6 @@ async function get_sub_items(worldId, collectionName) {
         res['entries'] = thisCollection['entries'];
     }
     if (thisCollection['collections']) {
-        res['collections'] = thisCollection['collections'];
         for (const subCollectionName of thisCollection['collections']) {
             res[subCollectionName] = await get_sub_items(worldId, subCollectionName); 
         }
@@ -272,8 +271,7 @@ async function dynamo_get_map(worldId) {
 
     let map = {};
     map['entries'] = world['entries'] || [];
-    map['collections'] = world['collections'] || [];
-    for (const collectionName of map['collections']) {
+    for (const collectionName of world['collections'] || []) {
         map[collectionName] = await get_sub_items(worldId, collectionName);
     }
     return map;
@@ -470,30 +468,57 @@ async function dynamo_create(data, table = dataTable) {
             }
         });
     } else if (data instanceof Collection) {
-        // if collection, add it to the world
-        const worldPrefix = 'WORLD#';
-        const worldParams = {
-            TableName: dataTable,
-            Key: {
-                PK: worldPrefix,
-                SK: data.worldId
-            }
-        };
-        const worldData = await ddbDocClient.send(new GetCommand(worldParams));
-        if (!worldData.Item) {
-            throw new Error("World not found");
-        }
-        const world = worldData.Item;
-        if (!world['collections']) {
-            world['collections'] = [];
-        }
-        world['collections'].push(data.name);
-        transactionItems.push({
-            Put: {
+        // if collection, add it to its parent
+        try {
+            const collectionParams = {
                 TableName: dataTable,
-                Item: world
+                Key: {
+                    PK: data.worldId + '#COLLECTION',
+                    SK: data.parentId
+                }
+            };
+            const collectionData = await ddbDocClient.send(new GetCommand(collectionParams));
+            if (!collectionData.Item) {
+                throw new Error("Collection not found");
             }
-        });
+            const collection = collectionData.Item;
+            if (!collection['collections']) {
+                collection['collections'] = [];
+            }
+            collection['collections'].push(data.name);
+            transactionItems.push({
+                Put: {
+                    TableName: dataTable,
+                    Item: collection
+                }
+            });
+        } catch (err) {
+            // Failed to get the parent collection, try to get the parent world instead
+            console.error("Error getting parent collection:", err); 
+            const worldPrefix = 'WORLD#';
+            const worldParams = {
+                TableName: dataTable,
+                Key: {
+                    PK: worldPrefix,
+                    SK: data.worldId
+                }
+            };
+            const worldData = await ddbDocClient.send(new GetCommand(worldParams));
+            if (!worldData.Item) {
+                throw new Error("World not found");
+            }
+            const world = worldData.Item;
+            if (!world['collections']) {
+                world['collections'] = [];
+            }
+            world['collections'].push(data.name);
+            transactionItems.push({
+                Put: {
+                    TableName: dataTable,
+                    Item: world
+                }
+            });
+        }
     } else if (data instanceof Entry) {
         try {
             // if entry, add it to the collection
