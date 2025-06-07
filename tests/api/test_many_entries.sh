@@ -105,3 +105,61 @@ put_subcollection "$collection1_name tres" "$collection1_content" "$collection1_
 # post entries to the above collection
 put_entry "$entry3_name dos" "$entry3_content" "$entry3_tags" "$collection1_name tres" "$world_name"
 put_entry "$entry3_name tres" "$entry3_content" "$entry3_tags" "$collection1_name tres" "$world_name"
+
+# MORE!
+
+collection4_name="Arcane Wonders"
+collection4_content=$(jq -n --arg text "Arcane Wonders is a collection of magical artifacts and creatures that embody the essence of the Grub Fantasy Realm's magic." \
+    '[{"text": $text}]')
+collection4_tags='["arcane", "magic", "fantasy"]'
+
+collection5_name="Mystical Flora"
+collection5_content=$(jq -n --arg text "Mystical Flora are the magical plants that thrive in the Grub Fantasy Realm, providing sustenance and magical properties to the ecosystem." \
+    '[{"text": $text}]')
+collection5_tags='["flora", "magic", "fantasy"]'
+
+collection6_name="Celestial Beasts"
+collection6_content=$(jq -n --arg text "Celestial Beasts are the majestic creatures that roam the skies of the Grub Fantasy Realm, often serving as companions to the grubs." \
+    '[{"text": $text}]')
+collection6_tags='["beasts", "magic", "fantasy"]'
+
+entry5_name="Arcane Artifact"
+entry5_content=$(jq -n --arg text "Arcane Artifacts are powerful objects imbued with magical properties, often sought after by adventurers and scholars." \
+    '[{"text": $text}]')
+entry5_tags='["artifact", "magic"]'
+
+entry6_name="Mystical Plant"
+entry6_content=$(jq -n --arg text "Mystical Plants are unique flora that possess magical properties, often used in potions and spells." \
+    '[{"text": $text}]')
+entry6_tags='["plant", "magic"]'
+
+entry7_name="Celestial Companion"
+entry7_content=$(jq -n --arg text "Celestial Companions are the loyal creatures that accompany grubs on their adventures, providing protection and companionship." \
+    '[{"text": $text}]')
+entry7_tags='["companion", "beast", "magic"]'
+
+entry8_name="Arcane Guardian"
+entry8_content=$(jq -n --arg text "Arcane Guardians are powerful protectors of the realm, often taking the form of magical beasts that defend against threats." \
+    '[{"text": $text}]')
+entry8_tags='["guardian", "magic", "fantasy"]'
+
+entry9_name="Mystical Healer"
+entry9_content=$(jq -n --arg text "Mystical Healers are grubs that have developed the ability to heal and restore, using their magical properties to mend wounds and ailments." \
+    '[{"text": $text}]')
+entry9_tags='["healer", "magic", "fantasy"]'
+
+entry10_name="Celestial Voyager"
+entry10_content=$(jq -n --arg text "Celestial Voyagers are grubs that have been transformed into magical vessels, capable of traversing the skies and exploring distant lands." \
+    '[{"text": $text}]')
+entry10_tags='["voyager", "beast", "magic"]'
+
+put_collection "$collection4_name" "$collection4_content" "$collection4_tags" "$world_name"
+put_collection "$collection5_name" "$collection5_content" "$collection5_tags" "$world_name"
+put_collection "$collection6_name" "$collection6_content" "$collection6_tags" "$world_name"
+
+put_entry "$entry5_name" "$entry5_content" "$entry5_tags" "$collection4_name" "$world_name"
+put_entry "$entry6_name" "$entry6_content" "$entry6_tags" "$collection5_name" "$world_name"
+put_entry "$entry7_name" "$entry7_content" "$entry7_tags" "$collection6_name" "$world_name"
+put_entry "$entry8_name" "$entry8_content" "$entry8_tags" "$collection4_name" "$world_name"
+put_entry "$entry9_name" "$entry9_content" "$entry9_tags" "$collection5_name" "$world_name"
+put_entry "$entry10_name" "$entry10_content" "$entry10_tags" "$collection6_name" "$world_name"
