@@ -52,7 +52,7 @@ jobs:
               ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
               ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelibrary-deployment-artifacts-dev \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
-              ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }}
+              ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue= \
               ParameterKey=Ver,ParameterValue=${SHORT_SHA}
           echo "Change set creation initiated."
