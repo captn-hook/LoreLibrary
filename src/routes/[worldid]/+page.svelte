@@ -5,13 +5,14 @@
     import Navbar from "$lib/components/navigationComponents/navbar.svelte";
     import Router from "$lib/components/navigationComponents/router.svelte";
     import Content from "$lib/components/content.svelte";
-    import { editContent } from "$lib/state/editState.svelte";
+    import { editContent, showCreateCollection } from "$lib/state/editState.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import { onDestroy, onMount } from "svelte";
     import { world as worldContext} from "$lib/state/worldState.svelte";
     import { routerItems } from "$lib/state/routerState.svelte.js";
     import { RouterItem } from "$lib/types/routerItem";
   import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
+  import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
 
 
     let editContentValue;
@@ -61,8 +62,11 @@
             {/if}
         </div>
         <div class="flex-none">
-            <img class="relative m-4" src={$worldContext?.img_url} alt=""/>
+            <img class="relative m-4 z-0" src={$worldContext?.img_url} alt=""/>
         </div>
     </div>
+{#if $showCreateCollection}
+<CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+{/if}
 </div>
     

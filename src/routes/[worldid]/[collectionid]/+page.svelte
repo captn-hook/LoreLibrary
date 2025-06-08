@@ -6,40 +6,44 @@
     import Router from "$lib/components/navigationComponents/router.svelte";
     import {collections} from "$lib/state/worldState.svelte";
     import {Collection} from "$lib/types/collection";
-    import {editContent} from "$lib/state/editState.svelte";
+    import {editContent, showCreateCollection} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
+    import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
 
 
     let collection: Collection;
-    onMount(async () => {
-        if (!$collections?.some(collection => collection.name === data.collectionid)) {
-            await getCollection(data.worldid, data.collectionid);
-        }
-        collections.subscribe(value => {
-        collection = value?.find(collection => collection.name === data.collectionid) ?? {} as Collection;
-        console.log(collection);
-        if (collection?.styling && collection.styling != '') {
-            if (collection.styling.length > 20) { // custom
-                const styleTag = document.createElement('style');
-			    styleTag.textContent = collection.styling;
-			    document.head.appendChild(styleTag);
-                document.documentElement.setAttribute('data-theme', 'custom');
 
-            }else {
+    // Subscribe to the store
+    $: collection = $collections?.find(c => c.name === data.collectionid) ?? {} as Collection;
+
+    // Fetch collection if not present
+    $: if (!$collections?.some(c => c.name === data.collectionid)) {
+        onMount(() => {
+            getCollection(data.worldid, data.collectionid);
+        });
+    }
+
+    // Apply collection styling if present
+    $: if (collection?.styling && collection.styling !== '') {
+        if (collection.styling.length > 20) {
+            const styleTag = document.createElement('style');
+            styleTag.textContent = collection.styling;
+            document.head.appendChild(styleTag);
+            document.documentElement.setAttribute('data-theme', 'custom');
+        } else {
             document.documentElement.setAttribute('data-theme', collection.styling);
-            }
-            updateSettingsFromCurrentStyles();
         }
-    });
-    });
+        updateSettingsFromCurrentStyles();
+    }
+
     function getNavItems(collection: Collection): {name: string, href: string}[] {
         let navItems : {name: string, href: string}[] = [];
-        collection?.collections.forEach(c => {
+        (collection?.collections ?? []).forEach(c => {
             navItems.push({name: c, href: `/${data.worldid}/${c}`});
         });
-        collection?.entries.forEach(e => {
+        (collection?.entries ?? []).forEach(e => {
             navItems.push({name: e, href: `/${data.worldid}/${data.collectionid}/${e}`});
         });
         return navItems;
@@ -62,4 +66,7 @@
             <img class="relative m-4" src={collection?.image} alt=""/>
         </div>
     </div>
+{#if $showCreateCollection}
+<CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+{/if}
 </div>

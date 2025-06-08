@@ -115,6 +115,63 @@ export function getWorlds() {
         });
 }
 
+export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
+    let url = '';
+    let path = window.location.pathname.split('/');
+    console.log("Path:", path.length, path); // Log the path for debugging
+    if (path.length == 2) { // worldId
+        url = `${PUBLIC_API_URL}/${path[1]}`;
+    }else if (path.length == 3) { // worldId and collectionId
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}`;
+    }
+    return fetch(url, {
+        method: 'PUT',
+        headers: {
+            'accept': 'application/json', // Specify the expected response format
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*',  // Ensure you have a valid token
+        },
+        body: JSON.stringify({
+            name: name,
+            tags: tags,
+            description: description,
+            image: imageUrl,
+            content: [],
+            collections: [],
+            entries: [],
+            parentId: path.length == 2 ? path[1] : path[2], // Set the parentId based on the current path
+        }),
+    }).then((response) => {
+        if (!response.ok) {
+            console.log(response);
+            return null;
+        } else if (response.ok) {
+            if (path.length == 2) {
+
+                worldContext.update((world: World | null) => {
+                    if (world) {
+                        world.collections.push(name);
+                    }
+                    return world;
+                });
+            } else if (path.length == 3) {
+                collectionsContext.update((collections: Collection[] | null) => {
+                    if (collections) {
+                        const collection = collections.find((c: Collection) => c.name === decodeURIComponent(path[2]).replace(/%20/g, ' '));
+                        console.log('found collection', collection);
+                        if (collection) {
+                            collection.collections.push(name);
+                            console.log('pushing new collection to array');
+                        }
+                    }
+                    return collections;
+                });
+        }
+    }});
+}
+
+
 
 export function getCollection(worldId: string, collectionId: string) {
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}`)
