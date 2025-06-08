@@ -3,6 +3,7 @@ import {settingsColors, settingsTypography} from '$lib/state/generator.svelte'
 import {goto} from '$app/navigation';
 import {getCollection, getEntry} from '$lib/scripts/world';
 import { routerItems } from '$lib/state/routerState.svelte';
+import { updateRouterStateFromPath } from "$lib/scripts/router";
 type Node = {
     name: string;
     href: string;
@@ -248,13 +249,7 @@ export function initializeCanvas(canvas: HTMLCanvasElement, incoming_data: any, 
                 // Example: route by node type
                 if (draggedNode.name !== window.location.pathname) {//prevent navigation to self
                     goto(draggedNode.href);
-                    if (draggedNode.size == 7){
-                        getCollection(worldName, draggedNode.name);
-                    } else if (draggedNode.size == 5){
-                        let parent = draggedNode.href.split('/')[2]
-                        getEntry(worldName, parent || worldName, draggedNode.name);
-                    }
-                    routerItems.set([]);
+                    routerItems.set(updateRouterStateFromPath(draggedNode.href));
                     closeNodeMap();
                 }
             }
