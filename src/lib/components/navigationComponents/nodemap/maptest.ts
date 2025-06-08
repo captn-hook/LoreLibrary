@@ -1,7 +1,7 @@
 import {get} from 'svelte/store';
 import {settingsColors, settingsTypography} from '$lib/state/generator.svelte'
 import {goto} from '$app/navigation';
-import {getCollection} from '$lib/scripts/world';
+import {getCollection, getEntry} from '$lib/scripts/world';
 import { routerItems } from '$lib/state/routerState.svelte';
 type Node = {
     name: string;
@@ -250,6 +250,9 @@ export function initializeCanvas(canvas: HTMLCanvasElement, incoming_data: any, 
                     goto(draggedNode.href);
                     if (draggedNode.size == 7){
                         getCollection(worldName, draggedNode.name);
+                    } else if (draggedNode.size == 5){
+                        let parent = draggedNode.href.split('/')[2]
+                        getEntry(worldName, parent || worldName, draggedNode.name);
                     }
                     routerItems.set([]);
                     closeNodeMap();
@@ -297,7 +300,6 @@ function createEntryNode(entry: string, parent: string | null = null) {
         // Find the parent node in the data structure
         const parentNode = findNodeByName(parent);
         if (parentNode) {
-            console.log(world, parent);
             if (world == parent){
                 parentNode.connections.push(createNode(entry, 5, 'entry', `/${world}/${world}/${entry}` ));
             }
