@@ -1,8 +1,7 @@
 export type CardType = {
     imgSrc: string;
-    worldid: string;
+    worldName: string;
     category: string[];
-    title: string;
     description: string;
     author: string;
     date: string;

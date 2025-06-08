@@ -12,7 +12,7 @@ import {
 } from '$lib/state/generator.svelte';
 import { oklch, formatHex } from 'culori';
 
-export function generatePreviewCss() {
+export function generatePreviewCss(dbversion = false) {
 	const typographyCss = formatTypography(settingsTypography);
 
 	const spacingCss = formatSpacing(settingsSpacing);
@@ -31,7 +31,11 @@ ${backgroundsCss}
 ${colorsCss}
 `.trim();
 	// See root +layout.svelte to reference where this attribute is used
-	return `[data-theme="generated"] {\n${themeCss}\n}`;
+    if (dbversion) {
+        return `[data-theme="custom"] {\n${themeCss}\n}`;
+    }else {
+	    return `[data-theme="generated"] {\n${themeCss}\n}`;
+    }
 }
 
 
@@ -54,10 +58,19 @@ export function updateSettingsFromCurrentStyles() {
         const typedKey = key as keyof typeof settingsColors;
         let value = rootStyles.getPropertyValue(key).trim();
         if (value) {
-            if (value.startsWith('oklch(')) {
+            if (value.startsWith('oklch(')) { // if value not in hex
                 value = oklchToHex(value);
             }
-            settingsColors[typedKey] = value;
+            if (typedKey.includes("-contrast")) { // if key is a contrast variable
+                // find the matching variable in the settings colors
+                // the contrast varaible do not hold their own hex value, they reference another variable
+                let color = Object.entries(settingsColors).find(([key, hex]) => hex === value)?.[0];
+                if (color){
+                    settingsColors[typedKey] = `var(${color})`;
+                }
+            }else {
+                settingsColors[typedKey] = value;
+            }
         }
     });
 
@@ -69,7 +82,11 @@ export function updateSettingsFromCurrentStyles() {
             if (value.startsWith('oklch(')) {
                 value = oklchToHex(value);
             }
-            settingsBackgrounds[typedKey] = value;
+            // Find the matching color key in settingsColors
+        }
+        let color = Object.entries(settingsColors).find(([key, hex]) => hex === value)?.[0];
+        if (color){
+            settingsBackgrounds[typedKey] = `var(${color})`;
         }
     });
 
@@ -78,7 +95,16 @@ export function updateSettingsFromCurrentStyles() {
         const typedKey = key as keyof typeof settingsTypography;
         let value = rootStyles.getPropertyValue(key).trim();
         if (value) {
-            settingsTypography[typedKey] = value;
+            if (typedKey.includes("-color")) { // if key is a contrast variable
+                // find the matching variable in the settings colors
+                // the contrast varaible do not hold their own hex value, they reference another variable
+                let color = Object.entries(settingsColors).find(([key, hex]) => hex === value)?.[0];
+                if (color){
+                    settingsTypography[typedKey] = `var(${color})`;
+                }
+            }else {
+                settingsTypography[typedKey] = value;
+            }
         }
     });
 

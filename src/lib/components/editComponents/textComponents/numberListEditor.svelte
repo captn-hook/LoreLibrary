@@ -1,12 +1,13 @@
 <script lang="ts">
     import NumberItem from './numberItem.svelte';
     import { editComponentContents } from '$lib/state/editState.svelte';
+	import DeleteComponentButton from '../controls/deleteComponentButton.svelte';
 
     export let items: { id: string; text: string; subItems?: any[] }[] = [];
     export let index: number;
      function syncToStore() {
 		editComponentContents.update((contents) => {
-			contents[index] = {key: "number", value: items};
+			contents[index] = {numberedList: items};
 			return contents;
 		});
 	}
@@ -36,14 +37,14 @@
 		}
 	}
 
-	const updateItem = (idx: number, updatedItem: { id: string; text: string; subItems?: any[] }) => {
-		items[idx] = updatedItem;
+	const updateItem = (id: number, updatedItem: { id: string; text: string; subItems?: any[] }) => {
+		items[id] = updatedItem;
 		items = [...items];
 		syncToStore();
 	};
 </script>
-
-<ol class="list-decimal pl-6 border-l border-muted ml-2">
+<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg">
+<ol class="list-decimal pl-[2.5%] border-l border-muted ">
     {#each items as number, i (number.id)}
         <NumberItem
             item={number}
@@ -55,4 +56,8 @@
     {/each}
 </ol>
 
-<button on:click={addItem} class="btn preset-tonal-secondary ml-2 button-filled">Add Item</button>
+<button on:click={addItem} class="btn preset-tonal-primary button-filled max-w-40 ml-4 my-2">Add Item</button>
+<div class="absolute top-2 right-2">
+	<DeleteComponentButton {index} />
+</div>
+</div>

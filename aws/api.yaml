@@ -4,7 +4,7 @@ info:
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
 servers:
-  - url: https://440cybvvr6.execute-api.us-west-2.amazonaws.com/prod
+  - url: https://2kzy6vjjm1.execute-api.us-west-2.amazonaws.com/-dev-5a740aa
 tags:
   - name: user
     description: Operations related to users
@@ -40,7 +40,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: limit
@@ -78,7 +78,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       security:
       - lorelibrary-gateway-authorizer: []
@@ -110,7 +110,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -119,6 +119,12 @@ paths:
           description: ID of the world to retrieve
           schema:
             type: string
+        - name: mapping
+          in: query
+          required: false
+          description: Whether to include mapping information, false by default
+          schema:
+            type: boolean
       responses:
         '200':
           description: World retrieved successfully
@@ -137,7 +143,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -170,17 +176,18 @@ paths:
     put:
       tags:
         - collection
-      summary: Create a new collection (requires a user)
+        - entry
+      summary: Create a new collection or entry (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to create the collection in
+          description: ID of the world to create the object in
           schema:
             type: string
       security:
@@ -190,17 +197,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Collection'
+              oneOf:
+                - $ref: '#/components/schemas/Collection'
+                - $ref: '#/components/schemas/Entry'
       responses:
         '200':
-          description: Collection created successfully
+          description: Object created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  collection:
-                    $ref: '#/components/schemas/Collection'
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
         '400':
           description: Bad request
         '500':
@@ -212,7 +220,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -230,60 +238,70 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-  /{WorldId}/{CollectionId}:
+  /{WorldId}/{Id}:
     get:
       tags:
         - collection
-      summary: Get a collection by WorldId and CollectionId
+        - entry
+      summary: Get a collection or entry by WorldId and object ID
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to retrieve the collection from
+          description: ID of the world to retrieve the object from
           schema:
             type: string
-        - name: CollectionId
+        - name: Id
           in: path
           required: true
-          description: ID of the collection to retrieve
+          description: ID of the object to retrieve
+          schema:
+            type: string
+        - name: ParentId
+          in: query
+          required: false
+          description: ID of the parent collection (if any)
           schema:
             type: string
       responses:
         '200':
-          description: Collection retrieved successfully
+          description: Object retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Collection'
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
         '404':
-          description: Collection not found
+          description: Object not found
         '500':
           description: Internal server error
     post:
       tags:
         - collection
-      summary: Update a collection (requires a user)
+        - entry
+      summary: Update a object (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to update the collection in
+          description: ID of the world to update the object in
           schema:
             type: string
-        - name: CollectionId
+        - name: Id
           in: path
           required: true
-          description: ID of the collection to update
+          description: ID of the object to update
           schema:
             type: string
       security:
@@ -293,18 +311,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Collection'
+              oneOf:
+                - $ref: '#/components/schemas/Collection'
+                - $ref: '#/components/schemas/Entry'
       responses:
         '200':
-          description: Collection updated successfully
+          description: Object updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Collection'
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
         '400':
           description: Bad request
         '404':
-          description: Collection not found
+          description: Object not found
         '500':
           description: Internal server error
     put:
@@ -314,7 +336,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -354,32 +376,33 @@ paths:
     delete:
       tags:
         - collection
-      summary: Delete a collection (requires a user)
+        - entry
+      summary: Delete an object (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to delete the collection from
+          description: ID of the world to delete the object from
           schema:
             type: string
-        - name: CollectionId
+        - name: Id
           in: path
           required: true
-          description: ID of the collection to delete
+          description: ID of the object to delete
           schema:
             type: string
       security:
       - lorelibrary-gateway-authorizer: []
       responses:
         '200':
-          description: Collection deleted successfully
+          description: Object deleted successfully
         '404':
-          description: Collection not found
+          description: Object not found
         '500':
           description: Internal server error
   /{WorldId}/{CollectionId}/{EntryId}:
@@ -390,7 +413,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -429,7 +452,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -478,7 +501,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: WorldId
@@ -516,7 +539,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       requestBody:
         required: true
@@ -525,12 +548,12 @@ paths:
             schema:
               $ref: '#/components/schemas/SignUp'
       responses:
-        '201':
-          description: User created successfully
+        '200':
+          description: User signed up successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Token'
+                $ref: '#/components/schemas/Message'
         '400':
           description: Bad request
         '500':
@@ -543,7 +566,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       requestBody:
         required: true
@@ -570,7 +593,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: limit
@@ -611,7 +634,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: username
@@ -633,14 +656,14 @@ paths:
           description: User not found
         '500':
           description: Internal server error
-    post:
+    put:
       tags:
         - user
       summary: Update a user (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: username
@@ -677,7 +700,7 @@ paths:
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function/invocations
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-function${Env}/invocations
         payloadFormatVersion: 2.0
       parameters:
         - name: username
@@ -705,7 +728,7 @@ components:
       x-amazon-apigateway-authorizer:
         type: request
         identitySource: $request.header.Authorization
-        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer/invocations
+        authorizerUri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:lorelibrary-authorizer${Env}/invocations
         authorizerPayloadFormatVersion: '2.0'
         enableSimpleResponses: true
   schemas:
@@ -722,75 +745,43 @@ components:
           type: array
           items:
             type: string
-    World:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-        parentId:
-          type: string
-        ownerId:
-          type: string
-        collections:
-          type: array
-          items:
-            type: string
-    Collection:
-      type: object
-      properties:
-        name:
-          type: string
-        id:
-          type: string
-        content:
-          type: array
-          items:
-            type: string
-        tags:
-          type: array
-          items:
-            type: string
-        parentId:
-          type: string
-        ownerId:
-          type: string
-        collections:
-          type: array
-          items:
-            type: string
-        entries:
-          type: array
-          items:
-            type: string
     Entry:
       type: object
       properties:
         name:
           type: string
-        id:
-          type: string
         content:
           type: array
           items:
             type: string
+        description:
+          type: string
+        image:
+          type: string
+        style:
+          type: string
         tags:
           type: array
           items:
             type: string
         parentId:
           type: string
-        ownerId:
-          type: string
+    Collection:
+      allOf:
+        - $ref: '#/components/schemas/Entry'
+        - type: object
+          properties:
+            entries:
+              type: array
+              items:
+                type: string
+            collections:
+              type: array
+              items:
+                type: string
+    World:
+      allOf:
+        - $ref: '#/components/schemas/Collection'
     Resource:
       type: object
       properties:
@@ -814,9 +805,9 @@ components:
       properties:
         username:
           type: string
-        password:
-          type: string
         email:
+          type: string
+        password:
           type: string
     Token:
       type: object
@@ -824,4 +815,9 @@ components:
         token:
           type: string
         username:
+          type: string
+    Message:
+      type: object
+      properties:
+        message:
           type: string

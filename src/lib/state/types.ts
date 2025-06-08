@@ -13,7 +13,6 @@ export interface SettingsCore {
 	name: string;
 }
 
-// NOTE: SettingsColors handled as `Record<string, string>`
 export interface SettingsColors {
 	'--color-primary-50': string;
 	'--color-primary-100': string;

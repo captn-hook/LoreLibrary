@@ -16,6 +16,11 @@
 	import IconOpen from '@lucide/svelte/icons/chevron-up';
 	import IconClosed from '@lucide/svelte/icons/chevron-down';
 
+	import { settingsBackgrounds } from '$lib/state/generator.svelte';
+	import { settingsColors } from '$lib/state/generator.svelte';
+	import { settingsTypography } from '$lib/state/generator.svelte';
+	import { settingsEdges } from '$lib/state/generator.svelte';
+	import { settingsSpacing } from '$lib/state/generator.svelte';
 
 	// Local
 	const accordionItemProps = {
@@ -24,11 +29,6 @@
 		controlHover: 'hover:preset-tonal',
 		panelPadding: 'p-5'
 	};
-
-	function handleSaveTheme() {
-		document.documentElement.setAttribute('data-theme', 'generated');
-		
-	}
 	let settings: string[] = $state([]);
 </script>
 
@@ -60,12 +60,12 @@
 			</Accordion.Item>
 			<hr class="hr" />
 			<!-- Controls: Edges -->
-			<Accordion.Item value="edges" {...accordionItemProps}>
+			<!-- <Accordion.Item value="edges" {...accordionItemProps}>
 				{#snippet lead()}<span class="btn-icon preset-tonal"><IconEdges size={20} /></span>{/snippet}
 				{#snippet control()}<span class="h4">Edges</span>{/snippet}
 				{#snippet panel()}<ControlsEdges />{/snippet}
 			</Accordion.Item>
-			<hr class="hr" />
+			<hr class="hr" /> -->
 			<!-- Controls: Typography -->
 			<Accordion.Item value="typography" {...accordionItemProps}>
 				{#snippet lead()}<span class="btn-icon preset-tonal"><IconTypography size={20} /></span>{/snippet}
@@ -74,10 +74,5 @@
 			</Accordion.Item>
 			<hr class="hr" />
 		</Accordion>
-	</div>
-	<div class="flex justify-center space-x-3 p-3 preset-primary">
-		<button onclick={handleSaveTheme} class="btn btn-primary preset-filled">Save</button>
-		<button onclick={() => { /* Add your cancel logic here */ }} class="btn btn-secondary preset-filled">Cancel</button>
-
 	</div>
 </section>
