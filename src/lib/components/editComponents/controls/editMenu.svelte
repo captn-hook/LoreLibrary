@@ -12,7 +12,7 @@
         useRole,
     } from "@skeletonlabs/floating-ui-svelte";
     import { fade } from "svelte/transition";
-    import { showStyleControls, editContent, editComponentContents, showCreateCollection } from "$lib/state/editState.svelte";
+    import { showStyleControls, editContent, editComponentContents, showCreateCollection, showCreateEntry } from "$lib/state/editState.svelte";
     import {world, collections, entry} from "$lib/state/worldState.svelte";
     import type { World } from "$lib/types/world";
     import type { Collection } from "$lib/types/collection";
@@ -178,6 +178,17 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                             
                         }}>
                             Create Collection
+                        </button>
+                    </li>
+                    <li>
+                                                <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
+                            showStyleControls.set(false);
+                            editContent.set(false);
+                            showCreateEntry.set(true);
+                            open = false;
+                            
+                        }}>
+                            Create Entry
                         </button>
                     </li>
                 {/if}
