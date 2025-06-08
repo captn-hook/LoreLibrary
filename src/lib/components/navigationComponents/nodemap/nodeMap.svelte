@@ -4,6 +4,7 @@
     import OpenNodeMapButton from "./openNodeMapButton.svelte";
     import { get } from 'svelte/store';
     import { token } from '$lib/state/userState.svelte';
+  import { PUBLIC_API_URL } from "$env/static/public";
     
 
     "use client";
@@ -15,7 +16,7 @@
 
     onMount(() => {
         if (typeof window !== 'undefined') {
-            url = `https://2kzy6vjjm1.execute-api.us-west-2.amazonaws.com/-dev-665d038/${window.location.pathname.split('/')[1]}?map=true`;
+            url = `${PUBLIC_API_URL}/${window.location.pathname.split('/')[1]}?map=true`;
         }
         // Fetch data only on the client side
         fetch(url, {
@@ -36,14 +37,16 @@
                 console.log("Data fetched:", data);
                 if (canvas) {
                     console.log("Setting up canvas with data:", data);
-                    setupCanvas(canvas, data, window.location.pathname.split('/')[1] || 'World');
+                    setupCanvas(canvas, data, window.location.pathname.split('/')[1] || 'World', closeNodeMap);
                 }
             })
             .catch(error => {
                 console.error("Error fetching data:", error);
             });
     });
-
+function closeNodeMap(){
+    openNodeMap = false;
+}
 </script>
 
 <OpenNodeMapButton onClick={() => {
@@ -53,9 +56,16 @@
 }}/>
 {#if openNodeMap}
 {#if canvas}
-    {@html (() => { setupCanvas(canvas, data, window.location.pathname.split('/')[1] || 'World'); return ''; })()}
+    {@html (() => { setupCanvas(canvas, data, window.location.pathname.split('/')[1] || 'World', closeNodeMap); return ''; })()}
 {/if}
-<div style="width: 100%; height: 100vh; overflow: hidden; z-index: 1; position: absolute; top: 0; left: 0; background: white;">
-    <canvas bind:this={canvas} style="margin-left: auto; margin-right: auto;"></canvas>
+<div class="fixed inset-0 z-1000 flex items-center justify-center w-full h-full 
+    bg-gradient-to-b from-surface-100 to-surface-500 
+    dark:from-surface-700 dark:to-surface-900">
+    <div style="position: absolute; top: 16px; right: 16px; z-index: 2;">
+        <button class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md p-4 px-4" on:click={() => openNodeMap = false}>
+            Exit
+        </button>
+    </div>
+    <canvas bind:this={canvas} style="display: block; margin: 0 auto;"></canvas>
 </div>
 {/if}

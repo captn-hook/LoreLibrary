@@ -12,6 +12,7 @@
     import { routerItems } from "$lib/state/routerState.svelte.js";
     import { RouterItem } from "$lib/types/routerItem";
   import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
+  import {settingsColors} from "$lib/state/generator.svelte";
 
 
     let editContentValue;
@@ -30,6 +31,7 @@
             }));
 
     onMount(async () => {
+        console.log(settingsColors);
         if ($worldContext?.name !== data.worldid) {
             await getWorld(data.worldid);
         }

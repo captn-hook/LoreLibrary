@@ -1,5 +1,11 @@
+import {get} from 'svelte/store';
+import {settingsColors, settingsTypography} from '$lib/state/generator.svelte'
+import {goto} from '$app/navigation';
+import {getCollection} from '$lib/scripts/world';
+import { routerItems } from '$lib/state/routerState.svelte';
 type Node = {
     name: string;
+    href: string;
     connections: Node[];
     x: number;
     y: number;
@@ -113,22 +119,25 @@ function drawGraph(ctx: CanvasRenderingContext2D | null, nodes: Node[] = allNode
     
     ctx.clearRect(0, 0, xmax, ymax);
 
-    // Draw connections
-    ctx.strokeStyle = '#ccc';
+    // Draw connections with reduced opacity
+    ctx.save();
+    ctx.strokeStyle = settingsColors["--color-surface-contrast-900" as keyof typeof settingsColors] ?? "#e67e22";
+    ctx.globalAlpha = 0.3;
     for (const connection of connections) {
         ctx.beginPath();
         ctx.moveTo(connection.from.x, connection.from.y);
         ctx.lineTo(connection.to.x, connection.to.y);
         ctx.stroke();
     }
+    ctx.restore();
 
-    // Draw nodes
+    // Draw nodes with full opacity
     for (const node of nodes) {
         node.draw(ctx);
     }
 }
 
-export function setupCanvas(canvas: HTMLCanvasElement, incoming_data: any, worldName: string) {
+export function setupCanvas(canvas: HTMLCanvasElement, incoming_data: any, worldName: string, closeNodeMap: () => void) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     // Set initial canvas size
@@ -142,7 +151,7 @@ export function setupCanvas(canvas: HTMLCanvasElement, incoming_data: any, world
     defaultX = canvas.width / 2;
     defaultY = canvas.height / 2;
 
-    initializeCanvas(canvas, incoming_data, worldName, ctx);
+    initializeCanvas(canvas, incoming_data, worldName, ctx, closeNodeMap);
 
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth * scale;
@@ -190,30 +199,67 @@ export function setupCanvas(canvas: HTMLCanvasElement, incoming_data: any, world
     });
 }
 
-export function initializeCanvas(canvas: HTMLCanvasElement, incoming_data: any, worldName: string, context: CanvasRenderingContext2D) {
+export function initializeCanvas(canvas: HTMLCanvasElement, incoming_data: any, worldName: string, context: CanvasRenderingContext2D, closeNodeMap: () => void) {
 
     // if the d object is not empty, use it as data
 
     // Attach click and drag event listeners
+    let draggedNode: Node | null = null;
+    let dragStart = { x: 0, y: 0 };
+    let dragMoved = false;
+
     canvas.addEventListener('mousedown', (event) => {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        console.log(`Mouse down at (${x}, ${y})`);
+        dragStart = { x, y };
+        dragMoved = false;
+
+        for (const node of allNodes()) {
+            const distance = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2);
+            if (distance < node.size) {
+                draggedNode = node;
+                break;
+            }
+        }
     });
 
     canvas.addEventListener('mousemove', (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        if (draggedNode) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            if (Math.abs(x - dragStart.x) > 2 || Math.abs(y - dragStart.y) > 2) {
+                dragMoved = true;
+            }
+            draggedNode.x = x;
+            draggedNode.y = y;
+        }
     });
 
     canvas.addEventListener('mouseup', (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        console.log(`Mouse up at (${x}, ${y})`);
+        if (draggedNode) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            // If mouse didn't move much, treat as click
+            if (!dragMoved) {
+                // Navigation logic
+                // Example: route by node type
+                if (draggedNode.name !== window.location.pathname) {//prevent navigation to self
+                    goto(draggedNode.href);
+                    if (draggedNode.size == 7){
+                        getCollection(worldName, draggedNode.name);
+                    }
+                    routerItems.set([]);
+                    closeNodeMap();
+                }
+            }
+            draggedNode = null;
+        }
     });
+
+
 
     createRootNode(worldName);    
     createNodes(incoming_data);
@@ -237,19 +283,25 @@ function createNodes(incoming_data: any, parent: string | null = null) {
 }
 
 function createRootNode(name: string) {
-    data = createNode(name, 10);
+    data = createNode(name.replace(/%20/g, " "), 10, 'world', `/${name.replace(/%20/g, " ")}`);
 }
 
 function createEntryNode(entry: string, parent: string | null = null) {
+    let currentpath= window.location.pathname.split('/');
+    let world = currentpath[1];
     if (!data) throw new Error("Data structure is not initialized. Call initializeCanvas first.");
     // if no parent, attach directly to the root
     if (!parent) {
-        data.connections.push(createNode(entry, 5));
+        data.connections.push(createNode(entry, 5, 'entry', `/${world}/${world}/${entry}`));
     } else {
         // Find the parent node in the data structure
         const parentNode = findNodeByName(parent);
         if (parentNode) {
-            parentNode.connections.push(createNode(entry));
+            console.log(world, parent);
+            if (world == parent){
+                parentNode.connections.push(createNode(entry, 5, 'entry', `/${world}/${world}/${entry}` ));
+            }
+            parentNode.connections.push(createNode(entry, 5, 'entry', `/${world}/${parent}/${entry}`));
         } else {
             console.warn(`Parent node ${parent} not found.`);
         }
@@ -257,37 +309,67 @@ function createEntryNode(entry: string, parent: string | null = null) {
 }
 
 function createCollectionNode(name: string, parent: string | null = null) {
+    let currentpath= window.location.pathname.split('/');
+    let world = currentpath[1];
     if (!data) throw new Error("Data structure is not initialized. Call initializeCanvas first.");
 
     if (!parent) {
-        data.connections.push(createNode(name, 7));
+        data.connections.push(createNode(name, 7, 'collection', `/${world}/${name}`));
     } else {
         const parentNode = findNodeByName(parent);
         if (parentNode) {
-            parentNode.connections.push(createNode(name, 7));
+            parentNode.connections.push(createNode(name, 7, 'collection', `/${world}/${name}`));
         } else {
             console.warn(`Parent node ${parent} not found.`);
         }
     }
 }
 
-function createNode(name: string, size = 5): Node {
+function createNode(name: string, size = 5, type="entry", href="/"): Node {
+    let color: string;
+    let textColor: string
+    let mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Detect dark or light mode from the browser
+    
+    if (mode === 'dark') {
+        const darkKey = settingsTypography['--base-font-color-dark'].replace(/^var\((.*)\)$/, '$1');
+        textColor = settingsColors[darkKey as keyof typeof settingsColors] ?? "#ffffff";
+
+        if (type === 'world') {
+            color = settingsColors["--color-primary-900" as keyof typeof settingsColors] ?? "#3498db";
+        } else if (type === "collection") {
+            color = settingsColors["--color-primary-500" as keyof typeof settingsColors] ?? "#e67e22";
+        } else {
+            color = settingsColors["--color-primary-200" as keyof typeof settingsColors] ?? "#9b59b6";
+        }
+    } else { // light mode
+        const lightKey = settingsTypography['--base-font-color'].replace(/^var\((.*)\)$/, '$1');
+        textColor = settingsColors[lightKey as keyof typeof settingsColors] ?? "#000000";
+        if (type === 'world') {
+            color = settingsColors["--color-primary-200" as keyof typeof settingsColors] ?? "#3498db";
+        } else if (type === "collection") {
+            color = settingsColors["--color-primary-500" as keyof typeof settingsColors] ?? "#e67e22";
+        } else {
+            color = settingsColors["--color-primary-900" as keyof typeof settingsColors] ?? "#9b59b6";
+        }
+    }
     return {
         name: name,
         size: size,
+        href: href,
         connections: [],
         x: defaultX + Math.random() * defaultX - defaultX / 2, // Randomize initial position
         y: defaultY + Math.random() * defaultY - defaultY / 2, // Randomize initial position
         dx: Math.random() * defaultDxMagnitude - defaultDxMagnitude / 2,
         dy: Math.random() * defaultDyMagnitude - defaultDyMagnitude / 2,
-        color: '#000',
-        
+        color: color,
         draw: function(ctx) {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.closePath();
+            ctx.fillStyle= textColor;
             ctx.fillText(this.name, this.x + this.size + 5, this.y);
         }
     };

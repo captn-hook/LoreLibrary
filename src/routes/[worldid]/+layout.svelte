@@ -37,12 +37,14 @@
 
 <div class="flex w-full h-full">
 	<!-- Main Content -->
-	<div class="flex-grow flex-col flex" style="width: calc(100% - var(--style-editor-width));">
-		<div class="flex flex-row justify-end max-h-[5%] w-full">
-			<NodeMap/>
-		{#if $page?.url?.pathname !== '/' && $page?.url?.pathname !== '/dashboard' && $page?.url?.pathname !== '/workshop'}
-				<EditMenu/>
-		{/if}
+	<div class="flex-grow flex-col flex h-30" style="width: calc(100% - var(--style-editor-width));">
+		<div class="flex flex-row justify-end w-full">
+			<nav class="flex justify-between items-center mx-3 mb-1">
+				<NodeMap/>
+			{#if $page?.url?.pathname !== '/' && $page?.url?.pathname !== '/dashboard' && $page?.url?.pathname !== '/workshop'}
+					<EditMenu/>
+			{/if}
+			</nav>
 		</div>
 		{@render children()}
 	</div>

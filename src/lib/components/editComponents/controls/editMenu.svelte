@@ -111,10 +111,9 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
     }
 </script>
     
-<nav class="flex justify-between items-center mx-3 mb-1 mt-2 ">
-    <!-- Left: Save/Cancel -->
+{#if $editContent}
     <div class="flex gap-2">
-        {#if $editContent}
+
             <button
                 class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md"
                 onclick={handleSave}
@@ -127,19 +126,17 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             >
                 Cancel
             </button>
-        {/if}
     </div>
+{/if}
 
     <!-- Right: Edit Options -->
-    <div class="flex ml-auto">
         <button
             bind:this={floating.elements.reference}
             {...interactions.getReferenceProps()}
-            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 rounded-md"
+            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md"
         >
             Edit Options
         </button>
-    </div>
     <!-- Floating Element -->
     {#if open}
         <div
@@ -172,7 +169,6 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             <FloatingArrow bind:ref={elemArrow} context={floating.context} fill="#575969" />
         </div>
     {/if}
-</nav>
 
 <style>
     .menu {
