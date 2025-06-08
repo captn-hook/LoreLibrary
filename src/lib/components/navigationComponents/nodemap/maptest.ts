@@ -252,7 +252,6 @@ export function initializeCanvas(canvas: HTMLCanvasElement, incoming_data: any, 
                         getCollection(worldName, draggedNode.name);
                     } else if (draggedNode.size == 5){
                         let parent = draggedNode.href.split('/')[2]
-                        console.log(parent);
                         getEntry(worldName, parent || worldName, draggedNode.name);
                     }
                     routerItems.set([]);
@@ -301,7 +300,6 @@ function createEntryNode(entry: string, parent: string | null = null) {
         // Find the parent node in the data structure
         const parentNode = findNodeByName(parent);
         if (parentNode) {
-            console.log(world, parent);
             if (world == parent){
                 parentNode.connections.push(createNode(entry, 5, 'entry', `/${world}/${world}/${entry}` ));
             }
