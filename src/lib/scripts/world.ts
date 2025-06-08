@@ -34,9 +34,8 @@ export function getWorld(worldId: string) {
             if (!data) {
                 console.warn('No data received, returning base world data.');
             }
-            console.log("World data:", data); // Log the world data for debugging
+            console.log("World data:", data);
             let w = World.fromJson(data); // Convert the JSON data to a World object
-            console.log("World object:", w); // Log the world object for debugging
             routerItems.set([new RouterItem(w.name, `/${w.name}`)]); // Set the router items with the new world
             worldContext.set(w); // Update the world context store with the new world
         })
@@ -118,7 +117,6 @@ export function getWorlds() {
 export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
     let url = '';
     let path = window.location.pathname.split('/');
-    console.log("Path:", path.length, path); // Log the path for debugging
     if (path.length == 2) { // worldId
         url = `${PUBLIC_API_URL}/${path[1]}`;
     }else if (path.length == 3) { // worldId and collectionId
@@ -159,10 +157,8 @@ export function createCollection(name: string, tags: string[], description: stri
                 collectionsContext.update((collections: Collection[] | null) => {
                     if (collections) {
                         const collection = collections.find((c: Collection) => c.name === decodeURIComponent(path[2]).replace(/%20/g, ' '));
-                        console.log('found collection', collection);
                         if (collection) {
                             collection.collections.push(name);
-                            console.log('pushing new collection to array');
                         }
                     }
                     return collections;
@@ -221,6 +217,59 @@ export function updateCollection(id : string){
 
 }
 
+export function createEntry(name: string, tags: string[], description: string, imageUrl: string) {
+    let url = '';
+    let path = window.location.pathname.split('/');
+    if (path.length == 2) { // worldId
+        url = `${PUBLIC_API_URL}/${path[1]}`;
+    }else if (path.length == 3) { // worldId and collectionId
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}`;
+    }
+
+    return fetch(url, {
+        method: 'PUT',
+        headers: {
+            'accept': 'application/json', // Specify the expected response format
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*',  // Ensure you have a valid token
+        },
+        body: JSON.stringify({
+            name: name,
+            tags: tags,
+            description: description,
+            image: imageUrl,
+            content: [],
+            parentId: path.length == 2 ? path[1] : path[2], // Set the parentId based on the current path
+            worldId: path[1], // Set the worldId based on the current path
+        }),
+    }).then((response) => {
+        if (!response.ok) {
+            console.log(response);
+            return null;
+        } else if (response.ok) {
+            if (path.length == 2) {
+
+                worldContext.update((world: World | null) => {
+                    if (world) {
+                        world.entries.push(name);
+                    }
+                    return world;
+                });
+            } else if (path.length == 3) {
+                collectionsContext.update((collections: Collection[] | null) => {
+                    if (collections) {
+                        const collection = collections.find((c: Collection) => c.name === decodeURIComponent(path[2]).replace(/%20/g, ' '));
+                        if (collection) {
+                            collection.entries.push(name);
+                        }
+                    }
+                    return collections;
+                });
+        }
+    }});
+}
+
 export async function getEntry(worldId: string, collectionId: string, entryId: string) {
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`)
     .then((response) => {
@@ -237,7 +286,6 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
         }
         console.log(data);
         let e = Entry.fromJson(data); // Convert the JSON data to a World object
-        console.log("Entry object:", e); // Log the entry object for debugging
         if (get(routerItems).length > 0) {
 
             if (!get(routerItems).some(item => item.id === e.name)) {
@@ -259,10 +307,17 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
 
 export async function updateEntry() {
     const entry = get(entryContext);
+    let url = '';
+    let path = window.location.pathname.split('/');
+    if (path[1] == path[2]) { // worldId, we use /worldid/world id to tell the browser its an entry
+        url = `${PUBLIC_API_URL}/${path[1]}/${entry?.name}`;
+    }else { // worldId and collectionId
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`;
+    }
     if (!entry){
         return
     }
-    return fetch(`${PUBLIC_API_URL}/${entry.worldId}/${entry.parentId}/${entry.name}`, {
+    return fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

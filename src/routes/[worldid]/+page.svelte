@@ -5,14 +5,16 @@
     import Navbar from "$lib/components/navigationComponents/navbar.svelte";
     import Router from "$lib/components/navigationComponents/router.svelte";
     import Content from "$lib/components/content.svelte";
-    import { editContent, showCreateCollection } from "$lib/state/editState.svelte";
+    import { editContent, showCreateCollection, showCreateEntry } from "$lib/state/editState.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import { onDestroy, onMount } from "svelte";
     import { world as worldContext} from "$lib/state/worldState.svelte";
     import { routerItems } from "$lib/state/routerState.svelte.js";
     import { RouterItem } from "$lib/types/routerItem";
-  import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
-  import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
+    import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
+    import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
+    import CreateEntryForm from "$lib/components/editComponents/addDocumentComponents/createEntryForm.svelte";
+    import {World} from "$lib/types/world";
 
 
     let editContentValue;
@@ -24,11 +26,16 @@
         unsubscribe();
     });
 
-    const getNavItems = (collections: Array<{ key: string } | string> | undefined) => 
-            collections?.map((collection) => ({
-                name: typeof collection === 'string' ? collection : collection.key,
-                href: `/${data.worldid}/${typeof collection === 'string' ? collection : collection.key}`
-            }));
+    function getNavItems(world: World | null): {name: string, href: string}[] {
+        let navItems : {name: string, href: string}[] = [];
+        (world?.collections ?? []).forEach(c => {
+            navItems.push({name: c, href: `/${data.worldid}/${c}`});
+        });
+        (world?.entries ?? []).forEach(e => {
+            navItems.push({name: e, href: `/${data.worldid}/${data.worldid}/${e}`});
+        });
+        return navItems;
+    }
 
     onMount(async () => {
         if ($worldContext?.name !== data.worldid) {
@@ -50,7 +57,7 @@
     })
 </script>
 <div>
-<Navbar navItems={getNavItems($worldContext?.collections)} />
+<Navbar navItems={getNavItems($worldContext)} />
 <Router/>
     <div class="flex flex-row">
         <div class="flex-1 ml-3">
@@ -66,7 +73,10 @@
         </div>
     </div>
 {#if $showCreateCollection}
-<CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+    <CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+{/if}
+{#if $showCreateEntry}
+    <CreateEntryForm closeMenu={() => showCreateEntry.set(false)} />
 {/if}
 </div>
     

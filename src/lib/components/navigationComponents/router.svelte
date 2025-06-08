@@ -18,6 +18,10 @@
         }
         // Initialize routerItems based on the current path
         const segments = getPathSegments();
+        if (segments[0] == segments[1]){// a worlds entry
+            segments.splice(1, 1); // Remove the second segment if it's the same as the first
+
+        }
         if (segments.length > 0) {
             const items = segments.map((segment, index) => ({
                 id: segment,

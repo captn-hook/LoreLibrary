@@ -6,11 +6,12 @@
     import Router from "$lib/components/navigationComponents/router.svelte";
     import {collections} from "$lib/state/worldState.svelte";
     import {Collection} from "$lib/types/collection";
-    import {editContent, showCreateCollection} from "$lib/state/editState.svelte";
+    import {editContent, showCreateCollection, showCreateEntry} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
     import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
+    import CreateEntryForm from "$lib/components/editComponents/addDocumentComponents/createEntryForm.svelte";
 
 
     let collection: Collection;
@@ -67,6 +68,9 @@
         </div>
     </div>
 {#if $showCreateCollection}
-<CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+    <CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+{/if}
+{#if $showCreateEntry}
+    <CreateEntryForm closeMenu={() => showCreateEntry.set(false)} />
 {/if}
 </div>
