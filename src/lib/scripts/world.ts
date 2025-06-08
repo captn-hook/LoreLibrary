@@ -158,9 +158,11 @@ export function createCollection(name: string, tags: string[], description: stri
             } else if (path.length == 3) {
                 collectionsContext.update((collections: Collection[] | null) => {
                     if (collections) {
-                        const collection = collections.find((c: Collection) => c.name === path[2]);
+                        const collection = collections.find((c: Collection) => c.name === decodeURIComponent(path[2]).replace(/%20/g, ' '));
+                        console.log('found collection', collection);
                         if (collection) {
                             collection.collections.push(name);
+                            console.log('pushing new collection to array');
                         }
                     }
                     return collections;
