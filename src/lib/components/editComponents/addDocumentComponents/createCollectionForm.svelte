@@ -23,6 +23,7 @@
 </script>
 <div class="create-world-form bg-surface-100-900 w-[25%]"
     use:clickOutside={closeMenu}>
+    <h2 class="text-3xl">Create a Collection</h2>
     <form
     class="bg-surface-100-900 space-y-4"
     on:submit|preventDefault={handleSubmit}>
@@ -61,9 +62,6 @@
             <input id="image_url" type="text" bind:value={imageUrl} placeholder="Enter image URL" class="input input-bordered" />
         </div>
         <div class="form-control">
-            <label for="type" class="label">
-                <span class="label-text">Type</span>
-            </label>
         </div>
         <div class="form-actions flex justify-end space-x-2">
             <button type="submit" class="btn btn-primary">Submit</button>

@@ -118,10 +118,11 @@ export function getWorlds() {
 export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
     let url = '';
     let path = window.location.pathname.split('/');
-    if (path.length < 2) { // worldId
+    console.log("Path:", path.length, path); // Log the path for debugging
+    if (path.length == 2) { // worldId
         url = `${PUBLIC_API_URL}/${path[1]}`;
-    }else if (path.length < 3) { // worldId and collectionId
-        url = `${PUBLIC_API_URL}/${url[1]}/${url[2]}`;
+    }else if (path.length == 3) { // worldId and collectionId
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}`;
     }
     return fetch(url, {
         method: 'PUT',
@@ -137,13 +138,35 @@ export function createCollection(name: string, tags: string[], description: stri
             description: description,
             image: imageUrl,
             content: [],
+            collections: [],
+            entries: [],
+            parentId: path.length == 2 ? path[1] : path[2], // Set the parentId based on the current path
         }),
     }).then((response) => {
         if (!response.ok) {
             console.log(response);
             return null;
+        } else if (response.ok) {
+            if (path.length == 2) {
+
+                worldContext.update((world: World | null) => {
+                    if (world) {
+                        world.collections.push(name);
+                    }
+                    return world;
+                });
+            } else if (path.length == 3) {
+                collectionsContext.update((collections: Collection[] | null) => {
+                    if (collections) {
+                        const collection = collections.find((c: Collection) => c.name === path[2]);
+                        if (collection) {
+                            collection.collections.push(name);
+                        }
+                    }
+                    return collections;
+                });
         }
-    });
+    }});
 }
 
 

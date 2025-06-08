@@ -12,12 +12,12 @@
         useRole,
     } from "@skeletonlabs/floating-ui-svelte";
     import { fade } from "svelte/transition";
-    import { showStyleControls, editContent, editComponentContents } from "$lib/state/editState.svelte";
+    import { showStyleControls, editContent, editComponentContents, showCreateCollection } from "$lib/state/editState.svelte";
     import {world, collections, entry} from "$lib/state/worldState.svelte";
     import type { World } from "$lib/types/world";
     import type { Collection } from "$lib/types/collection";
     import type { Entry } from "$lib/types/entry";
-    import { updateWorld, updateCollection, updateEntry } from "$lib/scripts/world";
+    import { updateWorld, updateCollection, updateEntry, createCollection } from "$lib/scripts/world";
     
     // State
     let open = $state(false);
@@ -146,12 +146,12 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             bind:this={floating.elements.floating}
             style={floating.floatingStyles}
             {...interactions.getFloatingProps()}
-            class="floating popover-neutral"
+            class="floating popover-neutral z-50"
             transition:fade={{ duration: 200 }}
         >
             <ul class="menu preset-tonal-primary rounded-md">
                 <li>
-                    <button class="menu-item rounded-md" onclick={() => {
+                    <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
                         showStyleControls.set(false);
                         editContent.set(true);
                         open = false;}                        
@@ -160,7 +160,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                     </button>
                 </li>
                 <li>
-                    <button class="menu-item preset-tonal-primary rounded-md" onclick={() => {
+                    <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
                         showStyleControls.set(true);
                         editContent.set(false);
                         open = false;}
@@ -168,6 +168,19 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                         Edit Theme
                     </button>
                 </li>
+                {#if window.location.pathname.split("/").length <= 3}
+                    <li>
+                        <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
+                            showStyleControls.set(false);
+                            editContent.set(false);
+                            showCreateCollection.set(true);
+                            open = false;
+                            
+                        }}>
+                            Create Collection
+                        </button>
+                    </li>
+                {/if}
             </ul>
             <FloatingArrow bind:ref={elemArrow} context={floating.context} fill="#575969" />
         </div>
@@ -189,6 +202,6 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
         width: 100%;
     }
     .menu-item:hover {
-        background-color: #f0f0f0;
+        background-color: 'card-hover';
     }
 </style>

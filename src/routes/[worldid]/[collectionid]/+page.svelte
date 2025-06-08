@@ -6,10 +6,11 @@
     import Router from "$lib/components/navigationComponents/router.svelte";
     import {collections} from "$lib/state/worldState.svelte";
     import {Collection} from "$lib/types/collection";
-    import {editContent} from "$lib/state/editState.svelte";
+    import {editContent, showCreateCollection} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
+    import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
 
 
     let collection: Collection;
@@ -19,7 +20,6 @@
         }
         collections.subscribe(value => {
         collection = value?.find(collection => collection.name === data.collectionid) ?? {} as Collection;
-        console.log(collection);
         if (collection?.styling && collection.styling != '') {
             if (collection.styling.length > 20) { // custom
                 const styleTag = document.createElement('style');
@@ -62,4 +62,7 @@
             <img class="relative m-4" src={collection?.image} alt=""/>
         </div>
     </div>
+{#if $showCreateCollection}
+<CreateCollectionForm closeMenu={() => showCreateCollection.set(false)}/>
+{/if}
 </div>
