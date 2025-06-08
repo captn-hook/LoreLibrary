@@ -115,6 +115,38 @@ export function getWorlds() {
         });
 }
 
+export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
+    let url = '';
+    let path = window.location.pathname.split('/');
+    if (path.length < 2) { // worldId
+        url = `${PUBLIC_API_URL}/${path[1]}`;
+    }else if (path.length < 3) { // worldId and collectionId
+        url = `${PUBLIC_API_URL}/${url[1]}/${url[2]}`;
+    }
+    return fetch(url, {
+        method: 'PUT',
+        headers: {
+            'accept': 'application/json', // Specify the expected response format
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`, // Add the token to the headers
+            'access-control-allow-origin': '*',  // Ensure you have a valid token
+        },
+        body: JSON.stringify({
+            name: name,
+            tags: tags,
+            description: description,
+            image: imageUrl,
+            content: [],
+        }),
+    }).then((response) => {
+        if (!response.ok) {
+            console.log(response);
+            return null;
+        }
+    });
+}
+
+
 
 export function getCollection(worldId: string, collectionId: string) {
     return fetch(`${PUBLIC_API_URL}/${worldId}/${collectionId}`)
