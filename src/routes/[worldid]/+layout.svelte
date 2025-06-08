@@ -8,9 +8,8 @@
 	import { page } from '$app/stores';
 	import { onMount, onDestroy } from 'svelte';
 	import {browser} from '$app/environment';
-
+	import NodeMap from '$lib/components/navigationComponents/nodemap/nodeMap.svelte';
 	export const reset = true; // Prevent inheritance from the global layout
-
 	let { children } = $props();
     onMount(() => {
         updateSettingsFromCurrentStyles(); // Preps theme store with values from current theme
@@ -38,10 +37,15 @@
 
 <div class="flex w-full h-full">
 	<!-- Main Content -->
-	<div class="flex-grow" style="width: calc(100% - var(--style-editor-width));">
-		{#if $page?.url?.pathname !== '/' && $page?.url?.pathname !== '/dashboard' && $page?.url?.pathname !== '/workshop'}
-				<EditMenu/>
-		{/if}
+	<div class="flex-grow flex-col flex h-30" style="width: calc(100% - var(--style-editor-width));">
+		<div class="flex flex-row justify-end w-full">
+			<nav class="flex justify-between items-center mx-3 mb-1">
+				<NodeMap/>
+			{#if $page?.url?.pathname !== '/' && $page?.url?.pathname !== '/dashboard' && $page?.url?.pathname !== '/workshop'}
+					<EditMenu/>
+			{/if}
+			</nav>
+		</div>
 		{@render children()}
 	</div>
 

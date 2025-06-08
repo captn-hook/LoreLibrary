@@ -11,6 +11,7 @@
     import { world as worldContext} from "$lib/state/worldState.svelte";
     import { routerItems } from "$lib/state/routerState.svelte.js";
     import { RouterItem } from "$lib/types/routerItem";
+  import {settingsColors} from "$lib/state/generator.svelte";
     import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
     import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
     import CreateEntryForm from "$lib/components/editComponents/addDocumentComponents/createEntryForm.svelte";
@@ -38,6 +39,7 @@
     }
 
     onMount(async () => {
+        console.log(settingsColors);
         if ($worldContext?.name !== data.worldid) {
             await getWorld(data.worldid);
         }
