@@ -10,7 +10,7 @@ export function updateRouterStateFromPath(path: string) : RouterItem[]{
         switch (i) {
             case 0: //world
                 href = `/${pathParts[0]}`;
-                if (pathParts[0].replace(/and|%20/g, ' ') == pathParts[1].replace(/and|%20/g, ' ')) { // a worlds entry
+                if (pathParts[0]?.replace(/and|%20/g, ' ') == pathParts[1]?.replace(/and|%20/g, ' ')) { // a worlds entry
                     i+=1; // skip next router item since it is a duplicate
                 }
                 break;
