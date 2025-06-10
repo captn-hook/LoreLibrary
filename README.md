@@ -19,7 +19,11 @@ you could create it like, mind the region:
 
     aws s3api create-bucket --bucket lorelibrary-deployment-artifacts --region us-west-2
 
-# for the front end, 
+# deploy cloudformation
+use the github deploy action to enact the cloudformation
+take note of the api gateway stage's url, and add it to your .env
+
+## for the front end, 
 test locally
 
     npm i
@@ -27,7 +31,8 @@ test locally
     npm run dev
 
 # to deploy, use vercel 
-set the environment variable
+hook vercel up to your repo
+amd set the environment variable
 
     PUBLIC_API_URL: your api gateway deployment
 
@@ -46,5 +51,3 @@ https://github.com/skeletonlabs/skeleton
 © 2022 Skeleton Labs  
 Licensed under the MIT License
 See License.skeleton.txt
-
-Hello
