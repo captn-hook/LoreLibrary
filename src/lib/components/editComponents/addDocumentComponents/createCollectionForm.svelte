@@ -89,6 +89,5 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
     }
 </style>
