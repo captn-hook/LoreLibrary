@@ -2,34 +2,17 @@
     import { routerItems } from '$lib/state/routerState.svelte';
     import {editContent} from '$lib/state/editState.svelte';
     import { onMount } from 'svelte';
+    import { updateRouterStateFromPath } from "$lib/scripts/router";
 
     // Helper function to safely split and decode the path
-    function getPathSegments() {
-        return window.location.pathname
-            .split('/')
-            .filter(Boolean)
-            .map(segment => decodeURIComponent(segment));
+
+    // Reactive initialization of routerItems based on the current path
+    $: {
+        if (typeof window !== 'undefined' && $routerItems.length === 0) {
+                routerItems.set(updateRouterStateFromPath(window.location.pathname));
+
+        }
     }
-
-    onMount(() => {
-        if ($routerItems.length > 0) {
-            // If routerItems already has items, no need to reinitialize
-            return;
-        }
-        // Initialize routerItems based on the current path
-        const segments = getPathSegments();
-        if (segments[0] == segments[1]){// a worlds entry
-            segments.splice(1, 1); // Remove the second segment if it's the same as the first
-
-        }
-        if (segments.length > 0) {
-            const items = segments.map((segment, index) => ({
-                id: segment,
-                href: '/' + segments.slice(0, index + 1).join('/')
-            }));
-            routerItems.set(items);
-        }
-    });
 
     function onNavigate(itemIndex: number) {
         routerItems.update(items => items.slice(0, itemIndex + 1));

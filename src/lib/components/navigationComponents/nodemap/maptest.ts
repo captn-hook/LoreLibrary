@@ -3,6 +3,7 @@ import {settingsColors, settingsTypography} from '$lib/state/generator.svelte'
 import {goto} from '$app/navigation';
 import {getCollection, getEntry} from '$lib/scripts/world';
 import { routerItems } from '$lib/state/routerState.svelte';
+import { updateRouterStateFromPath } from "$lib/scripts/router";
 type Node = {
     name: string;
     href: string;
@@ -29,6 +30,34 @@ const repulsionThreshold = 100;
 const attractionForce = 0.0005;
 const attractionThreshold = 50;
 const damping = 0.9;
+var i = 0; // counter for node creation
+var angleStep = Math.PI / 12; // 30 degrees per step (adjust for spacing)
+var radiusStep = 3; // distance between spiral loops (adjust as needed)
+
+function getNextPosition(): [number, number] {
+    if (i === 0) {
+        // First node is at the center
+        i++;
+        return [defaultX, defaultY];
+    }
+
+    var theta = i * angleStep;
+    var radius = i * radiusStep;
+
+    var x = defaultX + radius * Math.cos(theta);
+    var y = defaultY + radius * Math.sin(theta);
+
+    i++;
+
+    // ensure the position is within bounds
+    if (x < 0) x = 1;
+    if (x > xmax) x = xmax - 1;
+    if (y < 0) y = 1;
+    if (y > ymax) y = ymax - 1;
+
+    return [x, y];
+}
+
 
 function allNodes(): Node[] {
     if (!data) return [];
@@ -106,9 +135,11 @@ function applyForces(
 
         // Keep nodes within canvas bounds
         if (node.x < 0 || node.x > xmax) {
+            node.x = Math.max(0, Math.min(node.x, xmax)); // Clamp to bounds
             node.dx *= -1; // Reverse direction
         }
         if (node.y < 0 || node.y > ymax) {
+            node.y = Math.max(0, Math.min(node.y, ymax)); // Clamp to bounds
             node.dy *= -1; // Reverse direction
         }
     }
@@ -122,7 +153,8 @@ function drawGraph(ctx: CanvasRenderingContext2D | null, nodes: Node[] = allNode
     // Draw connections with reduced opacity
     ctx.save();
     ctx.strokeStyle = settingsColors["--color-surface-contrast-900" as keyof typeof settingsColors] ?? "#e67e22";
-    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.2;
     for (const connection of connections) {
         ctx.beginPath();
         ctx.moveTo(connection.from.x, connection.from.y);
@@ -248,13 +280,7 @@ export function initializeCanvas(canvas: HTMLCanvasElement, incoming_data: any, 
                 // Example: route by node type
                 if (draggedNode.name !== window.location.pathname) {//prevent navigation to self
                     goto(draggedNode.href);
-                    if (draggedNode.size == 7){
-                        getCollection(worldName, draggedNode.name);
-                    } else if (draggedNode.size == 5){
-                        let parent = draggedNode.href.split('/')[2]
-                        getEntry(worldName, parent || worldName, draggedNode.name);
-                    }
-                    routerItems.set([]);
+                    routerItems.set(updateRouterStateFromPath(draggedNode.href));
                     closeNodeMap();
                 }
             }
@@ -355,13 +381,14 @@ function createNode(name: string, size = 5, type="entry", href="/"): Node {
             color = settingsColors["--color-primary-900" as keyof typeof settingsColors] ?? "#9b59b6";
         }
     }
+    var [x, y] = getNextPosition();
     return {
         name: name,
         size: size,
         href: href,
         connections: [],
-        x: defaultX + Math.random() * defaultX - defaultX / 2, // Randomize initial position
-        y: defaultY + Math.random() * defaultY - defaultY / 2, // Randomize initial position
+        x: x,
+        y: y,
         dx: Math.random() * defaultDxMagnitude - defaultDxMagnitude / 2,
         dy: Math.random() * defaultDyMagnitude - defaultDyMagnitude / 2,
         color: color,

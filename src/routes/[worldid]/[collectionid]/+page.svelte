@@ -12,6 +12,7 @@
     import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
     import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
     import CreateEntryForm from "$lib/components/editComponents/addDocumentComponents/createEntryForm.svelte";
+    import { browser } from '$app/environment';
 
 
     let collection: Collection;
@@ -20,10 +21,8 @@
     $: collection = $collections?.find(c => c.name === data.collectionid) ?? {} as Collection;
 
     // Fetch collection if not present
-    $: if (!$collections?.some(c => c.name === data.collectionid)) {
-        onMount(() => {
-            getCollection(data.worldid, data.collectionid);
-        });
+    $: if (browser && !$collections?.some(c => c.name === data.collectionid)) {
+        getCollection(data.worldid, data.collectionid);
     }
 
     // Apply collection styling if present

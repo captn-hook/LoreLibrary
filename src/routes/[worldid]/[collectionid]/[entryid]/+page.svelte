@@ -19,23 +19,25 @@
     onDestroy(() => {
         unsubscribe();
     });
-    onMount(async () => {
-        if ($entryContext?.name !== data.entryid) {
-            await getEntry(data.worldid, data.collectionid, data.entryid);
-        }
-        if ($entryContext?.styling) {
-            if ($entryContext.styling.length > 20) { // custom
-                const styleTag = document.createElement('style');
-			    styleTag.textContent = $entryContext.styling;
-			    document.head.appendChild(styleTag);
-                document.documentElement.setAttribute('data-theme', 'custom');
 
-            }else {
+    $: if (typeof window !== 'undefined' && $entryContext?.name !== data.entryid) {
+        getEntry(data.worldid, data.collectionid, data.entryid);
+    }
+    $: if (
+        typeof window !== 'undefined' &&
+        $entryContext?.styling &&
+        $entryContext.styling !== ''
+    ) {
+        if ($entryContext.styling.length > 20) {
+            const styleTag = document.createElement('style');
+            styleTag.textContent = $entryContext.styling;
+            document.head.appendChild(styleTag);
+            document.documentElement.setAttribute('data-theme', 'custom');
+        } else {
             document.documentElement.setAttribute('data-theme', $entryContext.styling);
-            }
-            updateSettingsFromCurrentStyles();
         }
-    })
+        updateSettingsFromCurrentStyles();
+    }
 </script>
 
 <div>
