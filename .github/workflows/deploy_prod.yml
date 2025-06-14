@@ -33,10 +33,10 @@ jobs:
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
-        aws s3 cp index.zip s3://lorelibrary--deployment-artifacts-dev/
+        aws s3 cp index.zip s3://lorelib-deployment-artifacts-dev/
 
     - name: Upload OpenAPI Spec
-      run: aws s3 cp aws/api.yaml s3://lorelibrary--deployment-artifacts-dev/
+      run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts-dev/
 
     - name: Create Change Set
       id: changeset
@@ -48,9 +48,9 @@ jobs:
             --template-body file://aws/stack.yml \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
             --parameters \
-              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelibrary--deployment-artifacts-dev \
+              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelib-deployment-artifacts-dev \
               ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
-              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelibrary--deployment-artifacts-dev \
+              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelib-deployment-artifacts-dev \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue= \
@@ -103,4 +103,4 @@ jobs:
     #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelibrary-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelibrary-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelibrary-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml --region us-west-2
 
     - name: Close Bucket
-      run: aws s3api put-public-access-block --bucket lorelibrary--resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
+      run: aws s3api put-public-access-block --bucket lorelib-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
