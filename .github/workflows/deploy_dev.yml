@@ -39,10 +39,10 @@ jobs:
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
-        aws s3 cp index.zip s3://lorelib-deployment-artifacts/
+        aws s3 cp index.zip s3://lorelib-deployment-artifacts-pain/
 
     - name: Upload OpenAPI Spec
-      run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts/
+      run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts-pain/
 
     - name: Create Change Set
       id: changeset
@@ -54,9 +54,9 @@ jobs:
             --template-body file://aws/stack.yml \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
             --parameters \
-              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelib-deployment-artifacts \
+              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelib-deployment-artifacts-pain \
               ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
-              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelib-deployment-artifacts \
+              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelib-deployment-artifacts-pain \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue=-dev \
