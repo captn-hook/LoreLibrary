@@ -30,7 +30,7 @@ Resources:
   ResourcesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub lorelibrary-resources${Env}
+      BucketName: !Sub lorelibresources${Env}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
