@@ -38,6 +38,9 @@ jobs:
     - name: Upload OpenAPI Spec
       run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts/
 
+    - name: Validate CloudFormation Template
+      run: aws cloudformation validate-template --template-body file://aws/stack.yml
+
     - name: Deploy CloudFormation Stack
       run: |   
         SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
