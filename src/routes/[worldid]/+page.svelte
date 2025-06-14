@@ -44,6 +44,12 @@
             await getWorld(data.worldid);
         }
         if ($worldContext?.styling) {
+            // Remove all <style> tags that start with '[data-theme="custom"]'
+            document.querySelectorAll('style').forEach(tag => {
+                if (tag.textContent?.trim().startsWith('[data-theme="custom"]')) {
+                    tag.remove();
+                }
+            });
             if ($worldContext.styling.length > 20) { // custom
                 const styleTag = document.createElement('style');
 			    styleTag.textContent = $worldContext.styling;

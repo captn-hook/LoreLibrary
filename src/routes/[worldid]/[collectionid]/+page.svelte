@@ -27,6 +27,12 @@
 
     // Apply collection styling if present
     $: if (collection?.styling && collection.styling !== '') {
+            // Remove all <style> tags that start with '[data-theme="custom"]'
+            document.querySelectorAll('style').forEach(tag => {
+                if (tag.textContent?.trim().startsWith('[data-theme="custom"]')) {
+                    tag.remove();
+                }
+            });
         if (collection.styling.length > 20) {
             const styleTag = document.createElement('style');
             styleTag.textContent = collection.styling;

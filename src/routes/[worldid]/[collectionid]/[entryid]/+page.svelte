@@ -28,13 +28,21 @@
         $entryContext?.styling &&
         $entryContext.styling !== ''
     ) {
+        // Remove all <style> tags that start with '[data-theme="custom"]'
+        document.querySelectorAll('style').forEach(tag => {
+            if (tag.textContent?.trim().startsWith('[data-theme="custom"]')) {
+                tag.remove();
+                }
+            });
         if ($entryContext.styling.length > 20) {
             const styleTag = document.createElement('style');
             styleTag.textContent = $entryContext.styling;
             document.head.appendChild(styleTag);
             document.documentElement.setAttribute('data-theme', 'custom');
-        } else {
+        } else if ($entryContext.styling !== '') {
             document.documentElement.setAttribute('data-theme', $entryContext.styling);
+        } else {
+            document.documentElement.setAttribute('data-theme', 'pine'); //default if parent style was not passed
         }
         updateSettingsFromCurrentStyles();
     }
