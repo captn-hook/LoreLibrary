@@ -33,10 +33,10 @@ jobs:
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
-        aws s3 cp index.zip s3://loredragon-deployment-artifacts-dev/
+        aws s3 cp index.zip s3://loredragon-deployment-artifacts/
 
     - name: Upload OpenAPI Spec
-      run: aws s3 cp aws/api.yaml s3://loredragon-deployment-artifacts-dev/
+      run: aws s3 cp aws/api.yaml s3://loredragon-deployment-artifacts/
 
     - name: Create Change Set
       id: changeset
@@ -48,9 +48,9 @@ jobs:
             --template-body file://aws/stack.yml \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
             --parameters \
-              ParameterKey=LambdaCodeS3Bucket,ParameterValue=loredragon-deployment-artifacts-dev \
+              ParameterKey=LambdaCodeS3Bucket,ParameterValue=loredragon-deployment-artifacts \
               ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
-              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=loredragon-deployment-artifacts-dev \
+              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=loredragon-deployment-artifacts \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue= \
@@ -100,7 +100,7 @@ jobs:
   
 
     # - name: Deploy CloudFormation Stack
-    #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name loredragon-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=loredragon-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=loredragon-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml --region us-west-2
+    #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name loredragon-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=loredragon-deployment-artifacts LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=loredragon-deployment-artifacts OpenApiSpecS3Key=api.yaml --region us-west-2
 
     - name: Close Bucket
       run: aws s3api put-public-access-block --bucket loredragon-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
