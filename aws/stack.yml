@@ -30,7 +30,7 @@ Resources:
   ResourcesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub lorelib-resources${Env}
+      BucketName: !Sub loredragon-resources${Env}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
@@ -58,7 +58,7 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Sub lorelibrary-user-pool${Env}
+      UserPoolName: !Sub loredragon-user-pool${Env}
       LambdaConfig:
         PreSignUp: !GetAtt PreSignUpLambda.Arn
       AutoVerifiedAttributes:
@@ -78,7 +78,7 @@ Resources:
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: !Sub lorelibrary-client${Env}
+      ClientName: !Sub loredragon-client${Env}
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       AllowedOAuthFlows:
@@ -100,7 +100,7 @@ Resources:
   CognitoIdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
-      IdentityPoolName: !Sub lorelibrary-identity-pool${Env}
+      IdentityPoolName: !Sub loredragon-identity-pool${Env}
       AllowUnauthenticatedIdentities: false
       CognitoIdentityProviders:
         - ClientId: !Ref CognitoUserPoolClient
@@ -122,7 +122,7 @@ Resources:
               "ForAnyValue:StringLike":
                 cognito-identity.amazonaws.com:amr: authenticated
       Policies:
-        - PolicyName: !Sub lorelibrary-authenticated-policy${Env}
+        - PolicyName: !Sub loredragon-authenticated-policy${Env}
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -135,7 +135,7 @@ Resources:
   DataTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: !Sub lorelibrary-data${Env}
+      TableName: !Sub loredragon-data${Env}
       AttributeDefinitions:
         - AttributeName: PK # Combines entity type and ID (e.g., WORLD#, or COLLECTION#worldId)
           AttributeType: S
@@ -166,7 +166,7 @@ Resources:
   UserTable:
     Type: "AWS::DynamoDB::Table"
     Properties:
-      TableName: !Sub lorelibrary-users${Env}
+      TableName: !Sub loredragon-users${Env}
       AttributeDefinitions:
         - AttributeName: PK # User ID
           AttributeType: S
@@ -181,10 +181,10 @@ Resources:
       SSESpecification:
         SSEEnabled: true
 
-  LoreLibraryLambda:
+  LoreDragonLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-function${Env}
+      FunctionName: !Sub loredragon-function${Env}
       Runtime: nodejs22.x
       Handler: aws/index.handler
       Code:
@@ -204,7 +204,7 @@ Resources:
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"
     Properties:
-      FunctionName: !Sub lorelibrary-authorizer${Env}
+      FunctionName: !Sub loredragon-authorizer${Env}
       Runtime: nodejs22.x
       Handler: aws/authorizer.handler
       Code:
@@ -222,7 +222,7 @@ Resources:
   PreSignUpLambda:
       Type: "AWS::Lambda::Function"
       Properties:
-        FunctionName: !Sub lorelibrary-pre-signup${Env}
+        FunctionName: !Sub loredragon-pre-signup${Env}
         Runtime: nodejs22.x
         Handler: index.handler
         Code:
@@ -244,7 +244,7 @@ Resources:
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: !Sub lorelibrary-lambda-role${Env}
+      RoleName: !Sub loredragon-lambda-role${Env}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -255,7 +255,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: !Sub lorelibrary-lambda-policy${Env}
+        - PolicyName: !Sub loredragon-lambda-policy${Env}
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -273,10 +273,10 @@ Resources:
   LambdaInvokePermission:
     Type: "AWS::Lambda::Permission"
     Properties:
-      FunctionName: !GetAtt LoreLibraryLambda.Arn
+      FunctionName: !GetAtt LoreDragonLambda.Arn
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreDragonApiGateway}/*/*"
   
   PreSignUpLambdaInvokePermission:
     Type: "AWS::Lambda::Permission"
@@ -292,9 +292,9 @@ Resources:
       FunctionName: !GetAtt CustomAuthorizerLambda.Arn
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreLibraryApiGateway}/*/*"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LoreDragonApiGateway}/*/*"
 
-  LoreLibraryApiGateway:
+  LoreDragonApiGateway:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
       BodyS3Location:
@@ -304,23 +304,23 @@ Resources:
   # LorelibraryAuthorizer:
   #   Type: 'AWS::ApiGatewayV2::Authorizer'
   #   Properties:
-  #     ApiId: !Ref LoreLibraryApiGateway
+  #     ApiId: !Ref LoreDragonApiGateway
   #     AuthorizerPayloadFormatVersion: '2.0'
   #     AuthorizerType: REQUEST
   #     AuthorizerUri: !Sub
   #       - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
   #       - {LambdaArn: !GetAtt CustomAuthorizerLambda.Arn}
   #     EnableSimpleResponses: true
-  #     Name: lorelibrary-gateway-authorizer
+  #     Name: loredragon-gateway-authorizer
 
   ApiGatewayCognitoAuthorizer:
     Type: AWS::ApiGatewayV2::Authorizer
     Properties:
-      ApiId: !Ref LoreLibraryApiGateway
+      ApiId: !Ref LoreDragonApiGateway
       AuthorizerType: JWT
       IdentitySource:
         - "$request.header.Authorization"
-      Name: !Sub lorelibrary-cognito-authorizer${Env}
+      Name: !Sub loredragon-cognito-authorizer${Env}
       JwtConfiguration:
         Audience:
           - !Ref CognitoUserPoolClient
@@ -329,29 +329,29 @@ Resources:
   ApiGatewayIntegration:
     Type: "AWS::ApiGatewayV2::Integration"
     Properties:
-      ApiId: !Ref LoreLibraryApiGateway
+      ApiId: !Ref LoreDragonApiGateway
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub
         - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
-        - { LambdaArn: !GetAtt LoreLibraryLambda.Arn }
+        - { LambdaArn: !GetAtt LoreDragonLambda.Arn }
       PayloadFormatVersion: "2.0"
 
   AccessLogGroup:
     Type: "AWS::Logs::LogGroup"
     Properties:
-      LogGroupName: !Sub lorelibrary-access-logs${Env}
+      LogGroupName: !Sub loredragon-access-logs${Env}
       RetentionInDays: 1
 
   ApiGatewayDeployment:
     Type: "AWS::ApiGatewayV2::Deployment"
     Properties:
-      ApiId: !Ref LoreLibraryApiGateway
+      ApiId: !Ref LoreDragonApiGateway
     DependsOn: ApiGatewayIntegration
 
   ApiGatewayStage:
     Type: "AWS::ApiGatewayV2::Stage"
     Properties:
-      ApiId: !Ref LoreLibraryApiGateway
+      ApiId: !Ref LoreDragonApiGateway
       DeploymentId: !Ref ApiGatewayDeployment
       StageName: !Sub "${Env}-${Ver}"
       AccessLogSettings:
@@ -375,4 +375,4 @@ Outputs:
 
   ApiGatewayURL:
     Description: URL for the API Gateway
-    Value: !Sub "https://${LoreLibraryApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+    Value: !Sub "https://${LoreDragonApiGateway}.execute-api.${AWS::Region}.amazonaws.com"

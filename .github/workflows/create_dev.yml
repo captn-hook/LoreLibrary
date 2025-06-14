@@ -33,15 +33,15 @@ jobs:
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
-        aws s3 cp index.zip s3://lorelib-deployment-artifacts-dev/
+        aws s3 cp index.zip s3://loredragon-deployment-artifacts-dev/
 
     - name: Upload OpenAPI Spec
-      run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts-dev/
+      run: aws s3 cp aws/api.yaml s3://loredragon-deployment-artifacts-dev/
 
     - name: Deploy CloudFormation Stack
       run: |
         SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-        aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelib-stack-dev --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelib-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelib-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env=-dev Ver=${SHORT_SHA} --region us-west-2
+        aws cloudformation deploy --template-file aws/stack.yml --stack-name loredragon-stack-dev --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=loredragon-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=loredragon-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env=-dev Ver=${SHORT_SHA} --region us-west-2
 
     - name: Close Bucket
-      run: aws s3api put-public-access-block --bucket lorelib-resources-dev --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
+      run: aws s3api put-public-access-block --bucket loredragon-resources-dev --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true

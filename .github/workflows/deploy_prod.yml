@@ -33,24 +33,24 @@ jobs:
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
-        aws s3 cp index.zip s3://lorelib-deployment-artifacts-dev/
+        aws s3 cp index.zip s3://loredragon-deployment-artifacts-dev/
 
     - name: Upload OpenAPI Spec
-      run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts-dev/
+      run: aws s3 cp aws/api.yaml s3://loredragon-deployment-artifacts-dev/
 
     - name: Create Change Set
       id: changeset
       run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           aws cloudformation create-change-set \
-            --stack-name lorelib-stack \
+            --stack-name loredragon-stack \
             --change-set-name changeset-${{ github.run_id }}-${{ github.sha }} \
             --template-body file://aws/stack.yml \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
             --parameters \
-              ParameterKey=LambdaCodeS3Bucket,ParameterValue=lorelib-deployment-artifacts-dev \
+              ParameterKey=LambdaCodeS3Bucket,ParameterValue=loredragon-deployment-artifacts-dev \
               ParameterKey=LambdaCodeS3Key,ParameterValue=index.zip \
-              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=lorelib-deployment-artifacts-dev \
+              ParameterKey=OpenApiSpecS3Bucket,ParameterValue=loredragon-deployment-artifacts-dev \
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue= \
@@ -66,7 +66,7 @@ jobs:
       run: |
         echo "Waiting for change set changeset-${{ github.run_id }}-${{ github.sha }} to be created..."
         aws cloudformation wait change-set-create-complete \
-          --stack-name lorelib-stack \
+          --stack-name loredragon-stack \
           --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
         echo "Change set created successfully."
 
@@ -75,7 +75,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: us-west-2 # Match region above
-        STACK_NAME: lorelib-stack
+        STACK_NAME: loredragon-stack
         CHANGESET_NAME: changeset-${{ github.run_id }}-${{ github.sha }}
       run: |
         echo "Review the following proposed changes:"
@@ -94,13 +94,13 @@ jobs:
       run: |
         echo "Executing change set changeset-${{ github.run_id }}-${{ github.sha }}..."
         aws cloudformation execute-change-set \
-          --stack-name lorelib-stack \
+          --stack-name loredragon-stack \
           --change-set-name changeset-${{ github.run_id }}-${{ github.sha }}
         echo "Change set execution initiated. Stack update/creation is in progress."
   
 
     # - name: Deploy CloudFormation Stack
-    #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelib-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelib-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelib-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml --region us-west-2
+    #   run: aws cloudformation deploy --template-file aws/stack.yml --stack-name loredragon-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=loredragon-deployment-artifacts-dev LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=loredragon-deployment-artifacts-dev OpenApiSpecS3Key=api.yaml --region us-west-2
 
     - name: Close Bucket
-      run: aws s3api put-public-access-block --bucket lorelib-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
+      run: aws s3api put-public-access-block --bucket loredragon-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true

@@ -33,10 +33,10 @@ jobs:
     - name: Package Lambda Code
       run: |
         zip -r index.zip aws/*
-        aws s3 cp index.zip s3://lorelib-deployment-artifacts-pain/
+        aws s3 cp index.zip s3://loredragon-deployment-artifacts-pain/
 
     - name: Upload OpenAPI Spec
-      run: aws s3 cp aws/api.yaml s3://lorelib-deployment-artifacts-pain/
+      run: aws s3 cp aws/api.yaml s3://loredragon-deployment-artifacts-pain/
 
     - name: Validate CloudFormation Template
       run: aws cloudformation validate-template --template-body file://aws/stack.yml
@@ -44,7 +44,7 @@ jobs:
     - name: Deploy CloudFormation Stack
       run: |   
         SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-        aws cloudformation deploy --template-file aws/stack.yml --stack-name lorelib-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=lorelib-deployment-artifacts-pain LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=lorelib-deployment-artifacts-pain OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env= Ver=${SHORT_SHA} --region us-west-2
+        aws cloudformation deploy --template-file aws/stack.yml --stack-name loredragon-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides LambdaCodeS3Bucket=loredragon-deployment-artifacts-pain LambdaCodeS3Key=index.zip OpenApiSpecS3Bucket=loredragon-deployment-artifacts-pain OpenApiSpecS3Key=api.yaml JWTSecretParameter=${{ secrets.JWT_SECRET }} Env= Ver=${SHORT_SHA} --region us-west-2
 
     - name: Close Bucket
-      run: aws s3api put-public-access-block --bucket lorelib-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
+      run: aws s3api put-public-access-block --bucket loredragon-resources --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=true
