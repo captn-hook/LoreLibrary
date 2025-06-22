@@ -40,6 +40,7 @@ export async function login(username: string, password: string) {
     }
 
     if (browser) {
+      console.log('Login successful:', data);
       token.set(data.token);
       localStorage.setItem('token', data.token);
       goto('/dashboard');

@@ -307,13 +307,8 @@ export async function getEntry(worldId: string, collectionId: string, entryId: s
 
 export async function updateEntry() {
     const entry = get(entryContext);
-    let url = '';
     let path = window.location.pathname.split('/');
-    if (path[1] == path[2]) { // worldId, we use /worldid/world id to tell the browser its an entry
-        url = `${PUBLIC_API_URL}/${path[1]}/${entry?.name}`;
-    }else { // worldId and collectionId
-        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`;
-    }
+    let  url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`;
     if (!entry){
         return
     }
