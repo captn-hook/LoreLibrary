@@ -222,7 +222,7 @@ export const handler = async (e) => {
         // /{WorldId}/{Id}: GET, POST, PUT DELETE
         else if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
-            const Id = pathParameters.CollectionId;
+            const Id = pathParameters.Id;
 
             // reserved names
             if (reserved_names.includes(Id)) {
