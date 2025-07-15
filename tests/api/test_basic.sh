@@ -5,7 +5,7 @@ source "$(dirname "$0")/functions.sh"
 token=""
 username=""
 email1="hookt@oregonstate.edu"
-emalil2="hooktristanshs@gmail.com"
+email2="hooktristanshs@gmail.com"
 email3="tristanskyhook@gmail.com"
 
 # World Information
