@@ -59,6 +59,7 @@ export function createWorld(name: string, tags: string[], description: string, i
             description:description,
             image: imageUrl,
             content: [],
+            style: 'pine'
         }),
     })
     .then((response) => {
