@@ -11,6 +11,7 @@ import { world, collections, entry} from '$lib/state/worldState.svelte.js';
 	let group = 'premade';
 	let isResizing = false;
 	let initialTheme = document.documentElement.getAttribute('data-theme') || 'generated';
+	let saved = false
 
 	const MIN_WIDTH = 200;
 	const MAX_WIDTH = 800;
@@ -29,7 +30,9 @@ import { world, collections, entry} from '$lib/state/worldState.svelte.js';
 	});
 
 	function cancelEditTheme() {
-		document.documentElement.setAttribute('data-theme', initialTheme);
+		if (!saved){
+			document.documentElement.setAttribute('data-theme', initialTheme);
+		}
 		showStyleControls.set(false);
 	}
 
@@ -37,6 +40,7 @@ import { world, collections, entry} from '$lib/state/worldState.svelte.js';
 		let currentTheme = document.documentElement.getAttribute('data-theme')
 		if (currentTheme == 'generated'){
 			if (confirm('Are you sure you want to save the current theme? You are using a generated theme.')) {
+				saved = true
 				updateSettingsFromCurrentStyles();
 				let previewcss = generatePreviewCss(true);
 				previewcss.replace("generated", "custom");
@@ -44,6 +48,7 @@ import { world, collections, entry} from '$lib/state/worldState.svelte.js';
 			}
 		}else {//premade theme
 			if (confirm('Are you sure you want to save the current theme? You are using a premade theme.')) {
+				saved = true
 				updateSettingsFromCurrentStyles();
 				if (currentTheme){
 				updateTheme(currentTheme);
