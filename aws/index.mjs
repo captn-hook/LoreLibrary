@@ -27,6 +27,10 @@ export const handler = async (e) => {
             e.body = JSON.parse(e.body);
         }
 
+        console.log('Operation:', operation);
+        console.log('Path:', path);
+        console.log('Event path parameters:', pathParameters);
+
         let username = undefined;
         let pathParameters = {};
 
