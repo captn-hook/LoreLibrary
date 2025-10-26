@@ -98,12 +98,16 @@ put_world "$world_name" "$world_content" "$world_tags"
 get_world "$world_name"
 
 # Create collections
+echo "Creating collection $world_name/$collection1_name"
 put_collection "$collection1_name" "$collection1_content" "$collection1_tags" "$world_name"
 put_collection "$collection2_name" "$collection2_content" "$collection2_tags" "$world_name"
 put_collection "$collection3_name" "$collection3_content" "$collection3_tags" "$world_name"
 put_collection "$collection4_name" "$collection4_content" "$collection4_tags" "$world_name"
 put_collection "$collection5_name" "$collection5_content" "$collection5_tags" "$world_name"
 
+echo "Collections created successfully."
+
+echo "Getting  $world_name/$collection1_name"
 get_collection "$collection1_name" "$world_name"
 get_collection "$collection2_name" "$world_name"
 get_collection "$collection3_name" "$world_name"

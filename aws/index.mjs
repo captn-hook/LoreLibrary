@@ -163,9 +163,9 @@ export const handler = async (e) => {
         }
 
         console.log('matching to path length: ' + pathsplit.length + ' with operation: ' + operation);
-        for (const p of pathsplit) {
-            console.log(' - ' + p);
-        }
+      
+        console.log(pathsplit);
+        console.log(pathParameters);
 
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
@@ -230,6 +230,7 @@ export const handler = async (e) => {
         }
         // /{WorldId}/{Id}: GET, POST, PUT DELETE
         else if (pathsplit.length === 3) {
+            console.log('finding a collection or entry:', Id);
             const worldId = pathParameters.WorldId;
             const Id = pathParameters.Id;
 
@@ -289,6 +290,7 @@ export const handler = async (e) => {
                     }
                 }
             } else {
+                console.log('is there a collection or a entry?:', Id);
                 if (await dynamo_find_collection(worldId, Id)) {
                     console.log('Found collection with id: ' + Id);
                     const collectionId = Id;

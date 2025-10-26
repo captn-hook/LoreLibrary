@@ -9,8 +9,9 @@ import { Collection } from "../classes.mjs";
 
 async function dynamo_find_collection(worldId, collectionName) {
     // Find a top level collection in a world, return true or false
+    console.log(`1 Finding collection ${collectionName} in world ${worldId}`);
     try {
-        console.log(`Finding collection ${collectionName} in world ${worldId}`);
+        console.log(` 2 Finding collection ${collectionName} in world ${worldId}`);
         const collection = new Collection(collectionName, worldId, worldId);
         const params = {
             TableName: dataTable,
