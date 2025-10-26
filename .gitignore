@@ -24,3 +24,4 @@ vite.config.ts.timestamp-*
 
 # Node
 node_modules/
+aws/package-lock.json
