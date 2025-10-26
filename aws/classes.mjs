@@ -6,44 +6,49 @@ class Body {
     // Returns self with new data if valid
     // throws error if invalid
     static verify(data) {
-        const instance = new this();
-        const keys = Object.getOwnPropertyNames(instance);
-    
-        // Check for missing keys
-        const missingKeys = keys.filter(key => !data.hasOwnProperty(key) && instance[key] === undefined);
-        if (missingKeys.length > 0) {
-            throw new Error(`Missing keys: ${missingKeys.join(', ')}`);
-        }
-    
-        // Validate types and structure
-        // If a key has a default value, it is not required
-        for (const key of keys) {
-            const value = data[key];
-            const expectedType = typeof instance[key];
+        try {
+            const instance = new this();
+            const keys = Object.getOwnPropertyNames(instance);
+        
+            // Check for missing keys
+            const missingKeys = keys.filter(key => !data.hasOwnProperty(key) && instance[key] === undefined);
+            if (missingKeys.length > 0) {
+                throw new Error(`Missing keys: ${missingKeys.join(', ')}`);
+            }
+        
+            // Validate types and structure
+            // If a key has a default value, it is not required
+            for (const key of keys) {
+                const value = data[key];
+                const expectedType = typeof instance[key];
 
-            // If the expected type is undefined, the key is required to be a string or null
-            if (expectedType === 'undefined') {
-                if (typeof value !== 'string' && value !== null) {
-                    throw new Error(`Invalid type for key "${key}": expected string, got ${typeof value}`);
-                }    
-            }
-            // Check if the type matches
-            else if (value !== undefined && typeof value !== expectedType) {
-                throw new Error(`Invalid type for key "${key}": expected ${expectedType}, got ${typeof value}`);
-            }
-            // If the value is an array, check if all elements are of the same type
-            else if (Array.isArray(value)) {
-                const elementType = typeof value[0];
-                for (const element of value) {
-                    if (typeof element !== elementType) {
-                        throw new Error(`Invalid type for key "${key}": expected array of ${elementType}, got ${typeof element}`);
-                    }
+                // If the expected type is undefined, the key is required to be a string or null
+                if (expectedType === 'undefined') {
+                    if (typeof value !== 'string' && value !== null) {
+                        throw new Error(`Invalid type for key "${key}": expected string, got ${typeof value}`);
+                    }    
                 }
-            }           
+                // Check if the type matches
+                else if (value !== undefined && typeof value !== expectedType) {
+                    throw new Error(`Invalid type for key "${key}": expected ${expectedType}, got ${typeof value}`);
+                }
+                // If the value is an array, check if all elements are of the same type
+                else if (Array.isArray(value)) {
+                    const elementType = typeof value[0];
+                    for (const element of value) {
+                        if (typeof element !== elementType) {
+                            throw new Error(`Invalid type for key "${key}": expected array of ${elementType}, got ${typeof element}`);
+                        }
+                    }
+                }           
+            }
+        
+            // Assign validated data to the instance
+            return Object.assign(instance, data);
+        } catch (error) {
+            console.error(`Error verifying data for ${this.name}:`, error);
+            throw error;
         }
-    
-        // Assign validated data to the instance
-        return Object.assign(instance, data);
     }
 }
 

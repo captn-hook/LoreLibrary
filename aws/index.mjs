@@ -157,6 +157,9 @@ export const handler = async (e) => {
         }
 
         console.log('matching to path length: ' + pathsplit.length + ' with operation: ' + operation);
+        for (const p of pathsplit) {
+            console.log(' - ' + p);
+        }
 
         // /{WorldId}: GET, POST, PUT, DELETE
         if (pathsplit.length === 2) {
