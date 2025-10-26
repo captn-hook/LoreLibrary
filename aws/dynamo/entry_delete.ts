@@ -6,25 +6,30 @@ import {
     TransactWriteCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item } from "./dynamo.mjs"
-import { World, Collection } from "../classes.mjs";
+import type { TransactWriteItem } from "@aws-sdk/client-dynamodb";
 
-async function delete_entry(entry, final = true, updateParent = true) {
+import { dataTable, ddbDocClient, make_collection, make_world } from "./dynamo.ts"
+import { Collection, Entry } from "../classes.ts";
+
+async function delete_entry(entry: Entry, final = true, updateParent = true): Promise<TransactWriteItem[] | { statusCode: number; body: string }> {
     console.log("Deleting entry: ", entry);
     console.log("Deleting entry:", entry.pk(), entry.sk());
     if (final) {
-        let transactionItems = [];
+        let transactionItems: TransactWriteItem[] = [];
         if (updateParent) {
             let parent;
             try {
                 try {
+                    if (!entry.parentId) {
+                        throw new Error("Entry does not have a parentId");
+                    }
                     const col = new Collection(entry.parentId, null, entry.worldId);
                     console.log("Deleting entry from collection:", col.pk(), col.sk());
                     const params = {
                         TableName: dataTable,
                         Key: {
-                            PK: col.pk(),
-                            SK: col.sk()
+                            PK: { S: col.pk() },
+                            SK: { S: col.sk() }
                         }
                     };
                     let parentData = await ddbDocClient.send(new GetCommand(params));
@@ -32,7 +37,7 @@ async function delete_entry(entry, final = true, updateParent = true) {
                         console.error("Parent collection not found:", col);
                         throw new Error("Parent collection not found");
                     }   
-                    parent = dynamo_to_item(parentData.Item, Collection);
+                    parent = make_collection(parentData.Item);
                     if (!parent) {
                         console.error("Invalid parent collection data:", parentData.Item);
                         throw new Error("Invalid parent collection data");
@@ -43,8 +48,8 @@ async function delete_entry(entry, final = true, updateParent = true) {
                     const params = {
                         TableName: dataTable,
                         Key: {
-                            PK: entry.parentId + '#',
-                            SK: entry.worldId
+                            PK: { S: entry.parentId + '#' },
+                            SK: { S: entry.worldId }
                         }
                     };
                     let parentData = await ddbDocClient.send(new GetCommand(params));
@@ -52,7 +57,7 @@ async function delete_entry(entry, final = true, updateParent = true) {
                         console.error("Parent world not found:", entry.parentId);
                         throw new Error("Parent world not found");
                     }
-                    parent = dynamo_to_item(parentData.Item, World);
+                    parent = make_world(parentData.Item);
                     
                     if (!parent) {
                         throw new Error("Parent world not found");
@@ -69,20 +74,14 @@ async function delete_entry(entry, final = true, updateParent = true) {
             }   
 
             if (parent['entries']) {
-                parent['entries'] = parent['entries'].filter(e => e !== entry.name);
+                parent['entries'] = parent['entries'].filter((e: string) => e !== entry.name);
             }
 
             // turn the item into a dynamo item
-            const p = {
-                PK: parent.pk(),
-                SK: parent.sk(),
-                ...parent.getBody(),
-            };
-
             transactionItems.push({
                 Put: {
                     TableName: dataTable,
-                    Item: p
+                    Item: parent.marshalParent()
                 }
             });
         }
@@ -90,8 +89,8 @@ async function delete_entry(entry, final = true, updateParent = true) {
             Delete: {
                 TableName: dataTable,
                 Key: {
-                    PK: entry.pk(),
-                    SK: entry.sk()
+                    PK: { S: entry.pk() },
+                    SK: { S: entry.sk() }
                 }
             }
         });
@@ -116,8 +115,8 @@ async function delete_entry(entry, final = true, updateParent = true) {
             Delete: {
                 TableName: dataTable,
                 Key: {
-                    PK: entry.pk(),
-                    SK: entry.sk()
+                    PK: { S: entry.pk() },
+                    SK: { S: entry.sk() }
                 }
             }
         }];

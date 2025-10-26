@@ -4,10 +4,14 @@ import {
     GetCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item, get_style } from "./dynamo.mjs"
-import { World, User } from "../classes.mjs";
+import { dataTable, ddbDocClient, make, get_style } from "./dynamo.ts"
+import { World, User, Entry, Collection } from "../classes.ts";
 
-async function dynamo_get(data, table = dataTable, getStyle = true) {
+async function dynamo_get<M extends typeof User | typeof World | typeof Entry | typeof Collection>(
+    data: InstanceType<M>,
+    table = dataTable,
+    getStyle = true
+) {
 
     console.log("Getting item of type:", data.constructor.name);
     console.log("Getting item:", data.pk(), data.sk());
@@ -15,8 +19,8 @@ async function dynamo_get(data, table = dataTable, getStyle = true) {
     const params = {
         TableName: table,
         Key: {
-            PK: data.pk(),
-            SK: data.sk()
+            PK: { S: data.pk() },
+            SK: { S: data.sk() }
         }
     };
     try {
@@ -35,11 +39,20 @@ async function dynamo_get(data, table = dataTable, getStyle = true) {
             }
         }
         // if the style data is undefined, get its parent to fill it in
-        if (getStyle && !(data instanceof World) && !(data instanceof User) && data.style === '') {
+        if (getStyle && !(data instanceof World) && !(data instanceof User) && data.style === '' && data.parentId && data.worldId) {
             data.style = await get_style(data.parentId, data.worldId);
         }
         // convert the item to the correct model
-        data = dynamo_to_item(res.Item, data.constructor);
+        const ctor = data.constructor as M;
+        let d = make(res.Item, ctor);
+        if (!d) {
+            console.error("Error converting item to model:", res.Item);
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ message: "Error converting item to model" })
+            };
+        }
+        data = d;
         console.log("Item retrieved successfully:", data);
         return {
             statusCode: 200,

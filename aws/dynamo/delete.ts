@@ -4,14 +4,15 @@ import {
     GetCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item } from "./dynamo.mjs"
-import { World, Collection, Entry, User } from "../classes.mjs";
+import { dataTable, ddbDocClient, make } from "./dynamo.ts"
+import { World, Collection, Entry, User, Model } from "../classes.ts";
 
-import { delete_entry } from "./entry_delete.js";
-import { delete_collection } from "./collection_delete.js"
-import { delete_world } from "./world_delete.js"
+import { delete_entry } from "./entry_delete.ts";
+import { delete_collection } from "./collection_delete.ts"
+import { delete_world } from "./world_delete.ts"
+import { delete_user } from "./user_delete.ts"
 
-async function dynamo_delete(data) {
+async function dynamo_delete<M extends Model>(data: InstanceType<M>) {
     // Delete an item from the database and update associated items
     console.log("Deleting item of type:", data.constructor.name);
 
@@ -35,7 +36,8 @@ async function dynamo_delete(data) {
                 body: JSON.stringify({ message: "Item not found" })
             };
         }
-        item = dynamo_to_item(res.Item, data.constructor);
+        const ctor = data.constructor as M;
+        item = make(res.Item, ctor);
     } catch (err) {
         console.error("Error getting item:", err);
         throw new Error("Error getting item");

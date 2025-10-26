@@ -4,10 +4,10 @@ import {
     PutCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { userTable, ddbDocClient } from "./dynamo.mjs"
-import { User } from "../classes.mjs";
+import { userTable, ddbDocClient } from "./dynamo.ts"
+import { User } from "../classes.ts";
 
-async function dynamo_user_create(username) {
+async function dynamo_user_create(username: string): Promise<{ statusCode: number; body: string }> {
     // Create a new user in the user table
     const user = new User(username);
     const params = {
@@ -21,7 +21,7 @@ async function dynamo_user_create(username) {
     };
     try {
         const res = await ddbDocClient.send(new PutCommand(params));
-        if (res.$metadata.httpStatusCode == '200') {
+        if (res.$metadata.httpStatusCode == 200) {
             return {
                 statusCode: 200,
                 body: JSON.stringify({ message: "User created successfully" })

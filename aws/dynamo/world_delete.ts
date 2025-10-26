@@ -2,16 +2,19 @@ export { delete_world }
 
 import {
     GetCommand,
-    TransactWriteCommand
+    TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item } from "./dynamo.mjs"
-import { Collection, User } from "../classes.mjs";
-import { delete_collection } from "./collection_delete"
+import type { TransactWriteItem } from "@aws-sdk/client-dynamodb";
 
-async function delete_world(world, final = true, updateUser = true) {
-    let transactionItems = [];
-    
+import { dataTable, ddbDocClient, make_collection, make_entry, userTable } from "./dynamo.ts"
+import { User, World } from "../classes.ts";
+import { delete_collection } from "./collection_delete.ts"
+import { delete_entry } from "./entry_delete.ts";
+
+async function delete_world(world: World, final = true, updateUser = true): Promise<TransactWriteItem[] | { statusCode: number; body: string }> {
+    let transactionItems: TransactWriteItem[] = [];
+
     for (const collectionName of world['collections'] || []) {
         const params = {
             TableName: dataTable,
@@ -25,13 +28,17 @@ async function delete_world(world, final = true, updateUser = true) {
             console.error("Collection not found:", collectionName);
             continue; // Skip if collection not found
         }
-        const col = dynamo_to_item(collectionData.Item, Collection);
+        const col = make_collection(collectionData.Item);
         if (!col) {
             console.error("Invalid collection data:", collectionData.Item);
             continue; // Skip if invalid collection data
         }
         const collectionTsx = await delete_collection(col, false, false);
-        transactionItems = transactionItems.concat(collectionTsx); // Fix concat issue
+        if (Array.isArray(collectionTsx)) {
+            transactionItems = transactionItems.concat(collectionTsx); // Fix concat issue
+        } else {
+            console.error("Error deleting collection:", collectionTsx);
+        }
     }
 
     for (const entryName of world['entries'] || []) {
@@ -47,27 +54,34 @@ async function delete_world(world, final = true, updateUser = true) {
             console.error("Entry not found:", entryName);
             continue; // Skip if entry not found
         }
-        const entry = dynamo_to_item(entryData.Item, Entry);
+        const entry = make_entry(entryData.Item);
         if (!entry) {
             console.error("Invalid entry data:", entryData.Item);
             continue; // Skip if invalid entry data
         }
         const entryTsx = await delete_entry(entry, false, false);
-        transactionItems = transactionItems.concat(entryTsx); // Fix concat issue
+        if (Array.isArray(entryTsx)) {
+            transactionItems = transactionItems.concat(entryTsx); // Fix concat issue
+        } else {
+            console.error("Delete entry returned promise:", entryTsx);
+        }
     }
 
     transactionItems.push({
         Delete: {
             TableName: dataTable,
             Key: {
-                PK: world.pk(),
-                SK: world.sk()
+                PK: { S: world.pk() },
+                SK: { S: world.sk() }
             }
         }
     });
 
     console.log("Deleting world:", world.name, "with ownerId:", world.parentId);
     if (updateUser) {
+        if (!world.parentId) {
+            throw new Error("World does not have a parentId");
+        }
         const usero = new User(world.parentId);
 
         const params = {
@@ -83,7 +97,7 @@ async function delete_world(world, final = true, updateUser = true) {
         }
         const user = userData.Item;
         if (user.worlds) {
-            user.worlds = user.worlds.filter(w => w !== world.name);
+            user.worlds = user.worlds.filter((w: string) => w !== world.name);
         }
         // turn the item into a dynamo item
         const u = {

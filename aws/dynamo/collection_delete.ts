@@ -6,14 +6,16 @@ import {
     TransactWriteCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item } from "./dynamo.mjs"
-import { World, Collection, Entry } from "../classes.mjs";
+import type { TransactWriteItem } from "@aws-sdk/client-dynamodb";
+
+import { dataTable, ddbDocClient, make_entry, make_collection, make_world } from "./dynamo.ts"
+import { World, Collection } from "../classes.ts";
 
 import { delete_entry } from "./entry_delete"
 
-async function delete_collection(collection, final = true, updateParent = true) {
+async function delete_collection(collection: Collection, final = true, updateParent = true): Promise<TransactWriteItem[] | { statusCode: number; body: string }> {
     console.log("Deleting collection:", collection.pk(), collection.sk());
-    let transactionItems = [];
+    let transactionItems: TransactWriteItem[] = [];
 
     console.log("Collection entries:", collection['entries']);
     for (const entryName of collection['entries']) {
@@ -30,13 +32,17 @@ async function delete_collection(collection, final = true, updateParent = true) 
             console.error("Entry not found:", entryName);
             continue; // Skip if entry not found
         }
-        const ent = dynamo_to_item(entryData.Item, Entry);
+        const ent = make_entry(entryData.Item);
         if (!ent) {
             console.error("Invalid entry data:", entryData.Item);
             continue; // Skip if invalid entry data
         }
         const entryTsx = await delete_entry(ent, false, false);
-        transactionItems = transactionItems.concat(entryTsx); // Fix concat issue
+        if (Array.isArray(entryTsx)) {
+            transactionItems = transactionItems.concat(entryTsx);
+        } else {
+            console.error("Error deleting entry:", entryTsx);
+        }
     }
 
     for (const collectionName of collection['collections']) {
@@ -52,21 +58,25 @@ async function delete_collection(collection, final = true, updateParent = true) 
             console.error("Sub-collection not found:", collectionName);
             continue; // Skip if sub-collection not found
         }
-        const col = dynamo_to_item(collectionData.Item, Collection);
+        const col = make_collection(collectionData.Item);
         if (!col) {
             console.error("Invalid sub-collection data:", collectionData.Item);
             continue; // Skip if invalid sub-collection data
         }
         const collectionTsx = await delete_collection(col, false, false);
-        transactionItems = transactionItems.concat(collectionTsx); // Fix concat issue
+        if (Array.isArray(collectionTsx)) {
+            transactionItems = transactionItems.concat(collectionTsx);
+        } else {
+            console.error("Error deleting collection:", collectionTsx);
+        }
     }
 
     transactionItems.push({
         Delete: {
             TableName: dataTable,
             Key: {
-                PK: collection.pk(),
-                SK: collection.sk()
+                PK: { S: collection.pk() },
+                SK: { S: collection.sk() }
             }
         }
     });
@@ -85,26 +95,22 @@ async function delete_collection(collection, final = true, updateParent = true) 
                 console.log("Parent world not found, trying to get parent collection instead...");
                 throw new Error("Parent world not found");
             }
-            let parent = dynamo_to_item(parentData.Item, World);
+            let parent = make_world(parentData.Item);
             if (!parent) {
                 console.error("Invalid parent world data:", parentData.Item);
                 throw new Error("Invalid parent world data");
             }
             if (parent['collections']) {
-                parent['collections'] = parent['collections'].filter(c => c !== collection.name);
+                parent['collections'] = parent['collections'].filter((c: string) => c !== collection.name);
             }
-            // turn the item into a dynamo item
-            const p = {
-                PK: parent.pk(),
-                SK: parent.sk(),
-                ...parent.getBody(),
-            };
+
             transactionItems.push({
                 Put: {
                     TableName: dataTable,
-                    Item: p
+                    Item: parent.marshal()
                 }
             });
+
         } catch (err) {
             console.log("Error getting parent world:", err);
             console.log("Trying to get parent collection instead...: ", collection.parentId);
@@ -120,25 +126,19 @@ async function delete_collection(collection, final = true, updateParent = true) 
                 console.error("Parent collection not found:", collection.parentId);
                 throw new Error("Parent collection not found");
             }
-            let parent = dynamo_to_item(parentData.Item, Collection);
+            let parent = make_collection(parentData.Item);
             if (!parent) {
                 console.error("Invalid parent collection data:", parentData.Item);
                 throw new Error("Invalid parent collection data");
             }
             if (parent['collections']) {
-                parent['collections'] = parent['collections'].filter(c => c !== collection.name);
+                parent['collections'] = parent['collections'].filter((c: string) => c !== collection.name);
             }
-
-            const p = {
-                PK: parent.pk(),
-                SK: parent.sk(),
-                ...parent.getBody(),
-            };
 
             transactionItems.push({
                 Put: {
                     TableName: dataTable,
-                    Item: p
+                    Item: parent.marshal()
                 }
             });
         }

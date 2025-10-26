@@ -4,10 +4,10 @@ import {
     GetCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient } from "./dynamo.mjs"
-import { Collection } from "../classes.mjs";
+import { dataTable, ddbDocClient } from "./dynamo.ts"
+import { Collection } from "../classes.ts";
 
-async function dynamo_find_collection(worldId, collectionName) {
+async function dynamo_find_collection(worldId: string, collectionName: string) {
     // Find a top level collection in a world, return true or false
     console.log(`1 Finding collection ${collectionName} in world ${worldId}`);
     try {

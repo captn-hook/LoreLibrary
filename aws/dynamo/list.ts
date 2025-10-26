@@ -2,13 +2,14 @@
 export { dynamo_list }
 
 import {
-    QueryCommand
+    QueryCommand,
+    QueryCommandOutput
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item } from "./dynamo.mjs"
-import { User } from "../classes.mjs";
+import { dataTable, userTable, ddbDocClient, make } from "./dynamo.ts"
+import { User, Model } from "../classes.ts";
 
-async function dynamo_list(model, sk = '') {
+async function dynamo_list(model: Model, sk = '') {
 
     let params;
     if (model === User) {
@@ -31,7 +32,7 @@ async function dynamo_list(model, sk = '') {
         };
     }
     try {
-        let data = await ddbDocClient.send(new QueryCommand(params));
+        let data: QueryCommandOutput = await ddbDocClient.send(new QueryCommand(params));
         if (!data.Items || data.Items.length === 0) {
             return {
                 statusCode: 200,
@@ -39,12 +40,12 @@ async function dynamo_list(model, sk = '') {
             };
         }
         // Convert each item in the list using dynamo_to_item
-        const items = data.Items.map(item => dynamo_to_item(item, model));
-        data = items;
+        const items = data.Items.map(item => make(item, model));
+        let ret = items;
 
         return {
             statusCode: 200,
-            body: JSON.stringify(data)
+            body: JSON.stringify(ret)
         }
     } catch (err) {
         console.error("Error listing items:", err);

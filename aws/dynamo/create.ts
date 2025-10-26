@@ -5,10 +5,10 @@ import {
     TransactWriteCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, userTable, ddbDocClient, dynamo_get } from "./dynamo.mjs"
-import { World, Collection, Entry } from "../classes.mjs";
+import { dataTable, userTable, ddbDocClient, dynamo_get } from "./dynamo.js"
+import { World, Collection, Entry, DModel } from "../classes.js";
 
-async function dynamo_create(data, table = dataTable) {
+async function dynamo_create(data: InstanceType<DModel>, table = dataTable) {
 
     console.log("Creating item of type:", data.constructor.name);
     console.log("Creating item:", data.pk(), data.sk());
@@ -21,7 +21,7 @@ async function dynamo_create(data, table = dataTable) {
         }
     };
 
-    let existingItem;
+    let existingItem: any;
     try {
         existingItem = await ddbDocClient.send(new GetCommand(params));
         console.log("Existing item:", existingItem);
@@ -189,12 +189,12 @@ async function dynamo_create(data, table = dataTable) {
         const result = await ddbDocClient.send(new TransactWriteCommand({
             TransactItems: transactionItems
         }));
-        for (const key in data) {
-            if (result.Attributes && result.Attributes.hasOwnProperty(key) && data[key] !== undefined) {
-                data[key] = result.Attributes[key];
-            }
-        }
-        console.log("Item created successfully:", data);
+        // for (const key in data) {
+        //     if (result.Attributes && result.Attributes.hasOwnProperty(key) && data[key] !== undefined) {
+        //         data[key] = result.Attributes[key];
+        //     }
+        // }
+        console.log("Item created successfully:", data, result);
         return dynamo_get(data, table);
     } catch (err) {
         console.error("Error creating item:", err);

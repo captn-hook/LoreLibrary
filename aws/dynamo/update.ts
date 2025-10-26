@@ -1,19 +1,21 @@
 export { dynamo_update }
 
 import {
-    UpdateCommand
+    UpdateCommand,
+    GetCommand
 } from "@aws-sdk/lib-dynamodb";
 
-import { dataTable, ddbDocClient, dynamo_to_item } from "./dynamo.mjs"
+import { dataTable, ddbDocClient, make } from "./dynamo.ts"
+import { Model } from "../classes.ts"
 
-async function dynamo_update(data, model, table = dataTable) {
+async function dynamo_update(data: object, model: Model, table = dataTable) {
 
     const newItem = await update(data, model.verify(data), table);
     const params = {
         TableName: table,
         Key: {
-            PK: newItem.pk(),
-            SK: newItem.sk()
+            PK: { S: newItem.pk() },
+            SK: { S: newItem.sk() }
         },
         UpdateExpression: "SET " + Object.keys(newItem)
             .filter(key => key !== "PK" && key !== "SK") // Exclude PK and SK
@@ -21,17 +23,17 @@ async function dynamo_update(data, model, table = dataTable) {
             .join(", "),
         ExpressionAttributeNames: Object.keys(newItem)
             .filter(key => key !== "PK" && key !== "SK") // Exclude PK and SK
-            .reduce((acc, key, index) => {
+            .reduce<Record<string, string>>((acc, key, index) => {
                 acc[`#key${index}`] = key;
                 return acc;
             }, {}),
         ExpressionAttributeValues: Object.keys(newItem)
             .filter(key => key !== "PK" && key !== "SK") // Exclude PK and SK
-            .reduce((acc, key, index) => {
-                acc[`:value${index}`] = newItem[key];
+            .reduce<Record<string, any>>((acc, key, index) => {
+                acc[`:value${index}`] = (newItem as any)[key];
                 return acc;
             }, {}),
-        ReturnValues: "ALL_NEW"
+        ReturnValues: "ALL_NEW" as const
     };
 
     try {
@@ -41,7 +43,7 @@ async function dynamo_update(data, model, table = dataTable) {
         }
         return {
             statusCode: 200,
-            body: JSON.stringify(dynamo_to_item(res.Attributes, model))
+            body: JSON.stringify(make(res.Attributes, model))
         };
     } catch (err) {
         console.error("Error updating item:", err);
@@ -49,7 +51,11 @@ async function dynamo_update(data, model, table = dataTable) {
     }
 }
 
-async function update(data, instance, table = dataTable) {
+async function update<M extends Model>(
+    data: object,
+    instance: InstanceType<M>,
+    table = dataTable
+) {
     // get the item to update and replace any present keys
     const getParams = {
         TableName: table,
@@ -65,9 +71,14 @@ async function update(data, instance, table = dataTable) {
         if (!res.Item) {
             throw new Error("Item not found");
         }
-        item = dynamo_to_item(res.Item, instance.constructor);
-        item = instance.constructor.verify(item);
-        
+
+        const ctor = instance.constructor as M;
+        item = make(res.Item, ctor);
+        if (!item) {
+            throw new Error("Error making item");
+        }
+        item = ctor.verify(item);
+
     } catch (err) {
         console.error("Error getting item:", err);
         throw new Error("Error getting item");
@@ -78,18 +89,18 @@ async function update(data, instance, table = dataTable) {
     }
 
     for (const key in data) {
-        if (item.hasOwnProperty(key) && data[key] !== undefined) {
-            item[key] = data[key];
+        if (Object.prototype.hasOwnProperty.call(item, key) && (data as any)[key] !== undefined) {
+            (item as any)[key] = (data as any)[key];
         }
     }
-    
 
     try {
-        item = instance.constructor.verify(item);
+        const ctor = instance.constructor as M;
+        item = ctor.verify(item);
         if (item === null) {
             throw new Error("Invalid item data");
-        }    
-       return item;
+        }
+        return item;
     } catch (err) {
         console.error("Error verifying item:", err);
         throw new Error("Error verifying item");
