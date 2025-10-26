@@ -18,3 +18,5 @@ curl -v -w "\n%{http_code}" \
         -d "{\"username\":\"grubman2\", \"password\":\"iLoveworms123!\", \"email\":\"hookt@oregonstate.edu\"}" \
         "https://pil0cldk6a.execute-api.us-west-2.amazonaws.com/-dev-ff8acfd/signup"
 ```
+
+my stek

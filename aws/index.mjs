@@ -31,6 +31,8 @@ export const handler = async (e) => {
         console.log('Path:', path);
         console.log('Event path parameters:', pathParameters);
 
+        console.error('FUCKING LOG ME: operation:', operation, 'path:', path, 'body:', e.body);
+
         let username = undefined;
         let pathParameters = {};
 

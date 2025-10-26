@@ -66,6 +66,8 @@ export function crud(operation, model, body, username) {
         table = dataTable;
     }
 
+    console.log(`Performing crud ${operation} on ${model.name} with body:`, body, "by", username);
+
     switch (operation) {
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
