@@ -2,7 +2,8 @@
     import { TagsInput } from '@skeletonlabs/skeleton-svelte';
     import IconDelete from '@lucide/svelte/icons/circle-x';
     import { clickOutside } from './clickOutside';
-    import { createCollection } from '$lib/scripts/world';
+    import { createCollection, deleteWorld, deleteCollection, deleteEntry } from '$lib/scripts/world';
+    import { goto } from '$app/navigation';
     export let closeMenu: () => void;
 
     let item = '';
@@ -14,8 +15,20 @@
         item = 'World'
     }
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
+        if (item == 'World'){
+            await deleteWorld();
+        } else if (item == 'Collection'){
+            await deleteCollection();
+        } else {
+            await deleteEntry();
+        }
         closeMenu();
+        let path = window.location.pathname.split("/")
+        path.pop();
+        if (item == 'Collection'){
+        }
+        goto(path.join('/'))
     };
 
 </script>
@@ -25,18 +38,12 @@
         Delete {item}?
     </h2>
     <h3> 
-        Deleting a {item} will permanently delete its content and all sub-documents related to it. Are you sure?
+        Deleting {#if item == 'Entry'} an {:else} a {/if} {item.toLocaleLowerCase()} will permanently delete its content and all sub-documents related to it. Are you sure?
     </h3>
-    <button onclick={() => {
-        closeMenu();
-        }}>
-        yes
-    </button>
-    <button onclick={() => {
-        handleConfirm();
-    }}>
-        no
-    </button>
+    <div class="form-actions flex justify-end space-x-2">
+        <button class="btn btn-primary"onclick={() => {closeMenu();}}>Cancel</button>
+        <button class="btn btn-secondary" onclick={() => {handleConfirm();}}>Confirm</button>
+    </div>
 </div>
 
 <style>

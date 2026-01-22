@@ -115,6 +115,10 @@ export function getWorlds() {
         });
 }
 
+export async function deleteWorld(){
+    return
+}
+
 export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
     let url = '';
     let path = window.location.pathname.split('/');
@@ -216,6 +220,10 @@ export function updateCollection(id : string){
         console.log(response);
     });
 
+}
+
+export async function deleteCollection(){
+    return
 }
 
 export function createEntry(name: string, tags: string[], description: string, imageUrl: string) {
@@ -326,6 +334,25 @@ export async function updateEntry() {
     });
 
 
+}
+
+export async function deleteEntry(){
+    const entry = get(entryContext);
+    let path = window.location.pathname.split('/');
+    let  url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`; 
+    await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`
+        }
+    }).then ((response) => {
+        console.log(response);
+        let rI = get(routerItems)
+        rI.pop()
+        routerItems.set(rI);
+        collectionsContext.set(null);//could remove current parent to force the reload of sub-items?
+    })       
 }
         
 
