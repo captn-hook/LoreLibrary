@@ -339,7 +339,14 @@ export async function updateEntry() {
 export async function deleteEntry(){
     const entry = get(entryContext);
     let path = window.location.pathname.split('/');
-    let  url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`; 
+    let url;
+    if (path[1] == path[2]){
+        url = `${PUBLIC_API_URL}/${path[1]}/${entry?.name}`; 
+        worldContext.set(null);
+    } else {
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`; 
+        collectionsContext.set(null);
+    }
     await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -351,7 +358,7 @@ export async function deleteEntry(){
         let rI = get(routerItems)
         rI.pop()
         routerItems.set(rI);
-        collectionsContext.set(null);//could remove current parent to force the reload of sub-items?
+        entryContext.set(null);
     })       
 }
         
