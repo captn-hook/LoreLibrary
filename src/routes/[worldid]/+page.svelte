@@ -5,7 +5,7 @@
     import Navbar from "$lib/components/navigationComponents/navbar.svelte";
     import Router from "$lib/components/navigationComponents/router.svelte";
     import Content from "$lib/components/content.svelte";
-    import { editContent, showCreateCollection, showCreateEntry } from "$lib/state/editState.svelte";
+    import { editContent, showCreateCollection, showCreateEntry, showDeleteItem } from "$lib/state/editState.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import { onDestroy, onMount } from "svelte";
     import { world as worldContext} from "$lib/state/worldState.svelte";
@@ -13,9 +13,10 @@
     import { RouterItem } from "$lib/types/routerItem";
   import {settingsColors} from "$lib/state/generator.svelte";
     import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
-    import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
-    import CreateEntryForm from "$lib/components/editComponents/addDocumentComponents/createEntryForm.svelte";
+    import CreateCollectionForm from "$lib/components/editComponents/documentCRUDComponents/createCollectionForm.svelte";
+    import CreateEntryForm from "$lib/components/editComponents/documentCRUDComponents/createEntryForm.svelte";
     import {World} from "$lib/types/world";
+    import DeleteItem from "$lib/components/editComponents/documentCRUDComponents/deleteItem.svelte";
 
 
     let editContentValue;
@@ -85,6 +86,9 @@
 {/if}
 {#if $showCreateEntry}
     <CreateEntryForm closeMenu={() => showCreateEntry.set(false)} />
+{/if}
+{#if $showDeleteItem}
+    <DeleteItem closeMenu={() => {showDeleteItem.set(false)}} />
 {/if}
 </div>
     

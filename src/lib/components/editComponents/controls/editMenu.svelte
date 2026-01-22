@@ -12,7 +12,7 @@
         useRole,
     } from "@skeletonlabs/floating-ui-svelte";
     import { fade } from "svelte/transition";
-    import { showStyleControls, editContent, editComponentContents, showCreateCollection, showCreateEntry } from "$lib/state/editState.svelte";
+    import { showStyleControls, editContent, editComponentContents, showCreateCollection, showCreateEntry, showDeleteItem } from "$lib/state/editState.svelte";
     import {world, collections, entry} from "$lib/state/worldState.svelte";
     import type { World } from "$lib/types/world";
     import type { Collection } from "$lib/types/collection";
@@ -178,7 +178,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                         </button>
                     </li>
                     <li>
-                                                <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
+                        <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
                             showStyleControls.set(false);
                             editContent.set(false);
                             showCreateEntry.set(true);
@@ -189,6 +189,22 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                         </button>
                     </li>
                 {/if}
+                <li>
+                    <button class="btn preset-tonal-secondary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
+                        showStyleControls.set(false);
+                        editContent.set(false);
+                        showDeleteItem.set(true);
+                        open=false
+                    }}>
+                        {#if window.location.pathname.split("/").length == 4}
+                            Delete Entry
+                        {:else if window.location.pathname.split("/").length == 3}
+                            Delete Collection
+                        {:else}
+                            Delete World
+                        {/if}
+                    </button>
+                </li>
             </ul>
             <FloatingArrow bind:ref={elemArrow} context={floating.context} fill="#575969" />
         </div>

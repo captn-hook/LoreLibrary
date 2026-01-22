@@ -4,11 +4,13 @@
     import {getEntry} from "$lib/scripts/world";
     import Router from "$lib/components/navigationComponents/router.svelte";
     import Content from "$lib/components/content.svelte";
-    import { editContent } from "$lib/state/editState.svelte";
+    import { editContent, showDeleteItem } from "$lib/state/editState.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import { onDestroy, onMount } from "svelte";
     import {entry as entryContext} from "$lib/state/worldState.svelte";
     import { updateSettingsFromCurrentStyles } from "$lib/scripts/generator/generate-css.js";
+    import DeleteItem from "$lib/components/editComponents/documentCRUDComponents/deleteItem.svelte";
+    
 
 
     let editContentValue;
@@ -63,4 +65,7 @@
             <img class="relative m-4" src={$entryContext?.image} alt=""/>
         </div>
     </div>
+{#if $showDeleteItem}
+    <DeleteItem closeMenu={() => {showDeleteItem.set(false)}} />
+{/if}
 </div>
