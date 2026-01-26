@@ -26,7 +26,7 @@
         closeMenu();
         let path = window.location.pathname.split("/")
         path.pop();
-        if (path[-1] == path[-2]){
+        if (path[path.length - 1] == path[path.length - 2]){
             path.pop();
         }
         if (item == 'Collection'){

@@ -223,7 +223,24 @@ export function updateCollection(id : string){
 }
 
 export async function deleteCollection(){
-    return
+    let path = window.location.pathname.split('/');
+    const collections = get(collectionsContext);
+    let url = `${PUBLIC_API_URL}/${path[path.length - 2]}/${path[path.length - 1]}`; 
+    console.log('DELETE URL: ' + url)
+    await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`
+        }
+    }).then ((response) => {
+        console.log(response);
+        let rI = get(routerItems)
+        rI.pop()
+        routerItems.set(rI);
+        collectionsContext.set(null);
+        worldContext.set(null);
+    })       
 }
 
 export function createEntry(name: string, tags: string[], description: string, imageUrl: string) {
