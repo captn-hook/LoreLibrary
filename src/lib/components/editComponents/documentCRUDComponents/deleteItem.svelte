@@ -25,13 +25,16 @@
         }
         closeMenu();
         let path = window.location.pathname.split("/")
+        console.log(path);
         path.pop();
-        if (path[path.length - 1] == path[path.length - 2]){
+        if (path[path.length - 1] == path[path.length - 2]){ //deleting an entry from a world (/world/world/entry), has a backend bug rn
             path.pop();
         }
         if (item == 'Collection'){
+            //for sub collections maybe, idk, has a backend bug rn
+            //manipulate path to go to collection parent?
         }
-        goto(path.join('/'))
+        goto(path.join('/') || '/');
     };
 
 </script>
