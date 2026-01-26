@@ -116,7 +116,20 @@ export function getWorlds() {
 }
 
 export async function deleteWorld(){
-    return
+    let path = window.location.pathname.split('/');
+    let url = `${PUBLIC_API_URL}/${path[path.length - 1]}`; 
+    console.log('DELETE URL: ' + url)
+    await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`
+        }
+    }).then ((response) => {
+        console.log(response);
+        routerItems.set([]);
+        worldContext.set(null);
+    })       
 }
 
 export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
