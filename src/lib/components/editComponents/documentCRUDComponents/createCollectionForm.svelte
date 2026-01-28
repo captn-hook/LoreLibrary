@@ -9,6 +9,7 @@
     let tags: string[] = [];
     let description = '';
     let imageUrl = '';
+    let parentItem = decodeURI(window.location.pathname.split("/")[window.location.pathname.split("/").length -1 ])
 
     const handleSubmit = () => {
         createCollection(
@@ -32,6 +33,7 @@
                 <span class="label-text">Name</span>
             </label>
             <input id="name" type="text" bind:value={name} placeholder="Enter name" required class="input input-bordered" />
+            <p class='text-error-600'> {name == parentItem ? 'Cannot use same name as parent' : null} </p>
         </div>
         <div class="form-control">
             <TagsInput 
@@ -64,7 +66,7 @@
         <div class="form-control">
         </div>
         <div class="form-actions flex justify-end space-x-2">
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" disabled={name == parentItem} class="btn btn-primary">Submit</button>
             <button type="button" on:click={closeMenu} class="btn btn-secondary">Cancel</button>
         </div>
     </form>
