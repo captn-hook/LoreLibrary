@@ -116,13 +116,13 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
     <div class="flex gap-2">
 
             <button
-                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md"
+                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 h-[100%] rounded-md text-base md:text-lg"
                 onclick={handleSave}
             >
                 Save
             </button>
             <button
-                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md"
+                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-2 h-[100%] rounded-md text-base md:text-lg"
                 onclick={() => editContent.set(false)}
             >
                 Cancel
@@ -134,7 +134,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
         <button
             bind:this={floating.elements.reference}
             {...interactions.getReferenceProps()}
-            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md"
+            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md text-base md:text-lg"
             disabled={$editContent || $showStyleControls || $showCreateCollection || $showCreateEntry || $showDeleteItem}
         >
             Edit Options
