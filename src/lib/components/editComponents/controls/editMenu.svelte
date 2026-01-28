@@ -135,7 +135,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             bind:this={floating.elements.reference}
             {...interactions.getReferenceProps()}
             class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md"
-            disabled={$showStyleControls || $editContent }
+            disabled={$editContent || $showStyleControls || $showCreateCollection || $showCreateEntry || $showDeleteItem}
         >
             Edit Options
         </button>
