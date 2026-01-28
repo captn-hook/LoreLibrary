@@ -18,6 +18,7 @@
     import type { Collection } from "$lib/types/collection";
     import type { Entry } from "$lib/types/entry";
     import { updateWorld, updateCollection, updateEntry, createCollection } from "$lib/scripts/world";
+    import { get } from "svelte/store";
     
     // State
     let open = $state(false);
@@ -134,6 +135,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             bind:this={floating.elements.reference}
             {...interactions.getReferenceProps()}
             class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md"
+            disabled={$showStyleControls || $editContent }
         >
             Edit Options
         </button>
