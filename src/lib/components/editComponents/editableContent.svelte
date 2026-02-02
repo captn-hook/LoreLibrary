@@ -10,6 +10,7 @@
     import AddComponentButton from "$lib/components/editComponents/controls/addComponentButton.svelte";
     import HeaderEditor from "$lib/components/editComponents/textComponents/headerEditor.svelte";
     import DeleteComponentButton from "$lib/components/editComponents/controls/deleteComponentButton.svelte";
+    import ImageEditor from "$lib/components/editComponents/imageEditor.svelte";
 
     export let content: Content;
 
@@ -86,9 +87,9 @@
 		<HtmlEditor content={item.html} index={index} />
     {:else if item.text !== undefined}   
         <ParagraphEditor content={item.text} index={index} />
-	{:else if item.image !== undefined}
+	{:else if item.image_url !== undefined}
         <!-- Handle image component here if needed -->
-        <p>Image component not implemented yet.</p>
+        <ImageEditor content={item.image_url} index={index} />
     {:else if item.title !== undefined}
         <HeaderEditor content={item.title} index={index} />
     {:else}

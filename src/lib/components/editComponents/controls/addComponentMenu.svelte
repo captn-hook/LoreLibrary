@@ -6,6 +6,7 @@
 
     const menuOptions = {
         'Text': ['Header', 'Paragraph', 'Markdown', 'HTML', 'Number List', 'Bullet List'],
+        'Images': ['Image'],
         'TBA': ["Option 2.1", "Option 2.2", "Option 2.3"],
     };
 
@@ -37,6 +38,9 @@
                 case 'Bullet List':
                     component = { bulletList: [{ text: '', id: 0, subItems: [] }] };
                     break;
+                case 'Image':
+                    component = { image_url: "" };
+                    break; 
             }
             editComponentContents.update((contents) => {
                 contents.splice(index, 0, component);
