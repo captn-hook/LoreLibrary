@@ -60,7 +60,7 @@
 <div>
     <Navbar navItems={getNavItems(collection)} />
     <Router/>
-    <div class="flex flex-row">
+    <div class="flex flex-row max-w-full">
         <div class="flex-1 ml-3">
             <h1 class="text-4xl font-bold text-primary mb-4">{collection?.name}</h1>
             {#if $editContent == false}

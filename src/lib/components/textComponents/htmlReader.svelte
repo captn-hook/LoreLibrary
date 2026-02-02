@@ -35,5 +35,6 @@
     });
     let sanitizedHtml = tmp.innerHTML;
 </script>
-
+<div class="text-wrap max-w-[100%]">
 {@html sanitizedHtml}
+</div>

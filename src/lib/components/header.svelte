@@ -45,7 +45,7 @@
 
 </script>
 
-<div class="header pt-4 pl-4 pr-4">
+<div class="header pt-4 pl-4 pr-4 text-wrap">
   <div class="flex justify-between items-center">
     <a href="/" class="flex items-center space-x-4">
       <img 

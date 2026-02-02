@@ -44,7 +44,7 @@
     })();
 </script>
 
-<div class="md">
+<div class="md text-wrap break-all max-w-[100%] whitespace-pre-wrap overflow-wrap-anywhere">
     {@html sanitizedHtml}
 </div>
 
