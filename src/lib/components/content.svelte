@@ -11,7 +11,7 @@
 </script>
 <div>
     {#each content ?? [] as component} 
-    <div style="margin-bottom: calc(3*var(--spacing));">
+    <div style="margin-bottom: calc(3*var(--spacing));" class="min-w-full">
         {#if component.text}
             <p class="p text-base">{component.text}</p>
         {:else if component.name}

@@ -25,7 +25,5 @@
     class="bg-transparent text-surface pr-3 w-full h-full resize-none
            border-0 outline-none ring-0 focus:outline-none focus:ring-0 align-top"
   ></textarea>
-<div>
   <DeleteComponentButton {index} />
-  </div>
 </div>
