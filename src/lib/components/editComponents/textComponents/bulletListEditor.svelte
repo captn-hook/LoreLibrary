@@ -43,7 +43,7 @@
 		syncToStore();
 	};
 </script>
-<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg">
+<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
 	<div class="ml-[2.5%]">
 		<ul class='list-disc'>
 			{#each items as bullet, i (bullet.id)}

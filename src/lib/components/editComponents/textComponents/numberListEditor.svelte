@@ -43,7 +43,7 @@
 		syncToStore();
 	};
 </script>
-<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg">
+<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
 <ol class="list-decimal pl-[2.5%] border-l border-muted ">
     {#each items as number, i (number.id)}
         <NumberItem

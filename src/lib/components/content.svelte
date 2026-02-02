@@ -3,6 +3,7 @@
     import NumberList from '$lib/components/textComponents/numberList.svelte';
     import BullletList from "$lib/components/textComponents/bulletList.svelte";
     import MarkdownReader from "$lib/components/textComponents/markdownReader.svelte";
+    import Image from "./image.svelte";
     import HtmlReader from './textComponents/htmlReader.svelte';
 
     export let content: Content;
@@ -10,13 +11,13 @@
 </script>
 <div>
     {#each content ?? [] as component} 
-    <div style="margin-bottom: calc(3*var(--spacing));">
+    <div style="margin-bottom: calc(3*var(--spacing));" class="w-[75%]">
         {#if component.text}
-            <p class="p text-base">{component.text}</p>
+            <p class="p text-base text-wrap break-words max-w-[100%] whitespace-pre-wrap overflow-wrap-anywhere">{component.text}</p>
         {:else if component.name}
-            <h1 class="h1 text-5xl mb-4">{component.name}</h1>
+            <h1 class="h1 text-5xl mb-4 text-wrap break-all max-w-[100%] whitespace-pre-wrap overflow-wrap-anywhere">{component.name}</h1>
         {:else if component.image_url}
-            <img src={component.image_url} alt ='#'/>
+            <Image url={component.image_url}/>
         {:else if component.numberedList}
             <NumberList items={component.numberedList} />
         {:else if component.bulletList}
