@@ -54,8 +54,9 @@
 		return numberList.map(createEditableNumber);
 	}
 
-    function convertContentToEditableContent(content: Content): Content[] {
+    function convertContentToEditableContent(content: Content): Content {
         let editableContent = content.map((item: any) => {
+
             if (item.bulletList) {
                 return { bulletList: convertToEditableBulletList(item.bulletList) };
             } else if (item.numberedList) {
@@ -63,8 +64,35 @@
             } else {
                 return item;
             }
-        }).filter(Boolean);
+        });
+
         return editableContent;
+    }
+
+    let draggedIndex: number | null = null;
+
+    function onDragStart(index: number, event: DragEvent) {
+        draggedIndex = index;
+
+        // The element being dragged
+        const target = event.currentTarget as HTMLElement;
+
+        // Use the element itself as the drag image
+        // offsetX/Y = 0 centers the drag image under the cursor
+        event.dataTransfer?.setDragImage(target, 0, 0);
+    }
+
+    function onDrop(targetIndex: number) {
+        if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+        editComponentContents.update(contents => {
+        const next = [...contents];
+        const [moved] = next.splice(draggedIndex!, 1);
+        next.splice(targetIndex, 0, moved);
+        return next;
+        });
+
+        draggedIndex = null;
     }
 
     onMount(() => {
@@ -75,34 +103,41 @@
         });
 </script>
 <div class="w-[75%] flex flex-col mx-0">
-<AddComponentButton index={0} />
-{#each $editComponentContents as item, index}
-	{#if item.bulletList != undefined} 
-		<BulletListEditor items={item.bulletList} index={index} />
-	{:else if item.numberedList != undefined}
-		<NumberListEditor items={item.numberedList} index={index} />
-	{:else if item.md !== undefined}
-		<MarkdownEditor content={item.md} index={index} />
-	{:else if item.html !== undefined}
-		<HtmlEditor content={item.html} index={index} />
-    {:else if item.text !== undefined}   
+  <AddComponentButton index={0} />
+
+  {#each $editComponentContents as item, index (item.id = crypto.randomUUID())}
+    <div
+      role="listitem"
+      class="flex flex-col w-full h-full"
+      draggable="true"
+      on:dragstart={(event) => onDragStart(index, event)}
+      on:dragover|preventDefault
+      on:drop={() => onDrop(index)}
+    >
+      {#if item.bulletList != undefined} 
+        <BulletListEditor items={item.bulletList} index={index} />
+      {:else if item.numberedList != undefined}
+        <NumberListEditor items={item.numberedList} index={index} />
+      {:else if item.md !== undefined}
+        <MarkdownEditor content={item.md} index={index} />
+      {:else if item.html !== undefined}
+        <HtmlEditor content={item.html} index={index} />
+      {:else if item.text !== undefined}   
         <ParagraphEditor content={item.text} index={index} />
-	{:else if item.image_url !== undefined}
-        <!-- Handle image component here if needed -->
+      {:else if item.image_url !== undefined}
         <ImageEditor content={item.image_url} index={index} />
-    {:else if item.title !== undefined}
+      {:else if item.title !== undefined}
         <HeaderEditor content={item.title} index={index} />
-    {:else}
-        <!-- Handle other types of components here if needed -->
-         <div class="relative min-h-13">
-        <p>Unknown component type: {Object.keys(item)}</p>
-        <div class="absolute top-2 right-2">
+      {:else}
+        <div class="relative min-h-13">
+          <p>Unknown component type: {Object.keys(item)}</p>
+          <div class="absolute top-2 right-2">
             <DeleteComponentButton {index} />
+          </div>
         </div>
-        </div>
-    {/if}
-    <AddComponentButton index={index + 1} />
+      {/if}
 
-
-{/each}
+      <AddComponentButton index={index + 1} />
+    </div>
+  {/each}
 </div>
