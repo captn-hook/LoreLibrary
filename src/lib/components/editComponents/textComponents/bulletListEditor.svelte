@@ -2,9 +2,12 @@
     import BulletItem from './bulletItem.svelte';
     import { editComponentContents } from '$lib/state/editState.svelte';
 	import DeleteComponentButton from '../controls/deleteComponentButton.svelte';
+    import MoveComponentButtons from '../controls/moveComponentButtons.svelte';
 
     export let items: { id: string; text: string; subItems?: any[] }[] = [];
     export let index: number;
+	export let onDragStart: (index: number) => void = () => {};
+    export let onDrop: (index: number) => void = () => {};
      function syncToStore() {
 		editComponentContents.update((contents) => {
 			contents[index] = {bulletList: items};
@@ -43,23 +46,32 @@
 		syncToStore();
 	};
 </script>
-<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-	<div class="ml-[2.5%]">
-		<ul class='list-disc'>
-			{#each items as bullet, i (bullet.id)}
-				<BulletItem
-					item={bullet}
-					{addSubBullet}
-					{removeSubBullet}
-					removeItem={removeItem}
-					updateItem={(updatedItem) => updateItem(i, updatedItem)}
-				/>
-			{/each}
-		</ul>
-		
-	</div>
-	<button on:click={addItem} class="btn preset-tonal-primary button-filled max-w-40 ml-4 my-2">Add Item</button>
-	<div class="absolute top-2 right-2">
-        <DeleteComponentButton {index} />
-    </div>
-</div>	
+<div
+    role="listitem"
+    class="flex flex-row w-full items-center justify-center h-full"
+    on:dragover|preventDefault
+    on:drop={() => onDrop(index)}
+    >
+    <MoveComponentButtons index={index} onDragStart={onDragStart}/>
+
+	<div class="relative border-2 border-primary-200 bg-surface-500 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 w-[97%]">
+		<div class="ml-[2.5%]">
+			<ul class='list-disc'>
+				{#each items as bullet, i (bullet.id)}
+					<BulletItem
+						item={bullet}
+						{addSubBullet}
+						{removeSubBullet}
+						removeItem={removeItem}
+						updateItem={(updatedItem) => updateItem(i, updatedItem)}
+					/>
+				{/each}
+			</ul>
+			
+		</div>
+		<button on:click={addItem} class="btn preset-tonal-primary button-filled max-w-40 ml-4 my-2">Add Item</button>
+		<div class="absolute top-2 right-2">
+			<DeleteComponentButton {index} />
+		</div>
+	</div>	
+</div>

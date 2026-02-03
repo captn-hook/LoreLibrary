@@ -72,14 +72,12 @@
     let draggedIndex: number | null = null;
 
     function onDragStart(index: number, event: DragEvent) {
-        draggedIndex = index;
+    draggedIndex = index;
 
-        // The element being dragged
-        const target = event.currentTarget as HTMLElement;
+    const target = event.currentTarget as HTMLElement;
 
-        // Use the element itself as the drag image
-        // offsetX/Y = 0 centers the drag image under the cursor
-        event.dataTransfer?.setDragImage(target, 0, 0);
+    const editorElement = target.closest('.editor-row') as HTMLElement;
+    event.dataTransfer?.setDragImage(editorElement, 0, 0);
     }
 
     function onDrop(targetIndex: number) {
@@ -108,8 +106,7 @@
   {#each $editComponentContents as item, index (item.id = crypto.randomUUID())}
     <div
       role="listitem"
-      class="flex flex-col w-full h-full"
-      draggable="true"
+      class="flex flex-col w-full h-full editor-row"
       on:dragstart={(event) => onDragStart(index, event)}
       on:dragover|preventDefault
       on:drop={() => onDrop(index)}
