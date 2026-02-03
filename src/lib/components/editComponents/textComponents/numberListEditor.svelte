@@ -8,10 +8,12 @@
 	export let onDragStart: (index: number) => void = () => {};
     export let onDrop: (index: number) => void = () => {};
 
-     function syncToStore() {
+	 function syncToStore() {
 		editComponentContents.update((contents) => {
-			contents[index] = {numberedList: items};
-			return contents;
+			const next = [...contents];
+			const existing = next[index] ?? {};
+			next[index] = { ...existing, numberedList: items };
+			return next;
 		});
 	}
 

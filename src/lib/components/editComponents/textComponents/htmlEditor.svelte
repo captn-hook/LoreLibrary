@@ -16,6 +16,7 @@
             return next;
         });
     }
+
 </script>
 <div
     role="listitem"
@@ -27,7 +28,7 @@
     <div class="rounded grid grid-cols-[1fr_auto] items-stretch border-2 p-2 border-primary-200 bg-surface-500 focus-within:ring-2 focus-within:ring-blue-500 w-[97%]">
         <textarea
             bind:value={content}
-            on:input={() => syncToStore()}
+            on:input={syncToStore}
             rows="10"
             cols="50"
             placeholder="Enter your html content here..."

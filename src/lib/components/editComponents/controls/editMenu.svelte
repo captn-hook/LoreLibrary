@@ -72,7 +72,8 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             const { id, ...rest } = item; // Remove the id property from the top-level item
             return rest;
         }
-        return item; // Return the updated item
+        const { id, ...rest } = item; // Remove the id property
+        return rest; // Return the updated item
     });
 }
     function handleSave() { //needs to make post to api

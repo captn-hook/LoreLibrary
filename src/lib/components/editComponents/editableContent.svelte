@@ -56,16 +56,16 @@
 
     function convertContentToEditableContent(content: Content): Content {
         let editableContent = content.map((item: any) => {
-
+            let id = crypto.randomUUID();
             if (item.bulletList) {
-                return { bulletList: convertToEditableBulletList(item.bulletList) };
+                return { id: id, bulletList: convertToEditableBulletList(item.bulletList) };
             } else if (item.numberedList) {
-                return { numberedList: convertToEditableNumberList(item.numberedList) };
+                return { id: id, numberedList: convertToEditableNumberList(item.numberedList) };
             } else {
-                return item;
+                return {...item, id: id };
             }
         });
-
+        console.log(editableContent);
         return editableContent;
     }
 
@@ -103,7 +103,8 @@
 <div class="w-[75%] flex flex-col mx-0">
   <AddComponentButton index={0} />
 
-  {#each $editComponentContents as item, index (item.id = crypto.randomUUID())}
+  {#each $editComponentContents as item, index }
+  {console.log(item)}
     <div
       role="listitem"
       class="flex flex-col w-full h-full editor-row"

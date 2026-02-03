@@ -8,13 +8,12 @@
     import { editComponentContents } from '$lib/state/editState.svelte';
     import DeleteComponentButton from '../controls/deleteComponentButton.svelte';
 
-    $: syncToStore();
-
     function syncToStore() {
-        // content = content.replace(/\n/g, '');
         editComponentContents.update((contents) => {
-            contents[index] = { title: content };
-            return contents;
+            const next = [...contents];
+            const existing = next[index] ?? {};
+            next[index] = { ...existing, title: content };
+            return next;
         });
     }
 </script>
@@ -26,13 +25,13 @@
     >
     <MoveComponentButtons index={index} onDragStart={onDragStart}/>
 
-    <div class="rounded grid grid-cols-[1fr_auto] items-stretch border-2 p-2 border-primary-200 bg-surface-500 focus-within:ring-2 focus-within:ring-blue-500">
+    <div class="rounded grid grid-cols-[1fr_auto] items-stretch border-2 p-2 border-primary-200 bg-surface-500 focus-within:ring-2 focus-within:ring-blue-500 w-[97%] ">
     <textarea
         bind:value={content}
         on:input={() => syncToStore()}
-        placeholder="Enter the url to your image here..."
-        rows="2"
-        class="bg-transparent text-surface pr-3 w-full h-full resize-none
+        placeholder="Enter the header here..."
+        rows="4"
+        class="bg-transparent text-surface pr-3 w-full h-[100%] resize-none
             border-0 outline-none ring-0 focus:outline-none focus:ring-0 align-top"
     ></textarea>
     <DeleteComponentButton {index} />

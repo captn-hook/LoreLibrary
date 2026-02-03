@@ -6,17 +6,17 @@
     import { editComponentContents } from '$lib/state/editState.svelte';
     import DeleteComponentButton from '$lib/components/editComponents/controls/deleteComponentButton.svelte';
     import MoveComponentButtons from './controls/moveComponentButtons.svelte';
+    import { preventDefault } from 'svelte/legacy';
 
     function syncToStore() {
         editComponentContents.update((contents) => {
-            contents[index] = { image_url: content };
-            return contents;
+            const next = [...contents];
+            const existing = next[index] ?? {};
+            next[index] = { ...existing, image_url: content };
+            return next;
         });
     }
 
-    $: {
-        syncToStore();
-    }
 </script>
 <div
     role="listitem"
@@ -31,7 +31,7 @@
     bind:value={content}
     on:input={() => syncToStore()}
     placeholder="Enter the url to your image here..."
-    rows="2"
+    rows="4"
     class="bg-transparent text-surface pr-3 w-full h-full resize-none
            border-0 outline-none ring-0 focus:outline-none focus:ring-0 align-top"
   ></textarea>

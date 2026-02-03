@@ -10,13 +10,11 @@
 
     function syncToStore() {
         editComponentContents.update((contents) => {
-            contents[index] = { md: content };
-            return contents;
+            const next = [...contents];
+            const existing = next[index] ?? {};
+            next[index] = { ...existing, md: content };
+            return next;
         });
-    }
-
-    $: {
-        syncToStore();
     }
 </script>
 <div
