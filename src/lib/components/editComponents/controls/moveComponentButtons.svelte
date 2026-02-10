@@ -24,7 +24,7 @@ function moveDown() {
 }
 </script>
 
-<div class="flex flex-col items-center justify-center space-y-3 p-1 cursor-move select-none w-[3%] align-middle h-full ">
+<div class="flex flex-col items-center justify-center space-y-3 p-1 pr-2 cursor-move select-none w-[3%] align-middle h-full ">
     <button onclick={moveUp}>
         <ChevronUp size={32} />
     </button>

@@ -5,7 +5,7 @@
     export let onDrop: (index: number) => void = () => {};
     import MoveComponentButtons from '../controls/moveComponentButtons.svelte';
     import { editComponentContents } from '$lib/state/editState.svelte';
-    import DeleteComponentButton from '../controls/deleteComponentButton.svelte';
+    import ComponentControls from '../controls/componentControls.svelte';
 
     function syncToStore() {
         editComponentContents.update((contents) => {
@@ -32,6 +32,6 @@
             class="bg-transparent text-surface pr-3 w-full h-full resize-none
             border-0 outline-none ring-0 focus:outline-none focus:ring-0 align-top"
         ></textarea>
-            <DeleteComponentButton {index} />
+        <ComponentControls index={index}/>
     </div>
 </div>
