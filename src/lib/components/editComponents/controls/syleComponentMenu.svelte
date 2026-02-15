@@ -1,10 +1,10 @@
 <script lang="ts">
     import { editComponentContents } from '$lib/state/editState.svelte';
     import ColorPicker from 'svelte-awesome-color-picker';
+    import { get } from 'svelte/store';
     export let index: number | undefined;
     export let menuPosition = { x: 0, y: 0 };
     export let closeMenu: () => void;
-    let color = '#ff0000';
     type SubOption = Record<string, string[]>;
     type MenuOptions = Record<string, SubOption[]>;
 
@@ -16,6 +16,7 @@
 
     let selectedCategory: keyof typeof menuOptions = Object.keys(menuOptions)[0] as keyof typeof menuOptions;
     let selectedSubCategory: number | null = null;
+    let selectedOption: string | null = null;
 
     function selectCategory(category: keyof typeof menuOptions) {
         selectedCategory = category;
@@ -27,10 +28,36 @@
         if (menuOptions[selectedCategory][subCategoryIndex]) {
             const subOptionKey = Object.keys(menuOptions[selectedCategory][subCategoryIndex])[0];
             const subOptionValues = menuOptions[selectedCategory][subCategoryIndex][subOptionKey];
-            if (subOptionValues.length === 0) {
-                
+            if (editComponentContents && index !== undefined) {
+                const component = get(editComponentContents)[index];
+                if (component.style && subOptionKey in component.style) {
+                    selectedOption = component.style[subOptionKey] || null;
+                }
             }
         }
+    }
+
+    function handleOptionSelect(key: string, value: string) {
+        if (index === undefined) return;
+        selectedOption = value;
+        editComponentContents.update((contents) => {
+            const component = contents[index];
+            if (!component.style) component.style = {};
+            if (!component.style[selectedCategory]) component.style[selectedCategory] = {};
+            component.style[selectedCategory][key] = value;
+            return contents;
+        });
+    }
+
+    function handleColorPick(event: CustomEvent<string>) {
+        if (index === undefined) return;
+        const color  = event.detail;
+        editComponentContents.update((contents) => {
+            const component = contents[index];
+            if (!component.style) component.style = {};
+            component.style['Color'] = color;
+            return contents;
+        });
     }
 
 </script>
@@ -47,21 +74,41 @@
                 class={`text-left px-3 py-2 rounded-md transition-colors
                     hover:bg-surface-50 hover:text-primary-contrast-50
                     focus:outline-none focus:bg-surface-50
-                    ${selectedCategory === category ? 'bg-surface-100 text-primary-surface-contrast-100 font-medium' : 'text-surface-contrast-500'}`}
-                on:click={() => selectCategory(category as keyof typeof menuOptions)}
+                    ${selectedCategory === category ? 'bg-surface-50 text-primary-surface-contrast-100 font-medium' : 'text-surface-contrast-500'}`}
+                onclick={() => selectCategory(category as keyof typeof menuOptions)}
             >
                 {category}
             </button>
         {/each}
+        <button
+            type="button"
+            class={`text-left px-3 py-2 rounded-md transition-colors text-error-500
+                    hover:bg-error-50 hover:text-error-contrast-50
+                    focus:outline-none focus:bg-error-50 'text-error-contrast-500'`}
+            onclick={() => {
+                if (index === undefined) return;
+                editComponentContents.update((contents) => {
+                const component = contents[index];
+                if (component.style) {
+                    delete component.style;
+                }
+                return contents;
+            });
+            closeMenu();
+            }}
+            >Reset Styles</button>
     </div>
     <!-- Middle Column (Options) -->
-    <div class="w-auto flex flex-col pl-2 border-r border-primary-200 pr-2">
+    <div class="w-auto flex flex-col pl-2 border-r border-primary-200 pr-2 text-surface">
         {#if selectedCategory}
             {#each menuOptions[selectedCategory] as option, i}
                 <button
                     type="button"
-                    class="text-left px-3 py-2  rounded-md text-surface-contrast-500 transition-colors hover:bg-surface-50 hover:text-primary-contrast-50 focus:bg-gray-200"
-                    on:click={() => selectSubCategory(i)}
+                    class={`text-left px-3 py-2 rounded-md transition-colors
+                    hover:bg-surface-50 hover:text-primary-contrast-50
+                    focus:outline-none focus:bg-surface-50
+                    ${ selectedSubCategory === i ? 'bg-surface-50 text-primary-surface-contrast-100 font-medium' : 'text-surface-contrast-500'}`}
+                    onclick={() => selectSubCategory(i)}
                     >
                     {Object.keys(option)[0]}
                 </button>
@@ -71,20 +118,29 @@
         {/if}
     </div>
     {#if selectedSubCategory !== null}
-    <div class="w-auto flex flex-col pl-2 ">
+    <div class="w-auto flex flex-col pl-2 text-surface">
         {#each Object.entries(menuOptions[selectedCategory][selectedSubCategory]) as [key, values]}
             {#if values.length}
                 {#each values as val}
                     <button
                         type="button"
-                        class="text-left px-3 py-2 rounded-md text-surface-contrast-500 transition-colors hover:bg-surface-50 hover:text-primary-contrast-50 focus:bg-gray-200"
+                        class={`text-left px-3 py-2 rounded-md transition-colors
+                    hover:bg-surface-50 hover:text-primary-contrast-50
+                    focus:outline-none focus:bg-surface-50
+                    ${ selectedOption == val ? 'bg-surface-50 text-primary-surface-contrast-100 font-medium' : 'text-surface-contrast-500'}`}
+                        onclick={() => handleOptionSelect(key, val)}
                         >
                         {val}
                     </button>
                 {/each}
                 {:else if key === 'Color'}
                 <div class="picker-wrapper pt-2 pr-2">
-                 <ColorPicker isDialog={false} isDark />
+                <ColorPicker isDialog={false} isDark
+                    onInput={(e) => {
+                        if (e.hex){
+                            handleOptionSelect('Color', e.hex);
+                        }
+                    }} />
                  </div>
             {/if}
         {/each}
