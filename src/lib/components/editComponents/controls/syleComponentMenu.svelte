@@ -27,11 +27,11 @@
         selectedSubCategory = subCategoryIndex;
         if (menuOptions[selectedCategory][subCategoryIndex]) {
             const subOptionKey = Object.keys(menuOptions[selectedCategory][subCategoryIndex])[0];
-            const subOptionValues = menuOptions[selectedCategory][subCategoryIndex][subOptionKey];
             if (editComponentContents && index !== undefined) {
                 const component = get(editComponentContents)[index];
-                if (component.style && subOptionKey in component.style) {
-                    selectedOption = component.style[subOptionKey] || null;
+                if (component.style && subOptionKey in component.style[selectedCategory]) {
+                    console.log(component.style[selectedCategory][subOptionKey]);
+                    selectedOption = component.style[selectedCategory][subOptionKey] || null;
                 }
             }
         }
