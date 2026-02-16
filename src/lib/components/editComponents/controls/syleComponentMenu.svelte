@@ -1,5 +1,6 @@
 <script lang="ts">
     import { editComponentContents } from '$lib/state/editState.svelte';
+    import MiniPalletePicker from './miniPalletePicker.svelte';
     import ColorPicker from 'svelte-awesome-color-picker';
     import { get } from 'svelte/store';
     export let index: number | undefined;
@@ -16,7 +17,10 @@
 
     let selectedCategory: keyof typeof menuOptions = Object.keys(menuOptions)[0] as keyof typeof menuOptions;
     let selectedSubCategory: number | null = null;
-    let selectedOption: string | null = null;
+    let selectedOption: string | string[] | null = null;
+
+    // local identifier to bind to MiniPalletePicker; matches expected type [string,string] | undefined
+    let miniSelectedColor: [string, string] | undefined = undefined;
 
     function selectCategory(category: keyof typeof menuOptions) {
         selectedCategory = category;
@@ -29,37 +33,36 @@
             const subOptionKey = Object.keys(menuOptions[selectedCategory][subCategoryIndex])[0];
             if (editComponentContents && index !== undefined) {
                 const component = get(editComponentContents)[index];
-                console.log(component);
-                console.log(selectedCategory);
-                console.log(component.style[selectedCategory.toLowerCase()]);
                 if (component.style && subOptionKey.toLowerCase() in component.style[selectedCategory.toLowerCase()]) {
-                    // console.log(component.style[selectedCategory][subOptionKey]);
                     selectedOption = component.style[selectedCategory.toLowerCase()][subOptionKey.toLowerCase()] || null;
+                    if (Array.isArray(selectedOption) && selectedOption.length === 2) {
+                        miniSelectedColor = selectedOption as [string, string];
+                    } else {
+                        miniSelectedColor = undefined;
+                    }
+                } else {
+                    selectedOption = null;
+                    miniSelectedColor = undefined; //this is a lil weird, but it works...
                 }
             }
         }
     }
 
-    function handleOptionSelect(key: string, value: string) {
+    function handleOptionSelect(key: string, value: string | string[]) {
         if (index === undefined) return;
+        // keep selectedOption in sync with chosen value (string or array)
         selectedOption = value;
-        console.log(value);
+        // sync miniSelectedColor if the value is a tuple
+        if (Array.isArray(value) && value.length === 2) {
+            miniSelectedColor = value as [string, string];
+        } else {
+            miniSelectedColor = undefined;
+        }
         editComponentContents.update((contents) => {
             const component = contents[index];
             if (!component.style) component.style = {};
             if (!component.style[selectedCategory.toLowerCase()]) component.style[selectedCategory.toLowerCase()] = {};
             component.style[selectedCategory.toLowerCase()][key.toLowerCase()] = value;
-            return contents;
-        });
-    }
-
-    function handleColorPick(event: CustomEvent<string>) {
-        if (index === undefined) return;
-        const color  = event.detail;
-        editComponentContents.update((contents) => {
-            const component = contents[index];
-            if (!component.style) component.style = {};
-            component.style['Color'] = color;
             return contents;
         });
     }
@@ -138,14 +141,10 @@
                     </button>
                 {/each}
                 {:else if key === 'Color'}
-                <div class="picker-wrapper pt-2 pr-2">
-                <ColorPicker isDialog={false} isDark
-                    onInput={(e) => {
-                        if (e.hex){
-                            handleOptionSelect('Color', e.hex);
-                        }
-                    }} />
-                 </div>
+                <div class="pt-2 pr-2">
+                    <!-- bind to the identifier miniSelectedColor and provide an adapter for selectOption so the picker value is stored under the correct key -->
+                    <MiniPalletePicker on:change={(e) => {handleOptionSelect(key, e.detail)}} bind:selectedColor={miniSelectedColor}/>
+                </div>
             {/if}
         {/each}
     </div>
