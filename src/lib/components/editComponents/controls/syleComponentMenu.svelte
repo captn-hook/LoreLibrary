@@ -29,7 +29,7 @@
             const subOptionKey = Object.keys(menuOptions[selectedCategory][subCategoryIndex])[0];
             if (editComponentContents && index !== undefined) {
                 const component = get(editComponentContents)[index];
-                if (component.style && subOptionKey in component.style[selectedCategory]) {
+                if (component.style && subOptionKey.toLowerCase() in component.style[selectedCategory]) {
                     console.log(component.style[selectedCategory][subOptionKey]);
                     selectedOption = component.style[selectedCategory][subOptionKey] || null;
                 }
@@ -43,8 +43,8 @@
         editComponentContents.update((contents) => {
             const component = contents[index];
             if (!component.style) component.style = {};
-            if (!component.style[selectedCategory]) component.style[selectedCategory] = {};
-            component.style[selectedCategory][key] = value;
+            if (!component.style[selectedCategory.toLowerCase()]) component.style[selectedCategory.toLowerCase()] = {};
+            component.style[selectedCategory.toLowerCase()][key.toLowerCase()] = value;
             return contents;
         });
     }
