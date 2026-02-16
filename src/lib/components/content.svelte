@@ -28,7 +28,7 @@
         {:else if component.html}
             <HtmlReader html={component.html} />
         {:else if component.title}
-            <h2 class="text-2xl font-semibold">{component.title}</h2>
+            <h2 class="h2 text font-semibold">{component.title}</h2>
         {/if}
     </div>
 {/each}

@@ -9,7 +9,7 @@
     type MenuOptions = Record<string, SubOption[]>;
 
     const menuOptions: MenuOptions = {
-        'Text': [{'Size': ['h1', 'h2']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Serif', 'Sans-serif']}],
+        'Text': [{'Size': ['h1', 'h2']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
        'Background': [{'Color': []}, {'Border': []}, {'Rounding': []}],
         'TBA': [{"Option 2.1": []}, {"Option 2.2": []}, {"Option 2.3": []}],
     };
@@ -29,9 +29,12 @@
             const subOptionKey = Object.keys(menuOptions[selectedCategory][subCategoryIndex])[0];
             if (editComponentContents && index !== undefined) {
                 const component = get(editComponentContents)[index];
-                if (component.style && subOptionKey.toLowerCase() in component.style[selectedCategory]) {
-                    console.log(component.style[selectedCategory][subOptionKey]);
-                    selectedOption = component.style[selectedCategory][subOptionKey] || null;
+                console.log(component);
+                console.log(selectedCategory);
+                console.log(component.style[selectedCategory.toLowerCase()]);
+                if (component.style && subOptionKey.toLowerCase() in component.style[selectedCategory.toLowerCase()]) {
+                    // console.log(component.style[selectedCategory][subOptionKey]);
+                    selectedOption = component.style[selectedCategory.toLowerCase()][subOptionKey.toLowerCase()] || null;
                 }
             }
         }
@@ -40,6 +43,7 @@
     function handleOptionSelect(key: string, value: string) {
         if (index === undefined) return;
         selectedOption = value;
+        console.log(value);
         editComponentContents.update((contents) => {
             const component = contents[index];
             if (!component.style) component.style = {};
