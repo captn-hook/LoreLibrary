@@ -9,8 +9,8 @@
     type MenuOptions = Record<string, SubOption[]>;
 
     const menuOptions: MenuOptions = {
-        'Text': [{'Size': ['h1', 'h2']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
-       'Background': [{'Color': []}, {'Border': []}, {'Rounding': []}],
+        'Text': [{'Size': ['paragraph', 'h1', 'h2', 'h3', 'h4', 'h5']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
+       'Background': [{'Color': []}, {'Border': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}],
         'TBA': [{"Option 2.1": []}, {"Option 2.2": []}, {"Option 2.3": []}],
     };
 
