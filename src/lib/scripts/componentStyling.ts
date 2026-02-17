@@ -1,22 +1,23 @@
 type SubOption = Record<string, string[]>;
 export type MenuOptions = Record<string, SubOption[]>;
 
-
+//TODO - add contrast switch for color 
+//TODO - add svelte color picker as alternative(use hex)
 const menuOptions: MenuOptions = {
     'Text': [{'Size': ['Paragraph', 'Header 1', 'Header 2', 'Header 3', 'Header 4', 'Header 5']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
     'Background': [{'Color': []}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-};
+};//TODO - add align
 
 const mdOptions: MenuOptions = {
     'Text': [{'Color': [], 'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
     'Background': [{'Color': []}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-}
+}//TODO - add align
 
 const imageOptions: MenuOptions = {
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-    'Background': [{'Color': []}],
+    'Background': [{'Color': []}], //TODO - add align
 }
 
 export const getMenuOptions = (type: string): MenuOptions => {
