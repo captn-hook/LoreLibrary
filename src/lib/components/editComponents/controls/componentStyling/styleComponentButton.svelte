@@ -1,6 +1,7 @@
 <script lang="ts">
     export let index: number;
     export let disabledOwner: string | null = null;
+    export let type: string;
 
     import StyleComponentMenu from './syleComponentMenu.svelte';
     let menuVisible = false;
@@ -38,9 +39,9 @@
 
 {#if menuVisible}
     <StyleComponentMenu
-        {index}
-        {menuPosition}
-        {closeMenu}
-        on:closeMenu={closeMenu}
+        index={index}
+        menuPosition={menuPosition}
+        closeMenu={closeMenu}
+        type={type}
     />
 {/if}

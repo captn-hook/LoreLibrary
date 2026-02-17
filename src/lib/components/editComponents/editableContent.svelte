@@ -6,11 +6,10 @@
     import NumberListEditor from "$lib/components/editComponents/textComponents/numberListEditor.svelte";
     import MarkdownEditor from "$lib/components/editComponents/textComponents/markdownEditor.svelte";
     import HtmlEditor from "$lib/components/editComponents/textComponents/htmlEditor.svelte";
-    import ParagraphEditor from "./textComponents/paragraphEditor.svelte";
     import AddComponentButton from "$lib/components/editComponents/controls/addComponentButton.svelte";
-    import HeaderEditor from "$lib/components/editComponents/textComponents/headerEditor.svelte";
     import DeleteComponentButton from "$lib/components/editComponents/controls/deleteComponentButton.svelte";
     import ImageEditor from "$lib/components/editComponents/imageEditor.svelte";
+    import RawTextEditor from "./textComponents/rawTextEditor.svelte";
 
     export let content: Content;
 
@@ -19,6 +18,7 @@
 		id: string;
 		subItems?: EditableBullet[];
 	};
+
 	type EditableNumber = {
 		text: string;
 		id: string;
@@ -121,11 +121,9 @@
       {:else if item.html !== undefined}
         <HtmlEditor content={item.html} index={index} />
       {:else if item.text !== undefined}   
-        <ParagraphEditor content={item.text} index={index} />
+        <RawTextEditor content={item.text} index={index} />
       {:else if item.image_url !== undefined}
         <ImageEditor content={item.image_url} index={index} />
-      {:else if item.title !== undefined}
-        <HeaderEditor content={item.title} index={index} />
       {:else}
         <div class="relative min-h-13">
           <p>Unknown component type: {Object.keys(item)}</p>

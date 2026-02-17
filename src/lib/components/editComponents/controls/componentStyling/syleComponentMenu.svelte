@@ -1,26 +1,18 @@
 <script lang="ts">
     import { editComponentContents } from '$lib/state/editState.svelte';
     import MiniPalletePicker from './miniPalletePicker.svelte';
+    import {getMenuOptions} from "$lib/scripts/componentStyling";
     import ColorPicker from 'svelte-awesome-color-picker';
     import { get } from 'svelte/store';
     export let index: number | undefined;
     export let menuPosition = { x: 0, y: 0 };
+    export let type: string;
     export let closeMenu: () => void;
-    type SubOption = Record<string, string[]>;
-    type MenuOptions = Record<string, SubOption[]>;
 
-    const menuOptions: MenuOptions = {
-        'Text': [{'Size': ['paragraph', 'h1', 'h2', 'h3', 'h4', 'h5']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
-       'Background': [{'Color': []}],
-       'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-        'TBA': [{"Option 2.1": []}, {"Option 2.2": []}, {"Option 2.3": []}],
-    };
-
+    const menuOptions = getMenuOptions(type); 
     let selectedCategory: keyof typeof menuOptions = Object.keys(menuOptions)[0] as keyof typeof menuOptions;
     let selectedSubCategory: number | null = null;
     let selectedOption: string | string[] | null = null;
-
-    // local identifier to bind to MiniPalletePicker; matches expected type [string,string] | undefined
     let miniSelectedColor: [string, string] | undefined = undefined;
 
     function selectCategory(category: keyof typeof menuOptions) {

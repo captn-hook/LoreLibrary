@@ -5,7 +5,7 @@
     export let closeMenu: () => void;
 
     const menuOptions = {
-        'Text': ['Header', 'Paragraph', 'Markdown', 'HTML', 'Number List', 'Bullet List'],
+        'Text': ['Basic', 'Markdown', 'HTML', 'Number List', 'Bullet List'],
         'Images': ['Image'],
         'TBA': ["Option 2.1", "Option 2.2", "Option 2.3"],
     };
@@ -20,10 +20,7 @@
         let component = {};
         if (index !== undefined) {
             switch (option) {
-                case 'Header':
-                    component = { title: "" };
-                    break;
-                case 'Paragraph':
+                case 'Basic':
                     component = { text: "" };
                     break;
                 case 'Markdown':
