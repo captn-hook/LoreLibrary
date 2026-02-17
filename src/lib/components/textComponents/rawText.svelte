@@ -11,6 +11,15 @@
         "Round": "lg",
         "Full": "full"
     };
+
+    const pixelTranslations: Record<string, string> = {
+        "0px": "0",
+        "1px": "1",
+        "2px": "2",
+        "3px": "3",
+        "4px": "4",
+        "5px": "5"
+    };
   const loadFont = (fontName: string) => {
     if (!fontName) return;
     const formattedFont = fontName.replace(/ /g, "+");
@@ -33,7 +42,13 @@
     const c = `
         ${style?.text.size || "p"} text
         ${style?.text?.font ? `font-${style?.text?.font.toLowerCase()}` : "" }
-        ${style?.background?.rounding ? `rounded-${roundingTranslations[style.background.rounding]}` : "" }
+        ${style?.text?.color ? `text-${style?.text?.color[0].toLowerCase()}-${style?.text.color[1]}` : "" }
+        ${style?.border?.rounding ? `rounded-${roundingTranslations[style.border.rounding]}` : "" }
+        ${style?.border?.color ? `border-${style.border.color[0].toLowerCase()}-${style.border.color[1]}` : "" }
+        ${style?.border?.padding ? `p-${pixelTranslations[style.border.padding]}` : "" }
+        ${style?.border?.width ? `border-${pixelTranslations[style.border.width]}` : "" }
+
+        ${style?.background?.color ? `bg-${style.background.color[0].toLowerCase()}-${style.background.color[1]}` : "" }
         whitespace-pre-wrap break-words
     `;
     const s = style?.text?.["font variant"] ? `font-family: '${style?.text?.["font variant"]}', serif;` : "";

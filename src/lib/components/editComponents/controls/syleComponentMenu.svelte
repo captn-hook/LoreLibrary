@@ -11,7 +11,8 @@
 
     const menuOptions: MenuOptions = {
         'Text': [{'Size': ['paragraph', 'h1', 'h2', 'h3', 'h4', 'h5']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
-       'Background': [{'Color': []}, {'Border': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}],
+       'Background': [{'Color': []}],
+       'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
         'TBA': [{"Option 2.1": []}, {"Option 2.2": []}, {"Option 2.3": []}],
     };
 
@@ -24,7 +25,12 @@
 
     function selectCategory(category: keyof typeof menuOptions) {
         selectedCategory = category;
-        selectedSubCategory = null;
+        if (menuOptions[category].length == 1){
+            selectSubCategory(0);
+        } else {
+            selectedSubCategory = null;
+        }
+ 
     }
 
     function selectSubCategory(subCategoryIndex: number) {
@@ -33,7 +39,7 @@
             const subOptionKey = Object.keys(menuOptions[selectedCategory][subCategoryIndex])[0];
             if (editComponentContents && index !== undefined) {
                 const component = get(editComponentContents)[index];
-                if (component.style && subOptionKey.toLowerCase() in component.style[selectedCategory.toLowerCase()]) {
+                if (component.style && component.style[selectedCategory.toLowerCase()] && subOptionKey.toLowerCase() in component.style[selectedCategory.toLowerCase()]) {
                     selectedOption = component.style[selectedCategory.toLowerCase()][subOptionKey.toLowerCase()] || null;
                     if (Array.isArray(selectedOption) && selectedOption.length === 2) {
                         miniSelectedColor = selectedOption as [string, string];
