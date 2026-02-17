@@ -22,7 +22,7 @@
         {:else if component.numberedList}
             <NumberList items={component.numberedList} style={component.style} />
         {:else if component.bulletList}
-            <BullletList items={component.bulletList} />
+            <BullletList items={component.bulletList} style={component.style} />
         {:else if component.md}
             <MarkdownReader md={component.md} style={component.style} />
         {:else if component.html}

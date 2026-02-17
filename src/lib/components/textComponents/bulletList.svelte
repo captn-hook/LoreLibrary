@@ -1,16 +1,54 @@
 <script lang="ts">
     import BulletList from '$lib/components/textComponents/bulletList.svelte';
+    import {getClass, getStyle, loadFont} from "$lib/scripts/componentStyling";
     export let items: { text: string; subItems?: any[] }[] = [];
+    export let style: Record<string, any> | undefined = undefined;
+
+    
+        $: if (style?.text?.["font variant"]) {
+        loadFont(style.text["font variant"]);
+    }
+
+    const c = getClass(style);
+    const s = getStyle(style);
+
+    const passDownStyle = (style: Record<string, any> | undefined) => {
+        if (!style) return undefined;
+        const newStyle: Record<string, any> = {};
+        if (style.text) {
+            newStyle.text = {...style.text};
+        }
+        return newStyle;
+    };
+
+    const getFontSize = () => {
+        if (!style || !style.text || !style.text.size) return 'text-base';
+        switch (style.text.size) {
+            case 'Header 1':
+                return 'text-5xl ml-8';
+            case 'Header 2':
+                return 'text-3xl  ml-5';
+            case 'Header 3':
+                return 'text-2xl  ml-3';
+            case 'Header 4':
+                return 'text-xl  ml-2';
+            case 'Header 5':
+                return 'text-lg ml-1';
+            default:
+                return 'text-base';
+        }
+    };
   </script>
-  
+<div style={s} class={c}>
   <ul class="list-disc pl-6">
     {#each items as item}
-      <li class="my-2 text-base">
+      <li class={getFontSize() + ` ${style?.text?.font ? 'font-' + style.text.font : ''}`}>
         {item.text}
   
         {#if item.subItems?.length}
-          <BulletList items={item.subItems} />
+          <BulletList items={item.subItems} style={passDownStyle(style)} />
         {/if}
       </li>
     {/each}
   </ul>
+</div>

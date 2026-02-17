@@ -65,7 +65,6 @@
                 return {...item, id: id,};
             }
         });
-        console.log(editableContent);
         return editableContent;
     }
 

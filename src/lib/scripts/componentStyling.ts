@@ -63,7 +63,7 @@ export const getClass = (style: any): string => {
     ${style?.border?.rounding ? `rounded-${roundingTranslations[style.border.rounding]}` : "" }
 
     ${style?.border?.padding ? `p-${pixelTranslations[style.border.padding]}` : "" }
-    ${style?.border?.width ? `border-${pixelTranslations[style.border.width]}` : "" }
+    ${style?.border?.color ? 'border' : "" }
 
     whitespace-pre-wrap break-words`;
 }
@@ -79,6 +79,7 @@ export const getStyle = (style: any): string => {
         ${style?.border?.color
             ? `border-color: var(--color-${style.border.color[0].toLowerCase()}-${style.border.color[1]});`
             : ""}
+            ${style?.border?.width ? `border-width: ${style.border.width};` : "" }
         ${style?.text?.["font variant"]
             ? `font-family: '${style.text["font variant"]}', serif;`
             : ""}
