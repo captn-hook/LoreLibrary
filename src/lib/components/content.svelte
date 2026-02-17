@@ -20,11 +20,11 @@
         {:else if component.image_url}
             <Image url={component.image_url}/>
         {:else if component.numberedList}
-            <NumberList items={component.numberedList} />
+            <NumberList items={component.numberedList} style={component.style} />
         {:else if component.bulletList}
             <BullletList items={component.bulletList} />
         {:else if component.md}
-            <MarkdownReader md={component.md} />
+            <MarkdownReader md={component.md} style={component.style} />
         {:else if component.html}
             <HtmlReader html={component.html} />
         {/if}
