@@ -16,6 +16,7 @@ const mdOptions: MenuOptions = {
 
 const imageOptions: MenuOptions = {
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
+    'Background': [{'Color': []}],
 }
 
 export const getMenuOptions = (type: string): MenuOptions => {

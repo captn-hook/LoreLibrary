@@ -18,7 +18,7 @@
         {:else if component.name}
             <h1 class="h1 text-5xl mb-4 text-wrap break-all max-w-[100%] whitespace-pre-wrap overflow-wrap-anywhere">{component.name}</h1>
         {:else if component.image_url}
-            <Image url={component.image_url}/>
+            <Image url={component.image_url} style={component.style}/>
         {:else if component.numberedList}
             <NumberList items={component.numberedList} style={component.style} />
         {:else if component.bulletList}
