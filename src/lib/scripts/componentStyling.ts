@@ -4,18 +4,19 @@ export type MenuOptions = Record<string, SubOption[]>;
 //TODO - add contrast switch for color 
 //TODO - add svelte color picker as alternative(use hex)
 const menuOptions: MenuOptions = {
-    'Text': [{'Size': ['Paragraph', 'Header 1', 'Header 2', 'Header 3', 'Header 4', 'Header 5']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
+    'Text': [{'Size': ['Paragraph', 'Header 1', 'Header 2', 'Header 3', 'Header 4', 'Header 5']}, {'Align': ['Left', 'Center', 'Right']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
     'Background': [{'Color': []}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
 };//TODO - add align
 
 const mdOptions: MenuOptions = {
-    'Text': [{'Color': [], 'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
+    'Text': [{'Align': ['Left', 'Center', 'Right']}, {'Color': []}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
     'Background': [{'Color': []}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
 }//TODO - add align
 
 const imageOptions: MenuOptions = {
+    'Align': [{'Align': ['Left', 'Center', 'Right']}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
     'Background': [{'Color': []}], //TODO - add align
 }
@@ -66,7 +67,9 @@ export const getClass = (style: any): string => {
 
     ${style?.border?.padding ? `p-${pixelTranslations[style.border.padding]}` : "" }
     ${style?.border?.color ? 'border' : "" }
-
+    ${style?.align?.align == "Left" ? `float-left` : ""}
+    ${style?.align?.align == "Center" ? `block mx-auto` : ""}
+    ${style?.align?.align == "Right" ? `float-right` : ""}
     whitespace-pre-wrap break-words`;
 }
 
@@ -85,6 +88,7 @@ export const getStyle = (style: any): string => {
         ${style?.text?.["font variant"]
             ? `font-family: '${style.text["font variant"]}', serif;`
             : ""}
+        ${style?.text?.align ? `text-align: ${style.text.align.toLowerCase()};` : "" }
     `;
 };
 

@@ -12,7 +12,7 @@
 </script>
 <div>
     {#each content ?? [] as component} 
-    <div style="margin-bottom: calc(3*var(--spacing));" class="w-[75%]">
+    <div style="margin-bottom: calc(3*var(--spacing));" class="w-[75%] flex flex-col">
         {#if component.text}
             <RawText content={component.text} style={component.style}/>
         {:else if component.name}

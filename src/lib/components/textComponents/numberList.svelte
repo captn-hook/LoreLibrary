@@ -7,8 +7,22 @@
         $: if (style?.text?.["font variant"]) {
         loadFont(style.text["font variant"]);
     }
-
-    const c = getClass(style);
+    let c_alignment ="";
+    if (style?.text?.align) {
+        switch (style.text.align) {
+            case "Left":
+                c_alignment = `self-start `;
+                break;
+            case "Center":
+                c_alignment = `self-center `;
+                break;
+            case "Right":
+                c_alignment = `self-end `;
+                break;
+        }
+        delete style.text.align;
+    }
+    let c = getClass(style);
     const s = getStyle(style);
 
     const passDownStyle = (style: Record<string, any> | undefined) => {
@@ -16,7 +30,11 @@
         const newStyle: Record<string, any> = {};
         if (style.text) {
             newStyle.text = {...style.text};
+            if (style.text.align){
+                newStyle.text.align = ''
+            }
         }
+        console.log(newStyle);
         return newStyle;
     };
 
@@ -38,8 +56,9 @@
         }
     };
 </script>
-<div style={s} class={c}>
-    <ol class=" list-decimal pl-6">
+<div style={s} class={c + " flex flex-col"}>
+    <div class={c_alignment + " w-fit"}>
+    <ol class=" list-decimal pl-6 list-inside">
         {#each items as item}
             <li class={getFontSize() + ` ${style?.text?.font ? 'font-' + style.text.font : ''}`}>
                 {item.text}
@@ -50,4 +69,5 @@
             </li>
         {/each}
     </ol>
+    </div>
 </div>

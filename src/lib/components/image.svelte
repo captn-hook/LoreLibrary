@@ -5,7 +5,8 @@
 
     const c = getClass(style);
     const s = getStyle(style);
+    console.log(s);
 </script>
-<div class={`${c} flex justify-center`} style={s}>
-    <img src={url} alt="Not found" class="max-w-full h-auto" />
+<div class="w-full">
+    <img src={url} alt="Not found" style={s} class={c + " max-w-full h-auto"} />
 </div>
