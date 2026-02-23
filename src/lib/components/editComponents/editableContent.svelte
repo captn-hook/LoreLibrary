@@ -58,6 +58,7 @@
         let editableContent = content.map((item: any) => {
             let id = crypto.randomUUID();
             if (item.bulletList) {
+              console.log(item.style);
                 return { id: id, bulletList: convertToEditableBulletList(item.bulletList), style: item.style || undefined };
             } else if (item.numberedList) {
                 return { id: id, numberedList: convertToEditableNumberList(item.numberedList), style: item.style || undefined };
@@ -93,6 +94,7 @@
     }
 
     onMount(() => {
+      console.log(content);
         let editableContent = convertContentToEditableContent(content);
         if ($editComponentContents){
             editComponentContents.set(editableContent);
@@ -101,7 +103,7 @@
 </script>
 <div class="w-[75%] flex flex-col mx-0">
   <AddComponentButton index={0} />
-
+  {console.log($editComponentContents)}
   {#each $editComponentContents as item, index }
     <div
       role="listitem"

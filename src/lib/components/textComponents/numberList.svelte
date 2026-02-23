@@ -7,32 +7,34 @@
         $: if (style?.text?.["font variant"]) {
         loadFont(style.text["font variant"]);
     }
-    let c_alignment ="";
+
+    let cAlignment ="";
+    const tmp_align = style?.text?.align;
     if (style?.text?.align) {
         switch (style.text.align) {
             case "Left":
-                c_alignment = `self-start `;
+                cAlignment = `self-start `;
                 break;
             case "Center":
-                c_alignment = `self-center `;
+                cAlignment = `self-center `;
                 break;
             case "Right":
-                c_alignment = `self-end `;
+                cAlignment = `self-end `;
                 break;
         }
-        delete style.text.align;
+        delete style.text.align; //temporarily remove align so it it not used in getClass and getStyle
     }
-    let c = getClass(style);
+    const c = getClass(style);
     const s = getStyle(style);
+    if (style && tmp_align) {
+        style.text.align = tmp_align;//return align to preserve state, its either this or overgeneralizing getClass and getStyle
+    }
 
     const passDownStyle = (style: Record<string, any> | undefined) => {
         if (!style) return undefined;
         const newStyle: Record<string, any> = {};
         if (style.text) {
             newStyle.text = {...style.text};
-            if (style.text.align){
-                newStyle.text.align = ''
-            }
         }
         console.log(newStyle);
         return newStyle;
@@ -57,17 +59,17 @@
     };
 </script>
 <div style={s} class={c + " flex flex-col"}>
-    <div class={c_alignment + " w-fit"}>
-    <ol class=" list-decimal pl-6 list-inside">
-        {#each items as item}
-            <li class={getFontSize() + ` ${style?.text?.font ? 'font-' + style.text.font : ''}`}>
-                {item.text}
+    <div class={cAlignment + " w-fit"}>
+        <ol class=" list-decimal pl-6 list-inside">
+            {#each items as item}
+                <li class={getFontSize() + ` ${style?.text?.font ? 'font-' + style.text.font : ''}`}>
+                    {item.text}
 
-                {#if item.subItems?.length}
-                    <NumberList items={item.subItems} style={passDownStyle(style)} />
-                {/if}
-            </li>
-        {/each}
-    </ol>
+                    {#if item.subItems?.length}
+                        <NumberList items={item.subItems} style={passDownStyle(style)} />
+                    {/if}
+                </li>
+            {/each}
+        </ol>
     </div>
 </div>

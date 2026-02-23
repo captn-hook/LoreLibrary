@@ -61,7 +61,6 @@
             const component = contents[index];
             if (!component.style) component.style = {};
             if (!component.style[selectedCategory.toLowerCase()]) component.style[selectedCategory.toLowerCase()] = {};
-            console.log(component.style[selectedCategory.toLowerCase()])
             component.style[selectedCategory.toLowerCase()][key.toLowerCase()] = value;
             return contents;
         });
