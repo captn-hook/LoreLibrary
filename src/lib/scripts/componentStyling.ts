@@ -7,18 +7,18 @@ const menuOptions: MenuOptions = {
     'Text': [{'Size': ['Paragraph', 'Header 1', 'Header 2', 'Header 3', 'Header 4', 'Header 5']}, {'Align': ['Left', 'Center', 'Right']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
     'Background': [{'Color': []}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-};//TODO - add align
+};
 
 const mdOptions: MenuOptions = {
     'Text': [{'Align': ['Left', 'Center', 'Right']}, {'Color': []}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
     'Background': [{'Color': []}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-}//TODO - add align
+}
 
 const imageOptions: MenuOptions = {
     'Align': [{'Align': ['Left', 'Center', 'Right']}],
     'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
-    'Background': [{'Color': []}], //TODO - add align
+    'Background': [{'Color': []}],
 }
 
 export const getMenuOptions = (type: string): MenuOptions => {
@@ -62,9 +62,7 @@ export const getClass = (style: any): string => {
     return `
     ${sizeTranslations[style?.text?.size] || ""} text
     ${style?.text?.font ? `font-${style?.text?.font.toLowerCase()}` : "" }
-    
     ${style?.border?.rounding ? `rounded-${roundingTranslations[style.border.rounding]}` : "" }
-
     ${style?.border?.padding ? `p-${pixelTranslations[style.border.padding]}` : "" }
     ${style?.border?.color ? 'border' : "" }
     ${style?.align?.align == "Left" ? `float-left` : ""}
@@ -75,19 +73,11 @@ export const getClass = (style: any): string => {
 
 export const getStyle = (style: any): string => {
     return `
-        ${style?.text?.color
-            ? `color: var(--color-${style.text.color[0].toLowerCase()}-${style.text.color[1]});`
-            : ""}
-        ${style?.background?.color
-            ? `background-color: var(--color-${style.background.color[0].toLowerCase()}-${style.background.color[1]});`
-            : ""}
-        ${style?.border?.color
-            ? `border-color: var(--color-${style.border.color[0].toLowerCase()}-${style.border.color[1]});`
-            : ""}
-            ${style?.border?.width ? `border-width: ${style.border.width};` : "" }
-        ${style?.text?.["font variant"]
-            ? `font-family: '${style.text["font variant"]}', serif;`
-            : ""}
+        ${style?.text?.color? `color: var(--color-${style.text.color[0].toLowerCase()}-${style.text.color[1]});` : ""}
+        ${style?.background?.color ? `background-color: var(--color-${style.background.color[0].toLowerCase()}-${style.background.color[1]});` : ""}
+        ${style?.border?.color ? `border-color: var(--color-${style.border.color[0].toLowerCase()}-${style.border.color[1]});` : ""}
+        ${style?.border?.width ? `border-width: ${style.border.width};` : "" }
+        ${style?.text?.["font variant"] ? `font-family: '${style.text["font variant"]}', serif;` : ""}
         ${style?.text?.align ? `text-align: ${style.text.align.toLowerCase()};` : "" }
     `;
 };
