@@ -74,6 +74,7 @@
             {#if $editContent == false}
             <Content content={$worldContext?.content ?? []}/>
             {:else}
+            {console.log($worldContext?.content)}
             <EditableContent content={$worldContext?.content ?? []}/>
             {/if}
         </div>

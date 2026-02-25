@@ -25,5 +25,8 @@
 @import '@skeletonlabs/skeleton/themes/vox';
 @import '@skeletonlabs/skeleton/themes/wintry';
 
-
 @source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--base-font-family);
+}
