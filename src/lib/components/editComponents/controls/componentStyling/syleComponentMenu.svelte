@@ -48,6 +48,7 @@
     }
 
     function handleOptionSelect(key: string, value: string | string[]) {
+        console.log("Selected option:", key, value);
         if (index === undefined) return;
         // keep selectedOption in sync with chosen value (string or array)
         selectedOption = value;
@@ -143,6 +144,14 @@
                 <div class="pt-2 pr-2">
                     <!-- bind to the identifier miniSelectedColor and provide an adapter for selectOption so the picker value is stored under the correct key -->
                     <MiniPalletePicker on:change={(e) => {handleOptionSelect(key, e.detail)}} bind:selectedColor={miniSelectedColor}/>
+                    <ColorPicker
+                        onInput={(e) => {
+                            let timeout;
+                            clearTimeout(timeout);
+                            timeout = setTimeout(() => {
+                                if (!e.hex) return;
+                                handleOptionSelect(key, e.hex);
+                            }, 50);}}/>
                 </div>
             {/if}
         {/each}

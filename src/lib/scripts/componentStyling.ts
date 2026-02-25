@@ -73,9 +73,9 @@ export const getClass = (style: any): string => {
 
 export const getStyle = (style: any): string => {
     return `
-        ${style?.text?.color? `color: var(--color-${style.text.color[0].toLowerCase()}-${style.text.color[1]});` : ""}
-        ${style?.background?.color ? `background-color: var(--color-${style.background.color[0].toLowerCase()}-${style.background.color[1]});` : ""}
-        ${style?.border?.color ? `border-color: var(--color-${style.border.color[0].toLowerCase()}-${style.border.color[1]});` : ""}
+        ${style?.text?.color && style?.text?.color.length === 2 ?  `color: var(--color-${style.text.color[0].toLowerCase()}-${style.text.color[1]});` : style?.text?.color ? `color: ${style.text.color};` : "" }
+        ${style?.background?.color && style?.background?.color.length === 2 ? `background-color: var(--color-${style.background.color[0].toLowerCase()}-${style.background.color[1]});` : style?.background?.color ? `background-color: ${style.background.color};` : "" }
+        ${style?.border?.color && style?.border?.color.length === 2 ? `border-color: var(--color-${style.border.color[0].toLowerCase()}-${style.border.color[1]});` : style?.border?.color ? `border-color: ${style.border.color};` : "" }
         ${style?.border?.width ? `border-width: ${style.border.width};` : "" }
         ${style?.text?.["font variant"] ? `font-family: '${style.text["font variant"]}', serif;` : ""}
         ${style?.text?.align ? `text-align: ${style.text.align.toLowerCase()};` : "" }
