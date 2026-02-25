@@ -13,7 +13,7 @@
     let selectedCategory: keyof typeof menuOptions = Object.keys(menuOptions)[0] as keyof typeof menuOptions;
     let selectedSubCategory: number | null = null;
     let selectedOption: string | string[] | null = null;
-    let miniSelectedColor: [string, string] | undefined = undefined;
+    let miniSelectedColor: [string, boolean, string] | undefined = undefined;
 
     function selectCategory(category: keyof typeof menuOptions) {
         selectedCategory = category;
@@ -34,8 +34,8 @@
                 console.log(component);
                 if (component.style && component.style[selectedCategory.toLowerCase()] && subOptionKey.toLowerCase() in component.style[selectedCategory.toLowerCase()]) {
                     selectedOption = component.style[selectedCategory.toLowerCase()][subOptionKey.toLowerCase()] || null;
-                    if (Array.isArray(selectedOption) && selectedOption.length === 2) {
-                        miniSelectedColor = selectedOption as [string, string];
+                    if (Array.isArray(selectedOption) && selectedOption.length === 3) {
+                        miniSelectedColor = selectedOption as [string, boolean, string];
                     } else {
                         miniSelectedColor = undefined;
                     }
@@ -53,8 +53,8 @@
         // keep selectedOption in sync with chosen value (string or array)
         selectedOption = value;
         // sync miniSelectedColor if the value is a tuple
-        if (Array.isArray(value) && value.length === 2) {
-            miniSelectedColor = value as [string, string];
+        if (Array.isArray(value) && value.length === 3) {
+            miniSelectedColor = value as [string, boolean, string];
         } else {
             miniSelectedColor = undefined;
         }
