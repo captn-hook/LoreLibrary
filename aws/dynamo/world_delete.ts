@@ -12,60 +12,10 @@ import { User, World } from "../classes.ts";
 import { delete_collection } from "./collection_delete.ts"
 import { delete_entry } from "./entry_delete.ts";
 
-async function delete_world(world: World, final = true, updateUser = true): Promise<TransactWriteItem[] | { statusCode: number; body: string }> {
+async function delete_world(world: World, updateUser = true): Promise<{ statusCode: number; body: string }> {
+    // Step 1 (atomic): delete the world record and remove it from the owner's worlds list.
+    // This is the guaranteed part — once this succeeds the world is gone.
     let transactionItems: TransactWriteItem[] = [];
-
-    for (const collectionName of world['collections'] || []) {
-        const params = {
-            TableName: dataTable,
-            Key: {
-                PK: world.name + "#COLLECTION",
-                SK: collectionName
-            }
-        };
-        const collectionData = await ddbDocClient.send(new GetCommand(params));
-        if (!collectionData.Item) {
-            console.error("Collection not found:", collectionName);
-            continue; // Skip if collection not found
-        }
-        const col = make_collection(collectionData.Item);
-        if (!col) {
-            console.error("Invalid collection data:", collectionData.Item);
-            continue; // Skip if invalid collection data
-        }
-        const collectionTsx = await delete_collection(col, false, false);
-        if (Array.isArray(collectionTsx)) {
-            transactionItems = transactionItems.concat(collectionTsx); // Fix concat issue
-        } else {
-            console.error("Error deleting collection:", collectionTsx);
-        }
-    }
-
-    for (const entryName of world['entries'] || []) {
-        const params = {
-            TableName: dataTable,
-            Key: {
-                PK: world.name + "#ENTRY",
-                SK: entryName
-            }
-        };
-        const entryData = await ddbDocClient.send(new GetCommand(params));
-        if (!entryData.Item) {
-            console.error("Entry not found:", entryName);
-            continue; // Skip if entry not found
-        }
-        const entry = make_entry(entryData.Item);
-        if (!entry) {
-            console.error("Invalid entry data:", entryData.Item);
-            continue; // Skip if invalid entry data
-        }
-        const entryTsx = await delete_entry(entry, false, false);
-        if (Array.isArray(entryTsx)) {
-            transactionItems = transactionItems.concat(entryTsx); // Fix concat issue
-        } else {
-            console.error("Delete entry returned promise:", entryTsx);
-        }
-    }
 
     transactionItems.push({
         Delete: {
@@ -77,61 +27,79 @@ async function delete_world(world: World, final = true, updateUser = true): Prom
         }
     });
 
-    console.log("Deleting world:", world.name, "with ownerId:", world.parentId);
     if (updateUser) {
         if (!world.parentId) {
             throw new Error("World does not have a parentId");
         }
         const usero = new User(world.parentId);
-
-        const params = {
+        const userData = await ddbDocClient.send(new GetCommand({
             TableName: userTable,
-            Key: {
-                PK: usero.pk(),
-                SK: usero.sk()
-            }
-        };
-        const userData = await ddbDocClient.send(new GetCommand(params));
+            Key: { PK: usero.pk(), SK: usero.sk() }
+        }));
         if (!userData.Item) {
             throw new Error("User not found");
         }
         const user = userData.Item;
-        if (user.worlds) {
-            user.worlds = user.worlds.filter((w: string) => w !== world.name);
-        }
-        // turn the item into a dynamo item
-        const u = {
-            PK: user.PK,
-            SK: user.SK,
-            worlds: user.worlds || [],
-            content: user.content || [],
-        };
+        const updatedWorlds = (user.worlds || []).filter((w: string) => w !== world.name);
         transactionItems.push({
             Put: {
                 TableName: userTable,
-                Item: u
+                Item: {
+                    PK: user.PK,
+                    SK: user.SK,
+                    worlds: updatedWorlds,
+                    content: user.content || [],
+                }
             }
         });
     }
 
-    if (final) {
-        try {
-            console.log("Executing transaction with items:", transactionItems);
-            for (const item of transactionItems) {
-                console.log("Transaction item:", item);
-            }
-            const result = await ddbDocClient.send(new TransactWriteCommand({
-                TransactItems: transactionItems
-            }));
-            return {
-                statusCode: 200,
-                body: JSON.stringify({ message: "World deleted successfully" })
-            };
-        } catch (err) {
-            console.error("Error deleting world:", err);
-            throw new Error("Error deleting world");
-        }
-    } else {
-        return transactionItems;
+    try {
+        await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactionItems }));
+    } catch (err) {
+        console.error("Error deleting world record:", err);
+        throw new Error("Error deleting world");
     }
+
+    // Step 2 (best-effort): delete child collections and entries.
+    // These are not atomic — failures leave orphaned items that can be cleaned up later
+    // via cleanup_world_items() in dynamo.ts.
+    const childDeletes: Promise<any>[] = [];
+
+    for (const collectionName of world['collections'] || []) {
+        childDeletes.push(
+            ddbDocClient.send(new GetCommand({
+                TableName: dataTable,
+                Key: { PK: world.name + "#COLLECTION", SK: collectionName }
+            })).then(res => {
+                if (!res.Item) return;
+                const col = make_collection(res.Item);
+                if (col) return delete_collection(col, true, false);
+            }).catch(err => console.error("Orphan collection after world delete:", collectionName, err))
+        );
+    }
+
+    for (const entryName of world['entries'] || []) {
+        childDeletes.push(
+            ddbDocClient.send(new GetCommand({
+                TableName: dataTable,
+                Key: { PK: world.name + "#ENTRY", SK: entryName }
+            })).then(res => {
+                if (!res.Item) return;
+                const entry = make_entry(res.Item);
+                if (entry) return delete_entry(entry, true, false);
+            }).catch(err => console.error("Orphan entry after world delete:", entryName, err))
+        );
+    }
+
+    const results = await Promise.allSettled(childDeletes);
+    const orphanCount = results.filter(r => r.status === 'rejected').length;
+    if (orphanCount > 0) {
+        console.error(`${orphanCount} child item(s) could not be deleted after world '${world.name}' was removed`);
+    }
+
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "World deleted successfully", orphans: orphanCount })
+    };
 }
