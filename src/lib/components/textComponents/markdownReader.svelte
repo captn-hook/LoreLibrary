@@ -1,7 +1,9 @@
 <script lang="ts">
     import { marked } from 'marked';
+    import {getClass, getStyle, loadFont} from "$lib/scripts/componentStyling";
     import DOMPurify from 'dompurify';
     export let md: string;
+    export let style: Record<string, any> | undefined;
 
     // Convert markdown to HTML and sanitize it
     let sanitizedHtml: string;
@@ -42,9 +44,17 @@
         });
         sanitizedHtml = tmp.innerHTML;
     })();
+
+    $: if (style?.text?.["font variant"]) {
+    loadFont(style.text["font variant"]);
+    }
+
+    const c = getClass(style);
+    const s = getStyle(style);
 </script>
 
-<div class="md">
+
+<div style={s} class={"md " + c}>
     {@html sanitizedHtml}
 </div>
 

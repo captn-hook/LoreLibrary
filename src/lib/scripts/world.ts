@@ -115,6 +115,23 @@ export function getWorlds() {
         });
 }
 
+export async function deleteWorld(){
+    let path = window.location.pathname.split('/');
+    let url = `${PUBLIC_API_URL}/${path[path.length - 1]}`; 
+    console.log('DELETE URL: ' + url)
+    await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`
+        }
+    }).then ((response) => {
+        console.log(response);
+        routerItems.set([]);
+        worldContext.set(null);
+    })       
+}
+
 export function createCollection(name: string, tags: string[], description: string, imageUrl: string) {
     let url = '';
     let path = window.location.pathname.split('/');
@@ -216,6 +233,27 @@ export function updateCollection(id : string){
         console.log(response);
     });
 
+}
+
+export async function deleteCollection(){
+    let path = window.location.pathname.split('/');
+    const collections = get(collectionsContext);
+    let url = `${PUBLIC_API_URL}/${path[path.length - 2]}/${path[path.length - 1]}`; 
+    console.log('DELETE URL: ' + url)
+    await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`
+        }
+    }).then ((response) => {
+        console.log(response);
+        let rI = get(routerItems)
+        rI.pop()
+        routerItems.set(rI);
+        collectionsContext.set(null);
+        worldContext.set(null);
+    })       
 }
 
 export function createEntry(name: string, tags: string[], description: string, imageUrl: string) {
@@ -326,6 +364,32 @@ export async function updateEntry() {
     });
 
 
+}
+
+export async function deleteEntry(){
+    const entry = get(entryContext);
+    let path = window.location.pathname.split('/');
+    let url;
+    if (path[1] == path[2]){
+        url = `${PUBLIC_API_URL}/${path[1]}/${entry?.name}`; 
+        worldContext.set(null);
+    } else {
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${entry?.name}`; 
+        collectionsContext.set(null);
+    }
+    await fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `${get(token)}`
+        }
+    }).then ((response) => {
+        console.log(response);
+        let rI = get(routerItems)
+        rI.pop()
+        routerItems.set(rI);
+        entryContext.set(null);
+    })       
 }
         
 

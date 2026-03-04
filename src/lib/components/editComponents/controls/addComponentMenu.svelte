@@ -5,7 +5,8 @@
     export let closeMenu: () => void;
 
     const menuOptions = {
-        'Text': ['Header', 'Paragraph', 'Markdown', 'HTML', 'Number List', 'Bullet List'],
+        'Text': ['Basic', 'Markdown', 'HTML', 'Number List', 'Bullet List'],
+        'Images': ['Image'],
         'TBA': ["Option 2.1", "Option 2.2", "Option 2.3"],
     };
 
@@ -19,10 +20,7 @@
         let component = {};
         if (index !== undefined) {
             switch (option) {
-                case 'Header':
-                    component = { title: "" };
-                    break;
-                case 'Paragraph':
+                case 'Basic':
                     component = { text: "" };
                     break;
                 case 'Markdown':
@@ -37,6 +35,9 @@
                 case 'Bullet List':
                     component = { bulletList: [{ text: '', id: 0, subItems: [] }] };
                     break;
+                case 'Image':
+                    component = { image_url: "" };
+                    break; 
             }
             editComponentContents.update((contents) => {
                 contents.splice(index, 0, component);
@@ -59,7 +60,7 @@
                 class={`w-full text-left px-3 py-2 rounded-md transition-colors
                     hover:bg-surface-50 hover:text-primary-contrast-50
                     focus:outline-none focus:bg-surface-50
-                    ${selectedCategory === category ? 'bg-surface-100 text-primary-contrast-50 font-medium' : 'text-surface'}`}
+                    ${selectedCategory === category ? 'bg-surface-100 text-primary-surface-contrast-100 font-medium' : 'text-surface-contrast-500'}`}
                 on:click={() => selectCategory(category as keyof typeof menuOptions)}
             >
                 {category}
@@ -72,7 +73,7 @@
             {#each menuOptions[selectedCategory] as option}
                 <button
                     type="button"
-                    class="w-full text-left px-3 py-2 rounded-md text-surface transition-colors hover:bg-surface-50 hover:text-primary-contrast-50 focus:bg-gray-200"
+                    class="w-full text-left px-3 py-2 rounded-md text-surface-contrast-500 transition-colors hover:bg-surface-50 hover:text-primary-contrast-50 focus:bg-gray-200"
                     on:click={() => addComponent(option)}
                 >
                     {option}

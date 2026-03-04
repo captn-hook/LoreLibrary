@@ -6,12 +6,13 @@
     import Router from "$lib/components/navigationComponents/router.svelte";
     import {collections} from "$lib/state/worldState.svelte";
     import {Collection} from "$lib/types/collection";
-    import {editContent, showCreateCollection, showCreateEntry} from "$lib/state/editState.svelte";
+    import {editContent, showCreateCollection, showCreateEntry, showDeleteItem} from "$lib/state/editState.svelte";
     import Content from "$lib/components/content.svelte";
     import EditableContent from "$lib/components/editComponents/editableContent.svelte";
     import {updateSettingsFromCurrentStyles} from "$lib/scripts/generator/generate-css.js";
-    import CreateCollectionForm from "$lib/components/editComponents/addDocumentComponents/createCollectionForm.svelte";
-    import CreateEntryForm from "$lib/components/editComponents/addDocumentComponents/createEntryForm.svelte";
+    import CreateCollectionForm from "$lib/components/editComponents/documentCRUDComponents/createCollectionForm.svelte";
+    import DeleteItem from "$lib/components/editComponents/documentCRUDComponents/deleteItem.svelte";
+    import CreateEntryForm from "$lib/components/editComponents/documentCRUDComponents/createEntryForm.svelte";
     import { browser } from '$app/environment';
 
 
@@ -59,7 +60,7 @@
 <div>
     <Navbar navItems={getNavItems(collection)} />
     <Router/>
-    <div class="flex flex-row">
+    <div class="flex flex-row max-w-full">
         <div class="flex-1 ml-3">
             <h1 class="text-4xl font-bold text-primary mb-4">{collection?.name}</h1>
             {#if $editContent == false}
@@ -77,5 +78,8 @@
 {/if}
 {#if $showCreateEntry}
     <CreateEntryForm closeMenu={() => showCreateEntry.set(false)} />
+{/if}
+{#if $showDeleteItem}
+    <DeleteItem closeMenu={() => {showDeleteItem.set(false)}} />
 {/if}
 </div>

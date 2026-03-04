@@ -12,12 +12,13 @@
         useRole,
     } from "@skeletonlabs/floating-ui-svelte";
     import { fade } from "svelte/transition";
-    import { showStyleControls, editContent, editComponentContents, showCreateCollection, showCreateEntry } from "$lib/state/editState.svelte";
+    import { showStyleControls, editContent, editComponentContents, showCreateCollection, showCreateEntry, showDeleteItem } from "$lib/state/editState.svelte";
     import {world, collections, entry} from "$lib/state/worldState.svelte";
     import type { World } from "$lib/types/world";
     import type { Collection } from "$lib/types/collection";
     import type { Entry } from "$lib/types/entry";
     import { updateWorld, updateCollection, updateEntry, createCollection } from "$lib/scripts/world";
+    import { get } from "svelte/store";
     
     // State
     let open = $state(false);
@@ -71,7 +72,8 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
             const { id, ...rest } = item; // Remove the id property from the top-level item
             return rest;
         }
-        return item; // Return the updated item
+        const { id, ...rest } = item; // Remove the id property
+        return rest; // Return the updated item
     });
 }
     function handleSave() { //needs to make post to api
@@ -115,13 +117,13 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
     <div class="flex gap-2">
 
             <button
-                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md"
+                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 h-[100%] rounded-md text-base md:text-lg"
                 onclick={handleSave}
             >
                 Save
             </button>
             <button
-                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 rounded-md"
+                class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-2 h-[100%] rounded-md text-base md:text-lg"
                 onclick={() => editContent.set(false)}
             >
                 Cancel
@@ -133,7 +135,8 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
         <button
             bind:this={floating.elements.reference}
             {...interactions.getReferenceProps()}
-            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md"
+            class="btn preset-tonal-primary border-[1px] border-surface-200-800 card-hover px-2 mr-5 h-[100%] rounded-md text-base md:text-lg"
+            disabled={$editContent || $showStyleControls || $showCreateCollection || $showCreateEntry || $showDeleteItem}
         >
             Edit Options
         </button>
@@ -178,7 +181,7 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                         </button>
                     </li>
                     <li>
-                                                <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
+                        <button class="btn preset-tonal-primary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
                             showStyleControls.set(false);
                             editContent.set(false);
                             showCreateEntry.set(true);
@@ -189,6 +192,22 @@ function cleanContents() { //bullet and number lists are assigned ids while edit
                         </button>
                     </li>
                 {/if}
+                <li>
+                    <button class="btn preset-tonal-secondary min-w-[100%] flex flex-grow justify-start text-left" onclick={() => {
+                        showStyleControls.set(false);
+                        editContent.set(false);
+                        showDeleteItem.set(true);
+                        open=false
+                    }}>
+                        {#if window.location.pathname.split("/").length == 4}
+                            Delete Entry
+                        {:else if window.location.pathname.split("/").length == 3}
+                            Delete Collection
+                        {:else}
+                            Delete World
+                        {/if}
+                    </button>
+                </li>
             </ul>
             <FloatingArrow bind:ref={elemArrow} context={floating.context} fill="#575969" />
         </div>

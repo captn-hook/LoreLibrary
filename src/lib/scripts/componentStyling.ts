@@ -1,0 +1,96 @@
+type SubOption = Record<string, string[]>;
+export type MenuOptions = Record<string, SubOption[]>;
+
+const menuOptions: MenuOptions = {
+    'Text': [{'Size': ['Paragraph', 'Header 1', 'Header 2', 'Header 3', 'Header 4', 'Header 5']}, {'Align': ['Left', 'Center', 'Right']}, {'Color': []}, {'Font': ['Bold', 'Italic']}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
+    'Background': [{'Color': []}],
+    'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
+};
+
+const mdOptions: MenuOptions = {
+    'Text': [{'Align': ['Left', 'Center', 'Right']}, {'Color': []}, {'Font Variant': ['Cinzel', 'Cormorant Garamond', 'Uncial Antiqua']}],
+    'Background': [{'Color': []}],
+    'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
+}
+
+const imageOptions: MenuOptions = {
+    'Align': [{'Align': ['Left', 'Center', 'Right']}],
+    'Border': [{'Color': []}, {'Width': ['1px', '2px', '3px', '4px', '5px']}, {'Rounding': ["Sharp", "Slight", "Medium", "Round", "Full"]}, {'Padding': ['0px', '1px', '2px', '3px', '4px', '5px']}],
+    'Background': [{'Color': []}],
+}
+
+export const getMenuOptions = (type: string): MenuOptions => {
+    switch(type) {
+        case 'md':
+            return mdOptions;
+        case 'img':
+            return imageOptions;
+        default:
+            return menuOptions;
+    }
+}
+
+const roundingTranslations: Record<string, string> = {
+    "Sharp": "none",
+    "Slight": "sm",
+    "Medium": "md",
+    "Round": "lg",
+    "Full": "full"
+};
+
+const pixelTranslations: Record<string, string> = {
+    "0px": "0",
+    "1px": "1",
+    "2px": "2",
+    "3px": "3",
+    "4px": "4",
+    "5px": "5"
+};
+
+export const sizeTranslations: Record<string, string> = {
+    "Paragraph": "p",
+    "Header 1": "h1",
+    "Header 2": "h2",
+    "Header 3": "h3",
+    "Header 4": "h4",
+    "Header 5": "h5"
+}
+
+export const getClass = (style: any): string => { 
+    return `
+    ${sizeTranslations[style?.text?.size] || ""} text
+    ${style?.text?.font ? `font-${style?.text?.font.toLowerCase()}` : "" }
+    ${style?.border?.rounding ? `rounded-${roundingTranslations[style.border.rounding]}` : "" }
+    ${style?.border?.padding ? `p-${pixelTranslations[style.border.padding]}` : "" }
+    ${style?.border?.color ? 'border' : "" }
+    ${style?.align?.align == "Left" ? `float-left` : ""}
+    ${style?.align?.align == "Center" ? `block mx-auto` : ""}
+    ${style?.align?.align == "Right" ? `float-right` : ""}
+    whitespace-pre-wrap break-words`;
+}
+
+export const getStyle = (style: any): string => {
+    return `
+        ${style?.text?.color && style?.text?.color.length === 3 ?  `color: var(--color-${style.text.color[0].toLowerCase()}${style.text.color[1] ? '-contrast' : ''}-${style.text.color[2]});` : style?.text?.color ? `color: ${style.text.color};` : "" }
+        ${style?.background?.color && style?.background?.color.length === 3 ? `background-color: var(--color-${style.background.color[0].toLowerCase()}${style.background.color[1] ? '-contrast' : ''}-${style.background.color[2]});` : style?.background?.color ? `background-color: ${style.background.color};` : "" }
+        ${style?.border?.color && style?.border?.color.length === 3 ? `border-color: var(--color-${style.border.color[0].toLowerCase()}${style.border.color[1] ? '-contrast' : ''}-${style.border.color[2]});` : style?.border?.color ? `border-color: ${style.border.color};` : "" }
+        ${style?.border?.width ? `border-width: ${style.border.width};` : "" }
+        ${style?.text?.["font variant"] ? `font-family: '${style.text["font variant"]}', serif;` : ""}
+        ${style?.text?.align ? `text-align: ${style.text.align.toLowerCase()};` : "" }
+    `;
+};
+
+export const loadFont = (fontName: string) => {
+    if (!fontName) return;
+    const formattedFont = fontName.replace(/ /g, "+");
+
+    const id = `font-${formattedFont}`;
+
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${formattedFont}&display=swap`;
+      document.head.appendChild(link);
+    }
+  };
