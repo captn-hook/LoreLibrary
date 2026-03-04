@@ -120,6 +120,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: mapping
+          in: query
+          required: false
+          description: If true, recursively returns all objects underneath this world
+          schema:
+            type: boolean
       responses:
         '200':
           description: World retrieved successfully
@@ -213,6 +219,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: mapping
+          in: query
+          required: false
+          description: If true, recursively returns all objects underneath this collection (ignored for entries)
+          schema:
+            type: boolean
       responses:
         '200':
           description: Item retrieved successfully

@@ -2,7 +2,7 @@ import { badRequest, notImplemented, notFound } from './utilities.ts';
 
 import { User, Entry, Collection, World } from './classes.ts';
 
-import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_map, crud, dynamo_find_collection } from './dynamo/dynamo.ts';
+import { dynamo_get, dynamo_create, dynamo_list, dynamo_get_mapping, crud, dynamo_find_collection } from './dynamo/dynamo.ts';
 
 import { create_user, login_user } from './cognito.ts';
 
@@ -133,6 +133,9 @@ export const handler = async (e: any) => {
             e.body.worldId = worldId;
             e.body.name = worldId;
             e.body.parentId = username ?? null;
+            if (operation === 'GET' && e.queryStringParameters?.mapping === 'true') {
+                return await dynamo_get_mapping(worldId);
+            }
             return await crud(operation, World, e.body, username);
         }
 
@@ -176,6 +179,9 @@ export const handler = async (e: any) => {
             const isCollection = await dynamo_find_collection(worldId, itemName);
             e.body.name = itemName;
             e.body.parentId = parentId;
+            if (operation === 'GET' && e.queryStringParameters?.mapping === 'true' && isCollection) {
+                return await dynamo_get_mapping(worldId, itemName);
+            }
             const model = isCollection ? Collection : Entry;
             return await crud(operation, model, e.body, username);
         }

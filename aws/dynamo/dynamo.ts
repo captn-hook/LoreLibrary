@@ -14,7 +14,7 @@ import { dynamo_update } from "./update.ts";
 
 import { dynamo_user_create } from "./user_create.ts";
 import { dynamo_find_collection } from "./find_collection.ts";
-import { dynamo_get_map } from "./get_map.ts";
+import { dynamo_get_mapping } from "./mapping.ts";
 
 const ddbClient = new DynamoDBClient({ region: "us-west-2" });
 
@@ -205,25 +205,6 @@ export function crud(operation: string, model: Model, body: any, username: strin
     }
 }
 
-export async function get_sub_items(worldId: string, collectionName: string) {
-    // Get all sub items of a collection
-    let r = await dynamo_get(new Collection(collectionName, collectionName, worldId), dataTable, false);
-    let thisCollection = make_collection(r.body);
-    if (!thisCollection || !thisCollection['entries'] && !thisCollection['collections']) {
-        console.error("Collection not found or empty:", collectionName);
-        return {};
-    }
-    let res: any = {};
-    if (thisCollection['entries']) {
-        res['entries'] = thisCollection['entries'];
-    }
-    if (thisCollection['collections']) {
-        for (const subCollectionName of thisCollection['collections']) {
-            res[subCollectionName] = await get_sub_items(worldId, subCollectionName);
-        }
-    }
-    return res;
-}
 
 export async function get_style(parentId: string, worldId: string) {
     // Get the style data for a world or collection 
@@ -265,6 +246,6 @@ export {
     dynamo_update,
     dynamo_delete,
     dynamo_user_create,
-    dynamo_get_map,
+    dynamo_get_mapping,
     dynamo_find_collection
 };
