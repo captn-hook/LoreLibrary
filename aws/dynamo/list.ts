@@ -9,11 +9,10 @@ import {
 import { dataTable, userTable, ddbDocClient, make } from "./dynamo.ts"
 import { User, Model } from "../classes.ts";
 
-async function dynamo_list(model: Model, sk = '') {
+async function dynamo_list(model: Model, sk = '', limit?: number, cursor?: string) {
 
-    let params;
+    let params: any;
     if (model === User) {
-        //list all users in the user table
         params = {
             TableName: userTable,
             KeyConditionExpression: 'PK = :pk',
@@ -31,21 +30,36 @@ async function dynamo_list(model: Model, sk = '') {
             }
         };
     }
+
+    if (limit) {
+        params.Limit = limit;
+    }
+
+    if (cursor) {
+        try {
+            params.ExclusiveStartKey = JSON.parse(Buffer.from(cursor, 'base64').toString('utf8'));
+        } catch (err) {
+            console.error("Invalid cursor:", err);
+        }
+    }
+
     try {
         let data: QueryCommandOutput = await ddbDocClient.send(new QueryCommand(params));
         if (!data.Items || data.Items.length === 0) {
             return {
                 statusCode: 200,
-                body: JSON.stringify([])
+                body: JSON.stringify({ items: [], nextToken: null })
             };
         }
-        // Convert each item in the list using dynamo_to_item
         const items = data.Items.map(item => make(item, model));
-        let ret = items;
+
+        const nextToken = data.LastEvaluatedKey
+            ? Buffer.from(JSON.stringify(data.LastEvaluatedKey)).toString('base64')
+            : null;
 
         return {
             statusCode: 200,
-            body: JSON.stringify(ret)
+            body: JSON.stringify({ items, nextToken })
         }
     } catch (err) {
         console.error("Error listing items:", err);

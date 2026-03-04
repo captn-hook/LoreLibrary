@@ -4,7 +4,7 @@ info:
   description: API for managing users, worlds, collections, entries, and resources.
   version: 1.0.0
 servers:
-  - url: https://2kzy6vjjm1.execute-api.us-west-2.amazonaws.com/-dev-5a740aa
+  - url: https://gl8cj2zkxb.execute-api.us-west-2.amazonaws.com/-35e2041
 tags:
   - name: user
     description: Operations related to users
@@ -46,27 +46,31 @@ paths:
         - name: limit
           in: query
           required: false
-          description: Number of worlds to return
+          description: Number of worlds to return per page
           schema:
             type: integer
-        - name: offset
+        - name: cursor
           in: query
           required: false
-          description: Offset for pagination
+          description: Pagination cursor returned by a previous request (base64-encoded LastEvaluatedKey)
           schema:
-            type: integer
+            type: string
       responses:
         '200':
-          description: A list of worlds
+          description: A page of worlds
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  worlds:
+                  items:
                     type: array
                     items:
                       $ref: '#/components/schemas/World'
+                  nextToken:
+                    type: string
+                    nullable: true
+                    description: Pass as cursor to retrieve the next page, null if no more pages
         '400':
           description: Bad request
         '500':
@@ -599,29 +603,32 @@ paths:
         - name: limit
           in: query
           required: false
-          description: Number of users to return
+          description: Number of users to return per page
           schema:
             type: integer
-        - name: offset
+        - name: cursor
           in: query
           required: false
-          description: Offset for pagination
+          description: Pagination cursor returned by a previous request
           schema:
-            type: integer
+            type: string
       security:
       - loredragon-gateway-authorizer: []
       responses:
         '200':
-          description: A list of users
+          description: A page of users
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  users:
+                  items:
                     type: array
                     items:
                       $ref: '#/components/schemas/User'
+                  nextToken:
+                    type: string
+                    nullable: true
         '400':
           description: Bad request
         '500':

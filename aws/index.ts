@@ -59,8 +59,9 @@ export const handler = async (e: any) => {
 
         // /worlds: GET, PUT
         if (operation === 'GET' && path === '/worlds') {
-            // Get all worlds, FIX: paginated with limit and offset
-            var res = await dynamo_list(World)
+            const limit = e.queryStringParameters?.limit ? parseInt(e.queryStringParameters.limit) : undefined;
+            const cursor = e.queryStringParameters?.cursor;
+            var res = await dynamo_list(World, '', limit, cursor);
             if (res) {
                 return res;
             }
@@ -138,7 +139,9 @@ export const handler = async (e: any) => {
             if (pathsplit.length === 2 && operation === 'GET') {
                 if (!username) { return badRequest('Invalid authentication'); }
 
-                var res = await dynamo_list(User);
+                const limit = e.queryStringParameters?.limit ? parseInt(e.queryStringParameters.limit) : undefined;
+                const cursor = e.queryStringParameters?.cursor;
+                var res = await dynamo_list(User, '', limit, cursor);
                 if (res) {
                     return res;
                 }
