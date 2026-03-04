@@ -16,7 +16,7 @@
 
     onMount(() => {
         if (typeof window !== 'undefined') {
-            url = `${PUBLIC_API_URL}/${window.location.pathname.split('/')[1]}?map=true`;
+            url = `${PUBLIC_API_URL}/${window.location.pathname.split('/')[1]}?mapping=true`;
         }
         // Fetch data only on the client side
         fetch(url, {

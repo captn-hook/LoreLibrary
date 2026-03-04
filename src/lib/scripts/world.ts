@@ -46,7 +46,7 @@ export function getWorld(worldId: string) {
 
 export function createWorld(name: string, tags: string[], description: string, imageUrl: string, type: string){
     return fetch(`${PUBLIC_API_URL}/worlds`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
             'accept': 'application/json', // Specify the expected response format
             'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ export function updateWorld() {
         return;
     }
     return fetch(`${PUBLIC_API_URL}/${world.name}`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `${get(token)}`, // Add the token to the headers
@@ -136,12 +136,12 @@ export function createCollection(name: string, tags: string[], description: stri
     let url = '';
     let path = window.location.pathname.split('/');
     if (path.length == 2) { // worldId
-        url = `${PUBLIC_API_URL}/${path[1]}`;
+        url = `${PUBLIC_API_URL}/${path[1]}/${name}`;
     }else if (path.length == 3) { // worldId and collectionId
-        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}`;
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${name}`;
     }
     return fetch(url, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
             'accept': 'application/json', // Specify the expected response format
             'Content-Type': 'application/json',
@@ -149,6 +149,7 @@ export function createCollection(name: string, tags: string[], description: stri
             'access-control-allow-origin': '*',  // Ensure you have a valid token
         },
         body: JSON.stringify({
+            type: 'collection',
             name: name,
             tags: tags,
             description: description,
@@ -156,7 +157,6 @@ export function createCollection(name: string, tags: string[], description: stri
             content: [],
             collections: [],
             entries: [],
-            parentId: path.length == 2 ? path[1] : path[2], // Set the parentId based on the current path
         }),
     }).then((response) => {
         if (!response.ok) {
@@ -222,7 +222,7 @@ export function updateCollection(id : string){
         return;
     }
     return fetch(`${PUBLIC_API_URL}/${collection.parentId}/${id}`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `${get(token)}` // Add the token to the headers
@@ -260,13 +260,13 @@ export function createEntry(name: string, tags: string[], description: string, i
     let url = '';
     let path = window.location.pathname.split('/');
     if (path.length == 2) { // worldId
-        url = `${PUBLIC_API_URL}/${path[1]}`;
+        url = `${PUBLIC_API_URL}/${path[1]}/${name}`;
     }else if (path.length == 3) { // worldId and collectionId
-        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}`;
+        url = `${PUBLIC_API_URL}/${path[1]}/${path[2]}/${name}`;
     }
 
     return fetch(url, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
             'accept': 'application/json', // Specify the expected response format
             'Content-Type': 'application/json',
@@ -274,13 +274,12 @@ export function createEntry(name: string, tags: string[], description: string, i
             'access-control-allow-origin': '*',  // Ensure you have a valid token
         },
         body: JSON.stringify({
+            type: 'entry',
             name: name,
             tags: tags,
             description: description,
             image: imageUrl,
             content: [],
-            parentId: path.length == 2 ? path[1] : path[2], // Set the parentId based on the current path
-            worldId: path[1], // Set the worldId based on the current path
         }),
     }).then((response) => {
         if (!response.ok) {
@@ -352,7 +351,7 @@ export async function updateEntry() {
         return
     }
     return fetch(url, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `${get(token)}` // Add the token to the headers
@@ -414,7 +413,7 @@ export async function updateTheme(theme: string) {
         postUrl = `${PUBLIC_API_URL}/${worldId}/${collectionId}/${entryId}`;
     }
     fetch(`${postUrl}`, {
-        method: 'POST',
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `${get(token)}`, // Add the token to the headers
