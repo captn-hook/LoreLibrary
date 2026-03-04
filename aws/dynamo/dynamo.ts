@@ -28,8 +28,8 @@ export function make_entry(item: any): Entry | null {
         let content = Array.isArray(item.content) ? item.content : [item.content];
         return new Entry(
             String(item.SK),
+            String(item.parentId),
             String(item.worldId),
-            String(item.collectionId),
             content
         );
     } catch (error) {
