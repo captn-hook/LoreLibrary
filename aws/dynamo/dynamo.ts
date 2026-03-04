@@ -140,36 +140,30 @@ export function crud(operation: string, model: Model, body: any, username: strin
             }
 
             let gd;
-            if (model === User) {
-                gd = User.verify(body);
-                if (gd === null) {
-                    return badRequest('Invalid body');
+            try {
+                if (model === User) {
+                    gd = User.verify(body);
+                } else if (model === World) {
+                    gd = World.verify(body);
+                } else if (model === Collection) {
+                    gd = Collection.verify(body);
+                } else if (model === Entry) {
+                    gd = Entry.verify(body);
+                } else {
+                    console.error('Invalid model:', model);
+                    return badRequest('Invalid model');
                 }
-            } else if (model === World) {
-                gd = World.verify(body);
-                if (gd === null) {
-                    return badRequest('Invalid body');
-                }
-            } else if (model === Collection) {
-                gd = Collection.verify(body);
-                if (gd === null) {
-                    return badRequest('Invalid body');
-                }
-            } else if (model === Entry) {
-                gd = Entry.verify(body);
-                if (gd === null) {
-                    return badRequest('Invalid body');
-                }
-            } else {
-                console.error('Invalid model:', model);
-                return badRequest('Invalid model');
+            } catch (err) {
+                return badRequest('Invalid body');
             }
             return dynamo_get(gd, table);
         case 'PUT':
             if (!username) { return badRequest('Invalid authentication'); }
 
-            let pd = model.verify(body);
-            if (pd === null) {
+            let pd;
+            try {
+                pd = model.verify(body);
+            } catch (err) {
                 return badRequest('Invalid body');
             }
             if (pd instanceof User) {
@@ -182,7 +176,12 @@ export function crud(operation: string, model: Model, body: any, username: strin
         case 'DELETE':
             if (!username) { return badRequest('Invalid authentication'); }
 
-            let dd = model.verify(body);
+            let dd;
+            try {
+                dd = model.verify(body);
+            } catch (err) {
+                return badRequest('Invalid body');
+            }
 
             // display the type of the data
             console.log("Deleting item of type:", dd.constructor.name);

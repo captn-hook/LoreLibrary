@@ -30,8 +30,6 @@ export const handler = async (e: any) => {
         console.log('Operation:', operation);
         console.log('Path:', path);
 
-        console.error('FUCKING LOG ME: operation:', operation, 'path:', path, 'body:', e.body);
-
         let username = undefined;
         let pathParameters: Record<string, string> = {};
 
@@ -79,10 +77,12 @@ export const handler = async (e: any) => {
             e.body.parentId = username;
             e.body.ownerId = username;
             e.body.worldId = e.body.name? e.body.name : username;
-            var data = World.verify(e.body);
-
-            if (data === null) { return badRequest('Invalid world data'); }
-
+            let data;
+            try {
+                data = World.verify(e.body);
+            } catch (err) {
+                return badRequest('Invalid world data');
+            }
 
             var res = await dynamo_create(data);
             // Return world

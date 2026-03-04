@@ -97,9 +97,6 @@ async function update<M extends Model>(
     try {
         const ctor = instance.constructor as M;
         item = ctor.verify(item);
-        if (item === null) {
-            throw new Error("Invalid item data");
-        }
         return item;
     } catch (err) {
         console.error("Error verifying item:", err);
