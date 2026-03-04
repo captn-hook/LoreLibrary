@@ -25,6 +25,10 @@ Parameters:
   Ver:
     Type: String
     Description: The version of the deployment (github commit hash or similar)
+  AllowedOrigin:
+    Type: String
+    Default: "*"
+    Description: CORS allowed origin — use '*' for dev, set to the production domain for prod (e.g. https://lore-library.vercel.app)
 
 Resources:
   ResourcesBucket:

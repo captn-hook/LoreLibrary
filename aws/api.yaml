@@ -20,14 +20,15 @@ tags:
     description: Search and browse data
 x-amazon-apigateway-cors:
   allowOrigins:
-    - '*'
+    - '${AllowedOrigin}'
   allowMethods:
     - GET
     - POST
-    - PUT
+    - PATCH
     - DELETE
   allowHeaders:
-    - "*"
+    - authorization
+    - content-type
   exposeHeaders:
     - "*"
   maxAge: 86400
