@@ -7,6 +7,7 @@ import SelectTheme from '$lib/components/editComponents/theme/selectTheme.svelte
 import { showStyleControls } from "$lib/state/editState.svelte";
 import { updateTheme } from '$lib/scripts/world';
 import { world, collections, entry} from '$lib/state/worldState.svelte.js';
+    import { preventDefault } from 'svelte/legacy';
 
 	let group = 'premade';
 	let isResizing = false;
@@ -112,8 +113,8 @@ import { world, collections, entry} from '$lib/state/worldState.svelte.js';
 			fluid
 		>
 			{#snippet list()}
-			<button onclick={cancelEditTheme} class="close-tab" aria-label="Close style editor">
-				<Tabs.Control value="close">X</Tabs.Control>
+			<button onclick={cancelEditTheme} class="btn hover:preset-tonal-primary px-2 mb-2 mt-0.25 ml-0.25 rounded-md" aria-label="Close style editor">
+				X
 			</button>
 			<Tabs.Control value="premade">Pre-made Theme</Tabs.Control>
 			<Tabs.Control value="generated">Custom Theme</Tabs.Control>

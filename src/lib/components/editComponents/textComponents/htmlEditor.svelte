@@ -1,31 +1,40 @@
 <script lang="ts">
     export let content: string;
     export let index: number;
+    export let onDragStart: (index: number) => void = () => {};
+    export let onDrop: (index: number) => void = () => {};
     import { editComponentContents } from '$lib/state/editState.svelte';
     import DeleteComponentButton from '../controls/deleteComponentButton.svelte';
+    import MoveComponentButtons from '../controls/moveComponentButtons.svelte';
 
 
     function syncToStore() {
         editComponentContents.update((contents) => {
-            contents[index] = { html: content };
-            return contents;
+            const next = [...contents];
+            const existing = next[index] ?? {};
+            next[index] = { ...existing, html: content };
+            return next;
         });
     }
 
-    $: {
-        syncToStore();
-    }
 </script>
-<div class="relative">
-<textarea
-    bind:value={content}
-    on:input={() => syncToStore()}
-    rows="10"
-    cols="50"
-    placeholder="Enter your html content here..."
-    class="textarea bg-surface-500 max-w-[100%] border-2 border-primary-200 text-surface"
-></textarea>
-<div class="absolute top-2 right-2">
-    <DeleteComponentButton {index} />
-</div>
+<div
+    role="listitem"
+    class="flex flex-row w-full items-center justify-center h-full"
+    on:dragover|preventDefault
+    on:drop={() => onDrop(index)}
+    >
+    <MoveComponentButtons index={index} onDragStart={onDragStart}/>
+    <div class="rounded grid grid-cols-[1fr_auto] items-stretch border-2 p-2 border-primary-200 bg-surface-500 focus-within:ring-2 focus-within:ring-blue-500 w-[97%]">
+        <textarea
+            bind:value={content}
+            on:input={syncToStore}
+            rows="10"
+            cols="50"
+            placeholder="Enter your html content here..."
+            class="bg-transparent text-surface pr-3 w-full h-full resize-none
+                border-0 outline-none ring-0 focus:outline-none focus:ring-0 align-top"
+        ></textarea>
+        <DeleteComponentButton {index} />
+    </div>
 </div>
