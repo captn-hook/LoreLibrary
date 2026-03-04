@@ -12,7 +12,7 @@ import { delete_collection } from "./collection_delete.ts"
 import { delete_world } from "./world_delete.ts"
 import { delete_user } from "./user_delete.ts"
 
-async function dynamo_delete<M extends Model>(data: InstanceType<M>) {
+async function dynamo_delete<M extends Model>(data: InstanceType<M>, username?: string) {
     // Delete an item from the database and update associated items
     console.log("Deleting item of type:", data.constructor.name);
 
@@ -48,6 +48,14 @@ async function dynamo_delete<M extends Model>(data: InstanceType<M>) {
             statusCode: 404,
             body: JSON.stringify({ message: "Item not found" })
         };
+    }
+
+    // ownership check
+    if (username) {
+        const owner = (item instanceof World) ? item.parentId : (item as any).ownerId;
+        if (owner && owner !== username) {
+            return { statusCode: 403, body: JSON.stringify({ message: "Forbidden: you do not own this item" }) };
+        }
     }
 
     // if the item is a user, get all the worlds with their id

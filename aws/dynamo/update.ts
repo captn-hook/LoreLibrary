@@ -6,11 +6,30 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 import { dataTable, ddbDocClient, make } from "./dynamo.ts"
-import { Model } from "../classes.ts"
+import { Model, World } from "../classes.ts"
 
-async function dynamo_update(data: object, model: Model, table = dataTable) {
+async function dynamo_update(data: object, model: Model, table = dataTable, username?: string) {
 
-    const newItem = await update(data, model.verify(data), table);
+    let instance;
+    try {
+        instance = model.verify(data);
+    } catch (err) {
+        throw new Error("Invalid body");
+    }
+
+    // ownership check: fetch current item before applying update
+    if (username) {
+        const getParams = { TableName: table, Key: { PK: instance.pk(), SK: instance.sk() } };
+        const res = await ddbDocClient.send(new GetCommand(getParams));
+        if (res.Item) {
+            const owner = (instance instanceof World) ? res.Item.parentId : res.Item.ownerId;
+            if (owner && owner !== username) {
+                return { statusCode: 403, body: JSON.stringify({ message: "Forbidden: you do not own this item" }) };
+            }
+        }
+    }
+
+    const newItem = await update(data, instance, table);
     const params = {
         TableName: table,
         Key: {

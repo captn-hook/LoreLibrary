@@ -26,12 +26,14 @@ export const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 export function make_entry(item: any): Entry | null {
     try {
         let content = Array.isArray(item.content) ? item.content : [item.content];
-        return new Entry(
+        const entry = new Entry(
             String(item.SK),
             String(item.parentId),
             String(item.worldId),
             content
         );
+        if (item.ownerId) entry.ownerId = String(item.ownerId);
+        return entry;
     } catch (error) {
         console.error("Error creating Entry:", error);
         return null;
@@ -42,13 +44,15 @@ export function make_collection(item: any): Collection | null {
     try {
         let entries = Array.isArray(item.entries) ? item.entries : [item.entries];
         let collections = Array.isArray(item.collections) ? item.collections : [item.collections];
-        return new Collection(
+        const col = new Collection(
             String(item.SK),
             String(item.worldId),
             String(item.parentId),
             entries,
             collections
         );
+        if (item.ownerId) col.ownerId = String(item.ownerId);
+        return col;
     } catch (error) {
         console.error("Error creating Collection:", error);
         return null;
@@ -59,13 +63,15 @@ export function make_world(item: any): World | null {
     try {
         let entries = Array.isArray(item.entries) ? item.entries : [item.entries];
         let collections = Array.isArray(item.collections) ? item.collections : [item.collections];
-        return new World(
+        const world = new World(
             String(item.SK),
             String(item.parentId),
             String(item.worldId ? item.worldId : item.SK),
             entries,
             collections
         );
+        if (item.ownerId) world.ownerId = String(item.ownerId);
+        return world;
     } catch (error) {
         console.error("Error creating World:", error);
         return null;
@@ -122,9 +128,9 @@ export function crud(operation: string, model: Model, body: any, username: strin
         case 'POST':
             if (!username) { return badRequest('Invalid authentication'); }
             if (model === User) {
-                return badRequest('Use /signup to create a new user'); 
+                return badRequest('Use /signup to create a new user');
             } else if (model === World || model === Collection || model === Entry) {
-                return dynamo_update(body, model, table);
+                return dynamo_update(body, model, table, username);
             } else {
                 throw new Error('Invalid model in POST');
             }
@@ -189,7 +195,7 @@ export function crud(operation: string, model: Model, body: any, username: strin
             if (dd instanceof User) {
                 throw new Error('DELETE user not implemented');
             } else if (dd instanceof World || dd instanceof Collection || dd instanceof Entry) {
-                return dynamo_delete(dd);
+                return dynamo_delete(dd, username);
             } else {
                 throw new Error('Invalid model in DELETE');
             }

@@ -192,10 +192,11 @@ class DataShort extends Body {
     name: string;
     parentId: string | null;
     worldId: string;
+    ownerId: string = '';
     description: string;
     image: string;
     tags: string[];
-    
+
     constructor(name: string, parentId: string | null, worldId: string, description = '', image = '', tags = []) {
         super();
         this.name = name; // string
@@ -216,6 +217,7 @@ class DataShort extends Body {
         return {
             name: this.name,
             parentId: this.parentId,
+            ownerId: this.ownerId,
             description: this.description,
             image: this.image,
             tags: this.tags
