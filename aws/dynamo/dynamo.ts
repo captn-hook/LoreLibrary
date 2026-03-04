@@ -125,14 +125,15 @@ export function crud(operation: string, model: Model, body: any, username: strin
     console.log(`Performing crud ${operation} on ${model.name} with body:`, body, "by", username);
 
     switch (operation) {
-        case 'POST':
+        case 'PATCH':
+            // update existing item
             if (!username) { return badRequest('Invalid authentication'); }
             if (model === User) {
                 return badRequest('Use /signup to create a new user');
             } else if (model === World || model === Collection || model === Entry) {
                 return dynamo_update(body, model, table, username);
             } else {
-                throw new Error('Invalid model in POST');
+                throw new Error('Invalid model in PATCH');
             }
         case 'GET':
             if (model === User && !username) { return badRequest('Invalid authentication'); }
@@ -164,6 +165,7 @@ export function crud(operation: string, model: Model, body: any, username: strin
             }
             return dynamo_get(gd, table);
         case 'PUT':
+            // create new item (internal use; HTTP layer uses POST for create)
             if (!username) { return badRequest('Invalid authentication'); }
 
             let pd;
@@ -177,7 +179,7 @@ export function crud(operation: string, model: Model, body: any, username: strin
             } else if (pd instanceof World || pd instanceof Collection || pd instanceof Entry) {
                 return dynamo_create(pd, table);
             } else {
-                throw new Error('Invalid model in POST');
+                throw new Error('Invalid model in PUT');
             }
         case 'DELETE':
             if (!username) { return badRequest('Invalid authentication'); }
@@ -189,7 +191,6 @@ export function crud(operation: string, model: Model, body: any, username: strin
                 return badRequest('Invalid body');
             }
 
-            // display the type of the data
             console.log("Deleting item of type:", dd.constructor.name);
 
             if (dd instanceof User) {

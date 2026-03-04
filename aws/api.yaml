@@ -75,7 +75,7 @@ paths:
           description: Bad request
         '500':
           description: Internal server error
-    put:
+    post:
       tags:
         - world
       summary: Create a new world (requires a user)
@@ -98,10 +98,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  world:
-                    $ref: '#/components/schemas/World'
+                $ref: '#/components/schemas/World'
         '400':
           description: Bad request
         '500':
@@ -110,7 +107,7 @@ paths:
     get:
       tags:
         - world
-      summary: Get a world by ID
+      summary: Get a world by ID (includes direct child collections and entries)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -120,15 +117,8 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to retrieve
           schema:
             type: string
-        - name: mapping
-          in: query
-          required: false
-          description: Whether to include mapping information, false by default
-          schema:
-            type: boolean
       responses:
         '200':
           description: World retrieved successfully
@@ -140,7 +130,7 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-    post:
+    patch:
       tags:
         - world
       summary: Update a world (requires a user)
@@ -153,7 +143,6 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to update
           schema:
             type: string
       security:
@@ -177,46 +166,6 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-    put:
-      tags:
-        - collection
-        - entry
-      summary: Create a new collection or entry (requires a user)
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:loredragon-function${Env}/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to create the object in
-          schema:
-            type: string
-      security:
-      - loredragon-gateway-authorizer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/Collection'
-                - $ref: '#/components/schemas/Entry'
-      responses:
-        '200':
-          description: Object created successfully
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/Collection'
-                  - $ref: '#/components/schemas/Entry'
-        '400':
-          description: Bad request
-        '500':
-          description: Internal server error
     delete:
       tags:
         - world
@@ -230,7 +179,6 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to delete
           schema:
             type: string
       security:
@@ -242,12 +190,12 @@ paths:
           description: World not found
         '500':
           description: Internal server error
-  /{WorldId}/{Id}:
+  /{WorldId}/{path+}:
     get:
       tags:
         - collection
         - entry
-      summary: Get a collection or entry by WorldId and object ID
+      summary: Get a collection or entry at any depth (collections include direct children)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -257,24 +205,16 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to retrieve the object from
           schema:
             type: string
-        - name: Id
+        - name: path
           in: path
           required: true
-          description: ID of the object to retrieve
-          schema:
-            type: string
-        - name: ParentId
-          in: query
-          required: false
-          description: ID of the parent collection (if any)
           schema:
             type: string
       responses:
         '200':
-          description: Object retrieved successfully
+          description: Item retrieved successfully
           content:
             application/json:
               schema:
@@ -282,14 +222,17 @@ paths:
                   - $ref: '#/components/schemas/Collection'
                   - $ref: '#/components/schemas/Entry'
         '404':
-          description: Object not found
+          description: Item not found
         '500':
           description: Internal server error
     post:
       tags:
         - collection
         - entry
-      summary: Update a object (requires a user)
+      summary: Create a collection or entry at the given path (requires a user)
+      description: >
+        The last path segment is the new item's name; all preceding segments must
+        be existing collections. Provide `type: "collection"` or `type: "entry"` in the body.
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -299,13 +242,65 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to update the object in
           schema:
             type: string
-        - name: Id
+        - name: path
           in: path
           required: true
-          description: ID of the object to update
+          schema:
+            type: string
+      security:
+      - loredragon-gateway-authorizer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - oneOf:
+                    - $ref: '#/components/schemas/Collection'
+                    - $ref: '#/components/schemas/Entry'
+                - type: object
+                  required:
+                    - type
+                  properties:
+                    type:
+                      type: string
+                      enum: [collection, entry]
+      responses:
+        '201':
+          description: Item created successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Collection'
+                  - $ref: '#/components/schemas/Entry'
+        '400':
+          description: Bad request
+        '409':
+          description: Item already exists
+        '500':
+          description: Internal server error
+    patch:
+      tags:
+        - collection
+        - entry
+      summary: Update a collection or entry at the given path (requires a user)
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:loredragon-function${Env}/invocations
+        payloadFormatVersion: 2.0
+      parameters:
+        - name: WorldId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: path
+          in: path
+          required: true
           schema:
             type: string
       security:
@@ -320,7 +315,7 @@ paths:
                 - $ref: '#/components/schemas/Entry'
       responses:
         '200':
-          description: Object updated successfully
+          description: Item updated successfully
           content:
             application/json:
               schema:
@@ -329,59 +324,17 @@ paths:
                   - $ref: '#/components/schemas/Entry'
         '400':
           description: Bad request
+        '403':
+          description: Forbidden
         '404':
-          description: Object not found
-        '500':
-          description: Internal server error
-    put:
-      tags:
-        - entry
-      summary: Create a new entry (requires a user)
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:loredragon-function${Env}/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to create the entry in
-          schema:
-            type: string
-        - name: CollectionId
-          in: path
-          required: true
-          description: ID of the collection to create the entry in
-          schema:
-            type: string
-      security:
-      - loredragon-gateway-authorizer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Entry'
-      responses:
-        '200':
-          description: Entry created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  entry:
-                    $ref: '#/components/schemas/Entry'
-        '400':
-          description: Bad request
+          description: Item not found
         '500':
           description: Internal server error
     delete:
       tags:
         - collection
         - entry
-      summary: Delete an object (requires a user)
+      summary: Delete a collection or entry at the given path (requires a user)
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -391,148 +344,22 @@ paths:
         - name: WorldId
           in: path
           required: true
-          description: ID of the world to delete the object from
           schema:
             type: string
-        - name: Id
+        - name: path
           in: path
           required: true
-          description: ID of the object to delete
           schema:
             type: string
       security:
       - loredragon-gateway-authorizer: []
       responses:
         '200':
-          description: Object deleted successfully
+          description: Item deleted successfully
+        '403':
+          description: Forbidden
         '404':
-          description: Object not found
-        '500':
-          description: Internal server error
-  /{WorldId}/{CollectionId}/{EntryId}:
-    get:
-      tags:
-        - entry
-      summary: Get an entry by its WorldId, parent CollectionId, and EntryId
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:loredragon-function${Env}/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to retrieve the entry from
-          schema:
-            type: string
-        - name: CollectionId
-          in: path
-          required: true
-          description: ID of the collection to retrieve the entry from
-          schema:
-            type: string
-        - name: EntryId
-          in: path
-          required: true
-          description: ID of the entry to retrieve
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Entry retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Entry'
-        '404':
-          description: Entry not found
-        '500':
-          description: Internal server error
-    post:
-      tags:
-        - entry
-      summary: Update an entry (requires a user)
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:loredragon-function${Env}/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to update the entry in
-          schema:
-            type: string
-        - name: CollectionId
-          in: path
-          required: true
-          description: ID of the collection to update the entry in
-          schema:
-            type: string
-        - name: EntryId
-          in: path
-          required: true
-          description: ID of the entry to update
-          schema:
-            type: string
-      security:
-      - loredragon-gateway-authorizer: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Entry'
-      responses:
-        '200':
-          description: Entry updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Entry'
-        '400':
-          description: Bad request
-        '404':
-          description: Entry not found
-        '500':
-          description: Internal server error
-    delete:
-      tags:
-        - entry
-      summary: Delete an entry (requires a user)
-      x-amazon-apigateway-integration:
-        type: aws_proxy
-        httpMethod: POST
-        uri: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:loredragon-function${Env}/invocations
-        payloadFormatVersion: 2.0
-      parameters:
-        - name: WorldId
-          in: path
-          required: true
-          description: ID of the world to delete the entry from
-          schema:
-            type: string
-        - name: CollectionId
-          in: path
-          required: true
-          description: ID of the collection to delete the entry from
-          schema:
-            type: string
-        - name: EntryId
-          in: path
-          required: true
-          description: ID of the entry to delete
-          schema:
-            type: string
-      security:
-      - loredragon-gateway-authorizer: []
-      responses:
-        '200':
-          description: Entry deleted successfully
-        '404':
-          description: Entry not found
+          description: Item not found
         '500':
           description: Internal server error
   /signup:
@@ -663,7 +490,7 @@ paths:
           description: User not found
         '500':
           description: Internal server error
-    put:
+    patch:
       tags:
         - user
       summary: Update a user (requires a user)

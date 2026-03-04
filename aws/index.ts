@@ -1,4 +1,4 @@
-import { badRequest, notImplemented } from './utilities.ts';
+import { badRequest, notImplemented, notFound } from './utilities.ts';
 
 import { User, Entry, Collection, World } from './classes.ts';
 
@@ -11,353 +11,183 @@ import { s3_crud } from './s3.ts';
 const reserved_names = ['world', 'worlds', 'users', 'user', 'resource', 'resources', 'search', 'signup', 'login', 'logout', 'auth', 'authenticate', 'collections', 'collection', 'entries', 'entry'];
 
 export const handler = async (e: any) => {
-    // The event object contains:
-    // version: '2.0',
-    // routeKey: 'HTTP_METHOD /path',
-    // rawPath: '/stage/path',
-    // rawQueryString: 'query',
-    // headers: typical headers,
-    // requestContext: amazon stuff,
-    // isBase64Encoded: false,
     try {
         const [operation, path] = e.routeKey.split(' ');
 
         if (e.body) {
-            console.log('Event body:', e.body);
             e.body = JSON.parse(e.body);
         }
 
-        console.log('Operation:', operation);
-        console.log('Path:', path);
+        console.log('Operation:', operation, 'Path:', path);
 
-        let username = undefined;
+        let username: string | undefined = undefined;
         let pathParameters: Record<string, string> = {};
 
         try {
             if (e.requestContext.authorizer && e.requestContext.authorizer.lambda) {
                 username = e.requestContext.authorizer.lambda.username;
-            } else {
-                console.error('No auth from authorizer');
             }
         } catch (error) {
             console.error('Error getting username from authorizer:', error);
             throw error;
         }
+
         try {
             pathParameters = e.pathParameters;
-
-            // remove newlines from path parameters ???
             if (pathParameters && typeof pathParameters === 'object') {
                 Object.keys(pathParameters).forEach((key: string) => {
                     pathParameters[key] = pathParameters[key].replace(/(\r\n|\n|\r)/gm, '');
                 });
             }
-
         } catch (error) {
             console.error('Error getting path parameters:', error);
         }
 
-        // /worlds: GET, PUT
-        if (operation === 'GET' && path === '/worlds') {
-            const limit = e.queryStringParameters?.limit ? parseInt(e.queryStringParameters.limit) : undefined;
-            const cursor = e.queryStringParameters?.cursor;
-            var res = await dynamo_list(World, '', limit, cursor);
-            if (res) {
-                return res;
-            }
-        }
-        else if (operation === 'PUT' && path === '/worlds') {
-            // Create a new world
-            if (!username) { return badRequest('Invalid authentication'); }
-
-            // reserved names
-            if (reserved_names.includes(e.body.name)) {
-                return badRequest('Invalid world name: ' + e.body.name + '. Reserved names cannot be used.');
-            }
-
-            e.body.parentId = username;
-            e.body.ownerId = username;
-            e.body.worldId = e.body.name? e.body.name : username;
-            let data;
+        // /signup: POST
+        if (operation === 'POST' && path === '/signup') {
+            let newdata;
             try {
-                data = World.verify(e.body);
+                newdata = User.verify(e.body);
             } catch (err) {
-                return badRequest('Invalid world data');
+                return badRequest('Invalid user data');
             }
-
-            var res = await dynamo_create(data);
-            // Return world
-            if (res) {
-                return res;
-            }
-        }
-        // /signup: POST 
-        else if (operation === 'POST' && path === '/signup') {
-            // Check if user already exists
-            var newdata = User.verify(e.body);
-            if (newdata === null) { return badRequest('Invalid user data'); }
-
             try {
-                const userExists = await dynamo_get(newdata, process.env.USER_TABLE); // Users are in a different table than default
+                const userExists = await dynamo_get(newdata, process.env.USER_TABLE);
                 if (userExists.statusCode === 404) {
-                    const token = await create_user(e.body);
-                    return token;
+                    return await create_user(e.body);
                 } else if (userExists.statusCode === 200) {
                     return badRequest('User already exists');
                 } else {
-                    console.error('Error checking user existence:', userExists);
-                    return { 
-                        statusCode: 500,
-                        body: JSON.stringify({ message: 'Error checking user existence' })
-                    };
+                    return { statusCode: 500, body: JSON.stringify({ message: 'Error checking user existence' }) };
                 }
             } catch (error) {
                 console.error('Error checking user existence:', error);
-                return { 
-                    statusCode: 500,
-                    body: JSON.stringify({ message: 'Error checking user existence' })
-                };
+                return { statusCode: 500, body: JSON.stringify({ message: 'Error checking user existence' }) };
             }
-
         }
+
         // /login: POST
-        else if (operation === 'POST' && path === '/login') {
-            const token = await login_user(e.body);
-            return token;
+        if (operation === 'POST' && path === '/login') {
+            return await login_user(e.body);
         }
 
-        let pathsplit = path.split('/');
+        const pathsplit = path.split('/');
 
-        // NOT IMPLEMENTED
-        // /search: anything at all related to search
+        // /search
         if (pathsplit[1] === 'search') {
             return notImplemented('Search not implemented');
         }
-        // /users: GET, PUT, DELETE
-        else if (pathsplit[1] === 'users') {
-            // if no path split[2], and operation is GET, return all users
+
+        // /users: GET list; /users/{username}: GET, PATCH, DELETE
+        if (pathsplit[1] === 'users') {
             if (pathsplit.length === 2 && operation === 'GET') {
                 if (!username) { return badRequest('Invalid authentication'); }
-
                 const limit = e.queryStringParameters?.limit ? parseInt(e.queryStringParameters.limit) : undefined;
                 const cursor = e.queryStringParameters?.cursor;
-                var res = await dynamo_list(User, '', limit, cursor);
-                if (res) {
-                    return res;
-                }
+                return await dynamo_list(User, '', limit, cursor);
             }
             const user = pathParameters.username;
-            if (!e.body) {
-                e.body = {};
-            }
+            if (!e.body) { e.body = {}; }
             e.body.username = user;
-            var newres = await crud(operation, User, e.body, username);
-            if (newres) {
-                return newres;
-            }
+            return await crud(operation, User, e.body, username);
         }
-        // /resources: anything at all related to resources (images, files, etc)
-        else if (pathsplit[1] === 'resources') {
+
+        // /resources
+        if (pathsplit[1] === 'resources') {
             e.body.path = path;
-            var res = await s3_crud(path, operation, e.body, username);
-            if (res) {
-                return res;
+            return await s3_crud(path, operation, e.body, username);
+        }
+
+        // /worlds: GET list, POST create
+        if (path === '/worlds') {
+            if (operation === 'GET') {
+                const limit = e.queryStringParameters?.limit ? parseInt(e.queryStringParameters.limit) : undefined;
+                const cursor = e.queryStringParameters?.cursor;
+                return await dynamo_list(World, '', limit, cursor);
+            }
+            if (operation === 'POST') {
+                if (!username) { return badRequest('Invalid authentication'); }
+                if (reserved_names.includes(e.body?.name)) {
+                    return badRequest('Reserved name: ' + e.body.name);
+                }
+                e.body.parentId = username;
+                e.body.ownerId = username;
+                e.body.worldId = e.body.name ?? username;
+                let data;
+                try {
+                    data = World.verify(e.body);
+                } catch (err) {
+                    return badRequest('Invalid world data');
+                }
+                return await dynamo_create(data);
             }
         }
 
-        console.log('matching to path length: ' + pathsplit.length + ' with operation: ' + operation);
-      
-        console.log(pathsplit);
-        console.log(pathParameters);
-
-        // /{WorldId}: GET, POST, PUT, DELETE
+        // /{WorldId}: GET, PATCH (update), DELETE
         if (pathsplit.length === 2) {
             const worldId = pathParameters.WorldId;
-            // reserved names
             if (reserved_names.includes(worldId)) {
-                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+                return badRequest('Reserved name: ' + worldId);
             }
-
-            if (!e.body) {
-                e.body = {};
-            }
+            if (!e.body) { e.body = {}; }
             e.body.worldId = worldId;
-            if (operation === 'PUT') {
-                if (!username) { return badRequest('Invalid authentication'); }
-
-                if (reserved_names.includes(e.body.name)) {
-                    return badRequest('Invalid world name: ' + e.body.name + '. Reserved names cannot be used.');
-                }
-
-                // Try to get the type of the put object
-                // if the body contains a collections field, then it is a collection
-                if (e.body.collections && Array.isArray(e.body.collections)) {
-
-                    // Creating a collection
-                    e.body.worldId = worldId;
-                    e.body.ownerId = username? username : null;
-                    e.body.parentId = worldId; // worlds are their own parent
-
-                    var newres = await crud(operation, Collection, e.body, username);
-                    if (newres) {
-                        return newres;
-                    }
-                } else { 
-                    // Creating an entry
-                    e.body.worldId = worldId;
-                    e.body.ownerId = username? username : null;
-                    e.body.parentId = worldId; // worlds are their own parent
-
-                    var newres = await crud(operation, Entry, e.body, username);
-                    if (newres) {
-                        return newres;
-                    }
-
-                }
-
-            // check for query parameters
-            } else if (operation === 'GET' && e.queryStringParameters && e.queryStringParameters.map && e.queryStringParameters.map === 'true') {
-                // Get world as a map
-                var mres = await dynamo_get_map(worldId);
-                if (mres) {
-                    return mres;
-                }
-            } else {
-                e.body.name = worldId;
-                e.body.parentId = username? username : null;
-                var newres = await crud(operation, World, e.body, username);
-                if (newres) {
-                    return newres;
-                }
-            }
+            e.body.name = worldId;
+            e.body.parentId = username ?? null;
+            return await crud(operation, World, e.body, username);
         }
-        // /{WorldId}/{Id}: GET, POST, PUT DELETE
-        else if (pathsplit.length === 3) {
+
+        // /{WorldId}/{path+}: GET, POST (create), PATCH (update), DELETE
+        // pathsplit.length === 3 because the route template is /{WorldId}/{path+}
+        if (pathsplit.length === 3) {
             const worldId = pathParameters.WorldId;
-            const Id = pathParameters.Id;
-            console.log('finding a collection or entry:', Id);
+            const rawPath: string = pathParameters['path'] ?? '';
+            const segments = rawPath.split('/').filter(Boolean);
+            const itemName = segments[segments.length - 1];
+            // parent is the second-to-last segment, or worldId if item is at root depth
+            const parentId = segments.length > 1 ? segments[segments.length - 2] : worldId;
 
-            // reserved names
-            if (reserved_names.includes(Id)) {
-                return badRequest('Invalid collection or entry name: ' + Id + '. Reserved names cannot be used.');
-            }
             if (reserved_names.includes(worldId)) {
-                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
+                return badRequest('Reserved name: ' + worldId);
+            }
+            for (const seg of segments) {
+                if (reserved_names.includes(seg)) {
+                    return badRequest('Reserved name: ' + seg);
+                }
             }
 
-            // Parent id will be in the query if present
-            let parentId;
-            if (e.queryStringParameters && e.queryStringParameters.parentId) {
-                parentId = e.queryStringParameters.parentId;
-            } else if (e.body && e.body.parentId) {
-                parentId = e.body.parentId;
-            } else {
-                parentId = worldId; // Default to worldId if no parentId is provided
-            }
-            if (!e.body) {
-                e.body = {};
-            }
+            if (!e.body) { e.body = {}; }
             e.body.worldId = worldId;
-            
-            if (operation === 'PUT') {
-                // Creating an entry or collection
+
+            if (operation === 'POST') {
+                // Create: URL path encodes both parent and the new item's name
                 if (!username) { return badRequest('Invalid authentication'); }
-                if (e.body.collections && Array.isArray(e.body.collections)) {
-                    // Creating a collection
-                    e.body.worldId = worldId;
-                    e.body.ownerId = username;
-                    e.body.parentId = Id;
-                    
-                    if (reserved_names.includes(e.body.name)) {
-                        return badRequest('Invalid collection name: ' + e.body.name + '. Reserved names cannot be used.');
-                    }
-
-                    var newres = await crud(operation, Collection, e.body, username);
-                    if (newres) {
-                        return newres;
-                    }
+                e.body.name = itemName;
+                e.body.parentId = parentId;
+                e.body.ownerId = username;
+                const type = e.body.type;
+                if (type === 'collection') {
+                    return await crud('PUT', Collection, e.body, username);
                 } else {
-                    // Creating an entry
-                    e.body.worldId = worldId;
-                    e.body.ownerId = username;
-                    e.body.parentId = Id; // Use Id as parentId
-                    console.log('Creating entry /' + worldId + '/' + Id + '/' + e.body.name );
-
-                    if (reserved_names.includes(e.body.name)) {
-                        return badRequest('Invalid entry name: ' + e.body.name + '. Reserved names cannot be used.');
-                    }
-
-                    var newres = await crud(operation, Entry, e.body, username);
-                    if (newres) {
-                        return newres;
-                    }
-                }
-            } else {
-                console.log('is there a collection or a entry?:', Id);
-                if (await dynamo_find_collection(worldId, Id)) {
-                    console.log('Found collection with id: ' + Id);
-                    const collectionId = Id;
-                    e.body.name = collectionId;
-                    // parentid will be in query, or use worldId as parentId
-                    e.body.parentId = parentId; 
-                    var newres = await crud(operation, Collection, e.body, username);
-                    if (newres) {
-                        return newres;
-                    }
-                } else {
-                    console.log('No collection found with id: ' + Id + ', treating as entry');
-                    const entryId = Id;
-                    e.body.name = entryId;
-                    e.body.parentId = parentId; // Use parentId from query or body, or default to worldId
-                    var newres = await crud(operation, Entry, e.body, username);
-                    if (newres) {
-                        return newres;
-                    }
+                    return await crud('PUT', Entry, e.body, username);
                 }
             }
-        }
-        // /{WorldId}/{CollectionId}/{EntryId}: GET, POST, DELETE
-        else if (pathsplit.length === 4) {
-            console.log('Matched pathsplit length 4: ' + pathsplit.join('/'));
-            const worldId = pathParameters.WorldId;
-            const collectionId = pathParameters.CollectionId;
-            const entryId = pathParameters.EntryId;
 
-            // reserved names
-            if (reserved_names.includes(entryId)) {
-                return badRequest('Invalid entry name: ' + entryId + '. Reserved names cannot be used.');
-            }
-            if (reserved_names.includes(collectionId)) {
-                return badRequest('Invalid collection name: ' + collectionId + '. Reserved names cannot be used.');
-            }
-            if (reserved_names.includes(worldId)) {
-                return badRequest('Invalid world name: ' + worldId + '. Reserved names cannot be used.');
-            }
-
-            if (!e.body) {
-                e.body = {};
-            }
-            e.body.worldId = worldId;
-            e.body.name = entryId;
-            e.body.parentId = collectionId;
-            var newres = await crud(operation, Entry, e.body, username);
-            console.log('crud operation result:', newres);
-            if (newres) {
-                return newres;
-            }
+            // For GET, PATCH, DELETE: resolve whether item is a collection or entry
+            const isCollection = await dynamo_find_collection(worldId, itemName);
+            e.body.name = itemName;
+            e.body.parentId = parentId;
+            const model = isCollection ? Collection : Entry;
+            return await crud(operation, model, e.body, username);
         }
-        console.error('No route found for: ' + operation + ' ' + path + ' with body: ' + JSON.stringify(e.body));
-        console.error('Path parameters:', pathParameters, 'pathsplit length:', pathsplit.length);
-        console.error('pathsplit is 4???', pathsplit.length === 4);
-        return {
-            statusCode: 404,
-            body: JSON.stringify({ message: 'Route not found for: ' + operation + ' ' + path })
-        };
+
+        console.error('No route found for:', operation, path);
+        return notFound('Route not found: ' + operation + ' ' + path);
+
     } catch (err) {
         console.error("Error processing request:", err);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: err }) // Fix this in the future
+            body: JSON.stringify({ message: String(err) })
         };
     }
 }
