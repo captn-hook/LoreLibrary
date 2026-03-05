@@ -104,7 +104,7 @@ export function getWorlds() {
             return response.json()})
         .then((data) => {
             console.log(data);
-            let worlds = data.map((world: any) => {
+            let worlds = (data.items ?? data).map((world: any) => {
                 return  World.fromJson(world); // this will need to be updated later
             }
             );

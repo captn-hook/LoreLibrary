@@ -203,7 +203,7 @@ Resources:
           COGNITO_USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
           VER: !Ref Ver
-      Timeout: 7 # seconds
+      Timeout: 29 # seconds (API Gateway HTTP API hard limit)
 
   CustomAuthorizerLambda:
     Type: "AWS::Lambda::Function"

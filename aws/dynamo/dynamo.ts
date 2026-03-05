@@ -46,8 +46,8 @@ export function make_collection(item: any): Collection | null {
         let collections = Array.isArray(item.collections) ? item.collections : [item.collections];
         const col = new Collection(
             String(item.SK),
-            String(item.worldId),
             String(item.parentId),
+            String(item.worldId),
             entries,
             collections
         );

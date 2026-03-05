@@ -54,7 +54,8 @@ jobs:
               ParameterKey=OpenApiSpecS3Key,ParameterValue=api.yaml \
               ParameterKey=JWTSecretParameter,ParameterValue=${{ secrets.JWT_SECRET }} \
               ParameterKey=Env,ParameterValue= \
-              ParameterKey=Ver,ParameterValue=${SHORT_SHA}
+              ParameterKey=Ver,ParameterValue=${SHORT_SHA} \
+              ParameterKey=AllowedOrigin,ParameterValue=https://lore-library.vercel.app
           echo "Change set creation initiated."
           echo "Change set creation initiated."
 
