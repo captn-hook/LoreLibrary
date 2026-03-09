@@ -260,6 +260,7 @@ export class Entry extends DataShort {
         return {
             name: this.name,
             parentId: this.parentId,
+            ownerId: this.ownerId,
             description: this.description,
             image: this.image,
             tags: this.tags,
@@ -294,6 +295,7 @@ export class Collection extends Entry {
         return {
             name: this.name,
             parentId: this.parentId,
+            ownerId: this.ownerId,
             description: this.description,
             image: this.image,
             tags: this.tags,
@@ -325,6 +327,7 @@ export class World extends Collection {
         return {
             name: this.name,
             parentId: this.parentId,
+            ownerId: this.ownerId,
             description: this.description,
             image: this.image,
             tags: this.tags,
