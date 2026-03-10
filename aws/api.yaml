@@ -20,7 +20,8 @@ tags:
     description: Search and browse data
 x-amazon-apigateway-cors:
   allowOrigins:
-    - '${AllowedOrigin}'
+    - 'https://lore-library.vercel.app'
+    - 'http://localhost'
   allowMethods:
     - GET
     - POST
